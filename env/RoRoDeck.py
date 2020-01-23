@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 
 class RoRoDeck(object):
     def __init__(self, lanes=10, rows=12):
-
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
@@ -21,7 +20,6 @@ class RoRoDeck(object):
         self.actionSpace_names = {0: 'Switch', 2: 'Type1', 3: 'Type2'}
         self.actionSpace = np.array([0, 2, 3])
         self.minimalPackage = np.min(self.actionSpace[np.where(self.actionSpace > 0)])
-        print(self.minimalPackage)
         self.possibleActions = self.possibleActionsOfState()
 
         self.maxSteps = 0

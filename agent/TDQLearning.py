@@ -81,9 +81,10 @@ class TDQLearning(object):
                     print(self.action)
                     env.render()
                     print(self.epReward)
+                    print("The Terminal reward was "+ str(self.reward))
 
+                #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
                 if self.steps > self.MAX_IT:
-                    # print("That took too long")
                     break
             # Epsilon decreases lineary during training
             if 1. - i / (self.numGames - 50) > 0:
@@ -92,12 +93,6 @@ class TDQLearning(object):
                 self.EPS = 0
 
             self.totalRewards[i] = self.epReward
-
-            # if max(totalRewards)-1<=epReward:
-            #   print("New Best")
-            #   print(i)
-            #  print(epReward)
-            #  env.render()
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit

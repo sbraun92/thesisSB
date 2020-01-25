@@ -157,7 +157,7 @@ class RoRoDeck(object):
             print("Action was not Legal. There is an error in the legal action machine")
             return self.getCurrentState(), -1, self.isTerminalState(), None
         else:
-            reward = -0.01
+            reward = 0
             #Remove Switching-Option
             if self.actionSpace[action] == -1:
                 self.currentLane = self.switchCurrentLane()
@@ -168,7 +168,7 @@ class RoRoDeck(object):
                 self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
                 for i in range(self.action2vehicleLength[action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
-                    reward += 0.1+i*0.1
+                    reward += 0.1+i*0.6
 
                 self.frontier = self.getFrontier()
                 self.sequence_no += 1
@@ -180,7 +180,7 @@ class RoRoDeck(object):
             self.possibleActions = self.possibleActionsOfState()
 
             if self.isTerminalState():
-                reward = -0.1*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
+                reward = -0.6*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
                 #print(1*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows)))
             return self.getCurrentState(), reward, self.isTerminalState(), None
 

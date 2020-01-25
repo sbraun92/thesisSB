@@ -62,13 +62,18 @@ class TDQLearning(object):
                 self.action_ = self.maxAction(self.q_table, self.observation_, env.possibleActions)
 
                 # TD-Q-Learning with Epsilon-Greedy
-                '''if not done:
-                    q_table[observation.tobytes()][action] += ALPHA * (
-                                reward + GAMMA * q_table[observation_.tobytes()][action_]
-                                - q_table[observation.tobytes()][action])
-                '''
                 if not self.done:
-                    self.q_table[self.observation.tobytes()][self.action] = self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
+                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
+                                self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
+                                - self.q_table[self.observation.tobytes()][self.action])
+
+                else:
+                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
+                                self.reward - self.q_table[self.observation.tobytes()][self.action])
+
+                #if not self.done:
+                #    self.q_table[self.observation.tobytes()][self.action] = self.reward \
+                #                                    + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
 
                 self.observation = self.observation_
 
@@ -112,101 +117,3 @@ class TDQLearning(object):
             if ix_q_values in actions:
                 #print(ix_q_values)
                 return ix_q_values
-
-
-
-'''
-if __name__ == '__main__':
-
-    env = RoRoDeck(10,15)
-    initState = env.reset()
-
-    actionSpace_length = len(env.actionSpace)
-    #ix_Actions = np.arange(len(env.actionSpace))
-    #print(env.actionSpace)
-    action_list = []
-
-    # for ix, i in enumerate(env.actionSpace.keys()):
-    #    ix_Actions[i] = ix
-    #   action_list += [i]
-
-    q_table = {initState.tobytes(): np.zeros(actionSpace_length)}
-
-    ALPHA = 0.1
-    GAMMA = 0.999
-    EPS = 1.0
-    MAX_IT = 400
-
-
-    numGames = 50000
-    totalRewards = np.zeros(numGames)
-    stateExpantion = np.zeros(numGames)
-    stepsToExit = np.zeros(numGames)
-    #env.render()
-
-    for i in tqdm.tqdm(range(numGames)):
-        #print(EPS)
-        #if i % 2000 == 0:
-            #print('learning process epoch:', i)
-
-        done = False
-        epReward = 0
-        observation = env.reset()
-        steps = 0
-
-        while not done:
-            # Show for visualisation the last training epoch
-
-            rand = np.random.random()
-            action = maxAction(q_table, observation, env.possibleActions) if rand < (1 - EPS) \
-                else env.actionSpaceSample()
-
-            observation_, reward, done, info = env.step(action)
-            steps +=1
-
-
-            if observation_.tobytes() not in q_table:
-                q_table[observation_.tobytes()] = np.zeros(actionSpace_length)
-
-            epReward += reward
-
-            action_ = maxAction(q_table, observation_, env.possibleActions)
-
-            # TD-Q-Learning with Epsilon-Greedy
-            #if not done:
-             #   q_table[observation.tobytes()][action] += ALPHA * (
-              #              reward + GAMMA * q_table[observation_.tobytes()][action_]
-               #             - q_table[observation.tobytes()][action])
-       
-            if not done:
-                q_table[observation.tobytes()][action] = reward + GAMMA * q_table[observation_.tobytes()][action_]
-
-            observation = observation_
-
-            if i == numGames - 1:
-                print(action)
-                env.render()
-                print(epReward)
-
-            if steps > MAX_IT:
-                #print("That took too long")
-                break
-        # Epsilon decreases lineary during training
-        if 1. - i / (numGames-50) > 0:
-            EPS -= 1. / (numGames-50)
-        else:
-            EPS = 0
-
-        totalRewards[i] = epReward
-
-        #if max(totalRewards)-1<=epReward:
-         #   print("New Best")
-         #   print(i)
-          #  print(epReward)
-          #  env.render()
-        stateExpantion[i] = len(q_table.keys())
-        stepsToExit[i] = steps
-
-
-
-'''

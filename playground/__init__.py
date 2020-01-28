@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 
 
 env = RoRoDeck()
-agent = TDQLearning(1000)
+agent = TDQLearning(1000000)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
 print("Rewards Max:")
 print(max(totalRewards))
 
 sns.set(style="darkgrid")
-smoothing_window = 80
+smoothing_window = 200
 fig2 = plt.figure(figsize=(10, 5))
 rewards_smoothed = pd.Series(totalRewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
 ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False,color="blue")

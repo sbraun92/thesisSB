@@ -178,11 +178,16 @@ class RoRoDeck(object):
             else:
                 slot = self.endOfLanes[self.currentLane]
                 self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
+
+                numberOfShifts = self.getNumberOfShifts(self.action2destination[action])
+
                 for i in range(self.action2vehicleLength[action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
                     self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
 
-                    reward += 0.1+i*0.6
+
+
+                reward += 0.1+self.action2vehicleLength[action]*0.6-numberOfShifts*1.2
 
                 self.frontier = self.getFrontier()
                 self.sequence_no += 1
@@ -200,3 +205,17 @@ class RoRoDeck(object):
 
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
+
+    def getNumberOfShifts(self, destination):
+
+        shifts = 0
+        destination1 = len(np.where(self.gridDestination.T[self.currentLane] == 1))
+        destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
+
+        if destination == 2:
+            shifts = destination1
+
+        #if destination == 2:
+        return shifts
+        #else:
+        #    return 0

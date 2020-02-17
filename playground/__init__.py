@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 
 
 env = RoRoDeck()
-agent = TDQLearning(1000000)
+env.render()
+
+agent = TDQLearning(1000)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
 print("Rewards Max:")

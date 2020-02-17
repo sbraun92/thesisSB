@@ -9,6 +9,7 @@ class RoRoDeck(object):
         self.rows = rows
         self.sequence_no = 1
         self.grid = self.createGrid()
+        self.gridDestination = self.createGrid()
         self.endOfLanes = self.getEndOfLane(self.grid)
         self.capacity = self.getFreeCapacity(self.grid)
         self.currentLane = self.getMinimalLanes()[0]
@@ -21,6 +22,7 @@ class RoRoDeck(object):
         self.actionSpace_names = {0: 'Type1', 1: 'Type2'}
         self.actionSpace = np.array([0,1])
         self.action2vehicleLength = np.array([2, 3])
+        self.action2destination = np.array([1,2])
 
         #self.actionSpace_names = {0: 'Switch', 1: 'Type1', 2: 'Type2'}
         #self.actionSpace = np.array([0,1,2])
@@ -33,6 +35,7 @@ class RoRoDeck(object):
     def reset(self):
         self.sequence_no = 1
         self.grid = self.createGrid()
+        self.gridDestination = self.createGrid()
         self.endOfLanes = self.getEndOfLane(self.grid)
         self.capacity = self.getFreeCapacity(self.grid)
         self.currentLane = self.getMinimalLanes()[0]
@@ -46,8 +49,9 @@ class RoRoDeck(object):
         return self.getCurrentState()
 
     def render(self):
-        print('---------------------------------------------------------------------------')
+        print('-----------Loading Sequence----------------------------------------------------------------')
         for row in self.grid:
+            #Loading Sequence
             for col in row:
                 if col == -1:
                     print('X', end='\t')
@@ -56,8 +60,16 @@ class RoRoDeck(object):
                 else:
                     print(str(int(col)), end='\t')
             print('\n')
-            print('---------------------------------------------------------------------------')
-
+        print('-------Destination--------------------------------------------------------------------')
+        for row in self.gridDestination:
+            for col in row:
+                if col == -1:
+                    print('X', end='\t')
+                elif col == 0:
+                    print('-', end='\t')
+                else:
+                    print(str(int(col)), end='\t')
+            print('\n')
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
 
@@ -168,6 +180,8 @@ class RoRoDeck(object):
                 self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
                 for i in range(self.action2vehicleLength[action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
+                    self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
+
                     reward += 0.1+i*0.6
 
                 self.frontier = self.getFrontier()

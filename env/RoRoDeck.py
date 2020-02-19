@@ -1,10 +1,11 @@
 # RORO-Terminal Enviroment based on a GridWorld; is OpenAI Gym complying
 import numpy as np
 import matplotlib.pyplot as plt
-
+import logging
 
 class RoRoDeck(object):
     def __init__(self, lanes=10, rows=12):
+        logging.info('Initilise Enviroment')
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
@@ -33,6 +34,8 @@ class RoRoDeck(object):
         self.TerminalStateCounter = 0
 
     def reset(self):
+        logging.info('Reset Enviroment')
+
         self.sequence_no = 1
         self.grid = self.createGrid()
         self.gridDestination = self.createGrid()

@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 from datetime import datetime
+import logging
 date = str(datetime.utcnow().date().strftime("%Y%m%d"))
 time = str(datetime.now().strftime("%H%M"))
 
@@ -15,21 +16,25 @@ os.makedirs(module_path, exist_ok=True)
 
 module_path += time
 
+logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 
+it = 3000
+smoothing = int(it/10)
 
-print(module_path)
 
 env = RoRoDeck()
 env.render()
 
-agent = TDQLearning(1000)
+agent = TDQLearning(it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
+
+logging.info("prepare plots")
 print("Rewards Max:")
 print(max(totalRewards))
 
 sns.set(style="darkgrid")
-smoothing_window = 50
+smoothing_window = 200
 fig2 = plt.figure(figsize=(10, 5))
 rewards_smoothed = pd.Series(totalRewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
 ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False,color="blue")

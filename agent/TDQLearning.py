@@ -3,11 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tqdm
 import time
-
+import logging
 
 
 class TDQLearning(object):
     def __init__(self, numGames=20000, GAMMA = 0.999):
+        logging.info("Initilise TD-Q-Learning Agent")
         self.numGames=numGames
         self.GAMMA = GAMMA
         #self.env = env
@@ -15,6 +16,7 @@ class TDQLearning(object):
 
 
     def train(self,env):
+        logging.info("prepare training...")
         initState = env.reset()
 
         self.actionSpace_length = len(env.actionSpace)
@@ -26,6 +28,7 @@ class TDQLearning(object):
         #    ix_Actions[i] = ix
         #   action_list += [i]
 
+        logging.info("initilise Q table")
         self.q_table = {initState.tobytes(): np.zeros(self.actionSpace_length)}
 
         self.ALPHA = 0.1
@@ -33,11 +36,15 @@ class TDQLearning(object):
         self.EPS = 1.0
         self.MAX_IT = 400
 
+        logging.info("Use param: ALPHA: "+ str(self.ALPHA)+" GAMMA: "+str(self.GAMMA))
+
+
         self.totalRewards = np.zeros(self.numGames)
         self.stateExpantion = np.zeros(self.numGames)
         self.stepsToExit = np.zeros(self.numGames)
 
         print("Start Training Process")
+        logging.info("Start training process")
         for i in tqdm.tqdm(range(self.numGames)):
             self.done = False
             self.epReward = 0
@@ -83,9 +90,13 @@ class TDQLearning(object):
                     print(self.epReward)
                     print("The Terminal reward was "+ str(self.reward))
 
+
+
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
                 if self.steps > self.MAX_IT:
                     break
+
+            logging.info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
             # Epsilon decreases lineary during training
             if 1. - i / (self.numGames - 50) > 0:
                 self.EPS -= 1. / (self.numGames - 50)
@@ -95,6 +106,7 @@ class TDQLearning(object):
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
+        logging.info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
 
 

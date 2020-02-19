@@ -19,7 +19,7 @@ module_path += time
 logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 
 it = 3000
-smoothing = int(it/10)
+smoothing_window = int(it/10)
 
 
 env = RoRoDeck()
@@ -34,7 +34,7 @@ print("Rewards Max:")
 print(max(totalRewards))
 
 sns.set(style="darkgrid")
-smoothing_window = 200
+#smoothing_window = 200
 fig2 = plt.figure(figsize=(10, 5))
 rewards_smoothed = pd.Series(totalRewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
 ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False,color="blue")

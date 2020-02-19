@@ -11,14 +11,18 @@ time = str(datetime.now().strftime("%H%M"))
 
 
 module_path = str(os.path.dirname(os.path.realpath(__file__)))+'\\out\\'+date+'\\'
-
 os.makedirs(module_path, exist_ok=True)
-
 module_path += time
 
 logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
+logger1 = logging.getLogger('log1')
+logger2 = logging.getLogger('log2')
+logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
+#logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
+#log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
-it = 3000
+
+it = 10000
 smoothing_window = int(it/10)
 
 
@@ -29,7 +33,9 @@ agent = TDQLearning(it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
 
-logging.info("prepare plots")
+logging.getLogger('log1').info("prepare plots")
+
+
 print("Rewards Max:")
 print(max(totalRewards))
 

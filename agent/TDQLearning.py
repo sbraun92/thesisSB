@@ -14,6 +14,9 @@ class TDQLearning(object):
         #self.env = env
 
 
+    #TODO Output QTable
+    #TODO Load QTable
+
 
     def train(self,env):
         logging.info("prepare training...")
@@ -53,13 +56,16 @@ class TDQLearning(object):
 
             while not self.done:
                 # Show for visualisation the last training epoch
-
                 self.rand = np.random.random()
                 self.action = self.maxAction(self.q_table, self.observation, env.possibleActions) if self.rand < (1 - self.EPS) \
                     else env.actionSpaceSample()
 
                 self.observation_, self.reward, self.done, self.info = env.step(self.action)
                 self.steps += 1
+
+                #Log Loading Sequence
+                if i == self.numGames-1:
+                    logging.getLogger('log2').info("Current Lane:"+str(self.observation[-1])+" Action:"+str(self.action))
 
                 if self.observation_.tobytes() not in self.q_table:
                     self.q_table[self.observation_.tobytes()] = np.zeros(self.actionSpace_length)

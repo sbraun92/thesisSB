@@ -16,6 +16,8 @@ class RoRoDeck(object):
         self.currentLane = self.getMinimalLanes()[0]
         self.frontier = self.getFrontier()
 
+        self.mandatoryCargo = 12*np.ones(2)
+
         # State-Repräsentation Frontier, BackLook, CurrentLane
         self.currentState = self.getCurrentState()
 
@@ -48,6 +50,8 @@ class RoRoDeck(object):
 
         self.maxSteps = 0
         self.TerminalStateCounter = 0
+
+        self.mandatoryCargo = 12*np.ones(2)
 
         return self.getCurrentState()
 
@@ -154,7 +158,7 @@ class RoRoDeck(object):
             return False
 
     def getCurrentState(self):
-        return np.hstack((self.frontier, self.endOfLanes, self.currentLane)).astype(np.int32)
+        return np.hstack((self.frontier, self.endOfLanes, self.mandatoryCargo ,self.currentLane)).astype(np.int32)
 
     def step(self, action):
         # Must return new State, reward, if it is a TerminalState
@@ -184,13 +188,15 @@ class RoRoDeck(object):
 
                 numberOfShifts = self.getNumberOfShifts(self.action2destination[action])
 
+                if self.mandatoryCargo[action] > 0:
+                    self.mandatoryCargo[action]-=1
+
                 for i in range(self.action2vehicleLength[action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
                     self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
 
 
-
-                reward += 0.1+self.action2vehicleLength[action]*0.6-numberOfShifts*1.2
+                reward += 0.1+self.action2vehicleLength[action]*0.6-numberOfShifts*4
 
                 self.frontier = self.getFrontier()
                 self.sequence_no += 1
@@ -203,6 +209,7 @@ class RoRoDeck(object):
 
             if self.isTerminalState():
                 reward = -0.6*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
+                reward -= np.sum(self.mandatoryCargo)*10
                 #print(1*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows)))
             return self.getCurrentState(), reward, self.isTerminalState(), None
 
@@ -210,10 +217,9 @@ class RoRoDeck(object):
         return np.random.choice(self.possibleActions)
 
     def getNumberOfShifts(self, destination):
-
         shifts = 0
         destination1 = len(np.where(self.gridDestination.T[self.currentLane] == 1))
-        destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
+        #destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
 
         if destination == 2:
             shifts = destination1

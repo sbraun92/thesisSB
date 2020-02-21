@@ -12,7 +12,9 @@ class Plotter(object):
         self.stateExpPlot = stateExpPlot
         self.stepPlot = stepPlot
         self.it = it
-        self.smoothingWindow = int(it/50)
+        self.smoothingWindow = int(it/100)
+        if self.smoothingWindow == 0:
+            self.smoothingWindow = 1
         logging.getLogger('log1').info("Setting path for plots to:"+ path)
         self.path = path
 

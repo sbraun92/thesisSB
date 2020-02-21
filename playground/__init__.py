@@ -1,8 +1,6 @@
 from env.RoRoDeck import RoRoDeck
 from agent.TDQLearning import TDQLearning
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+from viz.Plotter import Plotter
 import os
 from datetime import datetime
 import logging
@@ -14,59 +12,42 @@ module_path = str(os.path.dirname(os.path.realpath(__file__)))+'\\out\\'+date+'\
 os.makedirs(module_path, exist_ok=True)
 module_path += time
 
-logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
+logging.basicConfig(filename=module_path+'_log.log',level=logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+
 logger1 = logging.getLogger('log1')
+logger1.addHandler(logging.FileHandler(module_path+'_debugger.log'))
+#logger1.addHandler(handler)
+
 logger2 = logging.getLogger('log2')
 logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
 
-it = 10000
-smoothing_window = int(it/10)
+it = 3000
+logging.getLogger('log1').info("Train for "+str(it)+" iterations.")
+
+smoothing_window = int(it/100)
 
 
 env = RoRoDeck()
-env.render()
 
+#Training
 agent = TDQLearning(it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
 
-logging.getLogger('log1').info("prepare plots")
+#Plotting
+plotter = Plotter(module_path, it)
+plotter.plot(totalRewards, stateExpantion, stepsToExit)
 
 
-print("Rewards Max:")
-print(max(totalRewards))
-
-sns.set(style="darkgrid")
-#smoothing_window = 200
-fig2 = plt.figure(figsize=(10, 5))
-rewards_smoothed = pd.Series(totalRewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
-ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False,color="blue")
-plt.plot(rewards_smoothed)
-plt.xlabel("Episode")
-plt.ylabel("Episode Reward (Smoothed)")
-plt.title("Episode Reward over Time (Smoothed over window size {})".format(smoothing_window))
-#plt.show()
-plt.savefig(module_path+'_Rewards.png')
-plt.close(fig2)
+logging.getLogger('log1').info("SHUTDOWN")
 
 
-#plt.title("State Expansion")
-fi3 = plt.figure(figsize=(10, 5))
-ax = sns.lineplot(data=pd.Series(stateExpantion), linewidth=2.5, dashes=False,color="black")
-plt.xlabel("Episode")
-plt.ylabel("States Explored")
-plt.title("State Expansion over time")
-#plt.show()
-fi3.savefig(module_path+'_StateExpansion.png')
 
-#Plot smoothed Steps to Exit
-steps_smoothed = pd.Series(stepsToExit).rolling(int(smoothing_window/2), min_periods=int(smoothing_window/2)).mean()
-fi4 = plt.figure(figsize=(10, 5))
-ax = sns.lineplot(data=steps_smoothed, linewidth=2.5, dashes=False, color="green")
-plt.xlabel("Episode")
-plt.ylabel("Steps to Finish (Smoothed)")
-plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(smoothing_window/2)))
-fi4.savefig(module_path+'_StepsToFinish.png')

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import logging
 
 class RoRoDeck(object):
-    def __init__(self, lanes=10, rows=12):
-        logging.info('Initilise Enviroment')
+    def __init__(self, lanes=8, rows=10):
+        logging.getLogger('log1').info('Initilise Enviroment')
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
@@ -16,9 +16,13 @@ class RoRoDeck(object):
         self.currentLane = self.getMinimalLanes()[0]
         self.frontier = self.getFrontier()
 
-        self.mandatoryCargo = 12*np.ones(2)
+        #for shifts TODO not a good name
+        self.shiftHelper = self.endOfLanes.copy()
 
-        # State-Repräsentation Frontier, BackLook, CurrentLane
+        #mandatory cargo, must be loaded
+        self.mandatoryCargo = 5*np.ones(2)
+
+        # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self.getCurrentState()
 
         #Test without switching
@@ -36,7 +40,7 @@ class RoRoDeck(object):
         self.TerminalStateCounter = 0
 
     def reset(self):
-        logging.info('Reset Enviroment')
+        logging.getLogger('log1').info('Reset Enviroment')
 
         self.sequence_no = 1
         self.grid = self.createGrid()
@@ -45,13 +49,16 @@ class RoRoDeck(object):
         self.capacity = self.getFreeCapacity(self.grid)
         self.currentLane = self.getMinimalLanes()[0]
         self.frontier = self.getFrontier()
-        self.currentState = np.hstack((self.frontier, self.endOfLanes, self.currentLane))
+        #self.currentState = np.hstack((self.frontier, self.endOfLanes, self.currentLane))
+        self.currentState = self.getCurrentState()
         self.possibleActions = self.possibleActionsOfState()
 
         self.maxSteps = 0
         self.TerminalStateCounter = 0
 
-        self.mandatoryCargo = 12*np.ones(2)
+        self.shiftHelper = self.endOfLanes.copy()
+
+        self.mandatoryCargo = 5*np.ones(2)
 
         return self.getCurrentState()
 
@@ -176,7 +183,7 @@ class RoRoDeck(object):
             print("Action was not Legal. There is an error in the legal action machine")
             return self.getCurrentState(), -1, self.isTerminalState(), None
         else:
-            reward = 0
+            reward = 0#self.calculateReward()
             #Remove Switching-Option
             if self.actionSpace[action] == -1:
                 self.currentLane = self.switchCurrentLane()
@@ -186,17 +193,18 @@ class RoRoDeck(object):
                 slot = self.endOfLanes[self.currentLane]
                 self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
 
-                numberOfShifts = self.getNumberOfShifts(self.action2destination[action])
+                numberOfShifts = self.getNumberOfShifts(action)
 
                 if self.mandatoryCargo[action] > 0:
                     self.mandatoryCargo[action]-=1
+                    reward+=2
 
                 for i in range(self.action2vehicleLength[action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
                     self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
 
 
-                reward += 0.1+self.action2vehicleLength[action]*0.6-numberOfShifts*4
+                reward -= numberOfShifts*6#+self.action2vehicleLength[action]*0.6
 
                 self.frontier = self.getFrontier()
                 self.sequence_no += 1
@@ -208,21 +216,28 @@ class RoRoDeck(object):
             self.possibleActions = self.possibleActionsOfState()
 
             if self.isTerminalState():
-                reward = -0.6*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
-                reward -= np.sum(self.mandatoryCargo)*10
+                reward = -2*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
+                reward -= np.sum(self.mandatoryCargo)*20
                 #print(1*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows)))
             return self.getCurrentState(), reward, self.isTerminalState(), None
 
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
 
-    def getNumberOfShifts(self, destination):
+    def getNumberOfShifts(self, action):
         shifts = 0
+        destination = self.action2destination[action]
         destination1 = len(np.where(self.gridDestination.T[self.currentLane] == 1))
-        #destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
+        destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
 
         if destination == 2:
-            shifts = destination1
+            if destination1 !=0:
+                shifts = destination1 + destination2
+
+        if destination == 1:
+            if destination2 !=0 :
+                shifts = destination1
+
 
         #if destination == 2:
         return shifts

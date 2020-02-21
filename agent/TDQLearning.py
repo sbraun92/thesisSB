@@ -19,7 +19,7 @@ class TDQLearning(object):
 
 
     def train(self,env):
-        logging.info("prepare training...")
+        logging.getLogger('log1').info("prepare training...")
         initState = env.reset()
 
         self.actionSpace_length = len(env.actionSpace)
@@ -31,7 +31,7 @@ class TDQLearning(object):
         #    ix_Actions[i] = ix
         #   action_list += [i]
 
-        logging.info("initilise Q table")
+        logging.getLogger('log1').info("initilise Q table")
         self.q_table = {initState.tobytes(): np.zeros(self.actionSpace_length)}
 
         self.ALPHA = 0.1
@@ -39,7 +39,7 @@ class TDQLearning(object):
         self.EPS = 1.0
         self.MAX_IT = 400
 
-        logging.info("Use param: ALPHA: "+ str(self.ALPHA)+" GAMMA: "+str(self.GAMMA))
+        logging.getLogger('log1').info("Use param: ALPHA: "+ str(self.ALPHA)+" GAMMA: "+str(self.GAMMA))
 
 
         self.totalRewards = np.zeros(self.numGames)
@@ -47,7 +47,7 @@ class TDQLearning(object):
         self.stepsToExit = np.zeros(self.numGames)
 
         print("Start Training Process")
-        logging.info("Start training process")
+        logging.getLogger('log1').info("Start training process")
         for i in tqdm.tqdm(range(self.numGames)):
             self.done = False
             self.epReward = 0
@@ -65,7 +65,7 @@ class TDQLearning(object):
 
                 #Log Loading Sequence
                 if i == self.numGames-1:
-                    logging.getLogger('log2').info("Current Lane:"+str(self.observation[-1])+" Action:"+str(self.action))
+                   logging.getLogger('log2').info("Current Lane:"+str(self.observation[-1])+" Action:"+str(self.action))
 
                 if self.observation_.tobytes() not in self.q_table:
                     self.q_table[self.observation_.tobytes()] = np.zeros(self.actionSpace_length)
@@ -80,6 +80,7 @@ class TDQLearning(object):
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
                                 - self.q_table[self.observation.tobytes()][self.action])
 
+                #Value of Terminal State is zero
                 else:
                     self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
                                 self.reward - self.q_table[self.observation.tobytes()][self.action])
@@ -102,7 +103,7 @@ class TDQLearning(object):
                 if self.steps > self.MAX_IT:
                     break
 
-            logging.info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
+            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
             # Epsilon decreases lineary during training
             if 1. - i / (self.numGames - 50) > 0:
                 self.EPS -= 1. / (self.numGames - 50)
@@ -112,11 +113,11 @@ class TDQLearning(object):
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
-        logging.info("End training process")
+        logging.getLogger('log1').info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
 
 
-
+    #TODO Warum so kompliziert...
     def maxAction(self, Q, state, actions):
         argSorted_qValues = np.flipud(np.argsort(Q[state.tobytes()]))
         if np.size(np.nonzero(Q[state.tobytes()]))== 0:

@@ -1,0 +1,65 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import logging
+
+sns.set(style="darkgrid")
+
+class Plotter(object):
+    def __init__(self, path, it, rewardPlot = True, stateExpPlot = True, stepPlot=True):
+        logging.getLogger('log1').info("Initialise Plotting Unit")
+        self.rewardPlot = rewardPlot
+        self.stateExpPlot = stateExpPlot
+        self.stepPlot = stepPlot
+        self.it = it
+        self.smoothingWindow = int(it/50)
+        logging.getLogger('log1').info("Setting path for plots to:"+ path)
+        self.path = path
+
+    def plot(self, rewards, states, steps):
+        if self.rewardPlot == True:
+            self.plotRewardPlot(rewards)
+        if self.stateExpPlot is True:
+            self.plotStateExp(states)
+        if self.stepPlot is True:
+            self.plotStepPlot(steps)
+
+    def plotRewardPlot(self,totalRewards):
+        logging.getLogger('log1').info("prepare reward plot...")
+        fig2 = plt.figure(figsize=(10, 5))
+        rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).mean()
+        ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False, color="blue")
+        plt.plot(rewards_smoothed)
+        plt.xlabel("Episode")
+        plt.ylabel("Episode Reward (Smoothed)")
+        plt.title("Episode Reward over Time (Smoothed over window size {})".format(self.smoothingWindow))
+        plt.savefig(self.path + '_Rewards.png')
+        plt.close(fig2)
+        logging.getLogger('log1').info("finished plot")
+
+    # Plot StateExpantion
+    def plotStateExp(self, stateExpantion):
+        logging.getLogger('log1').info("prepare state Expansion plot...")
+        fi3 = plt.figure(figsize=(10, 5))
+        ax = sns.lineplot(data=pd.Series(stateExpantion), linewidth=2.5, dashes=False, color="black")
+        plt.xlabel("Episode")
+        plt.ylabel("States Explored")
+        plt.title("State Expansion over time")
+        # plt.show()
+        fi3.savefig(self.path + '_StateExpansion.png')
+        logging.getLogger('log1').info("finished plot")
+
+    # Plot smoothed Steps to Exit
+    def plotStepPlot(self,stepsToExit):
+        logging.getLogger('log1').info("prepare step to finish plot...")
+        steps_smoothed = pd.Series(stepsToExit).rolling(int(self.smoothingWindow / 2+1),
+                                                        min_periods=int(self.smoothingWindow / 2+1)).mean()
+        fi4 = plt.figure(figsize=(10, 5))
+        ax = sns.lineplot(data=steps_smoothed, linewidth=2.5, dashes=False, color="green")
+        plt.xlabel("Episode")
+        plt.ylabel("Steps to Finish (Smoothed)")
+        plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
+        fi4.savefig(self.path + '_StepsToFinish.png')
+        logging.getLogger('log1').info("finished plot")
+
+

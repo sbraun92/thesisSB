@@ -104,7 +104,7 @@ class TDQLearning(object):
                     break
 
             logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
-            # Epsilon decreases lineary during training
+            # Epsilon decreases lineary during training TODO 50 is arbitrary
             if 1. - i / (self.numGames - 50) > 0:
                 self.EPS -= 1. / (self.numGames - 50)
             else:
@@ -117,7 +117,7 @@ class TDQLearning(object):
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
 
 
-    #TODO Warum so kompliziert...
+    #TODO Warum so kompliziert... and slow
     def maxAction(self, Q, state, actions):
         argSorted_qValues = np.flipud(np.argsort(Q[state.tobytes()]))
         if np.size(np.nonzero(Q[state.tobytes()]))== 0:

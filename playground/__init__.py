@@ -29,14 +29,12 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
 
-it = 3000
+it = 1000000
 logging.getLogger('log1').info("Train for "+str(it)+" iterations.")
 
 smoothing_window = int(it/100)
 
-
 env = RoRoDeck()
-
 #Training
 agent = TDQLearning(it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
@@ -48,6 +46,3 @@ plotter.plot(totalRewards, stateExpantion, stepsToExit)
 
 
 logging.getLogger('log1').info("SHUTDOWN")
-
-
-

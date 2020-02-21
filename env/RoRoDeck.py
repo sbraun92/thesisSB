@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import logging
 
 class RoRoDeck(object):
-    def __init__(self, lanes=8, rows=10):
+    def __init__(self, lanes=10, rows=12):
         logging.getLogger('log1').info('Initilise Enviroment')
         self.lanes = lanes
         self.rows = rows
@@ -18,9 +18,10 @@ class RoRoDeck(object):
 
         #for shifts TODO not a good name
         self.shiftHelper = self.endOfLanes.copy()
+        #self.prevVeh = self.endOfLanes.copy()
 
         #mandatory cargo, must be loaded
-        self.mandatoryCargo = 5*np.ones(2)
+        self.mandatoryCargo = 8*np.ones(2)
 
         # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self.getCurrentState()
@@ -40,7 +41,7 @@ class RoRoDeck(object):
         self.TerminalStateCounter = 0
 
     def reset(self):
-        logging.getLogger('log1').info('Reset Enviroment')
+        logging.getLogger('log1').info('Reset Environment')
 
         self.sequence_no = 1
         self.grid = self.createGrid()
@@ -90,11 +91,11 @@ class RoRoDeck(object):
     # Done
     # Return a grid world with a arrow shaped ships hule
     def createGrid(self):
-        grid = np.zeros((self.rows, self.lanes))
+        grid = np.zeros((self.rows, self.lanes),dtype=np.int32)
         for i in range(4):
             t = 4 - i
-            grid[i] += np.hstack([-np.ones(t), np.zeros(self.lanes - t)])
-            grid[i] += np.hstack([np.zeros(self.lanes - t), -np.ones(t)])
+            grid[i] += np.hstack([-np.ones(t,dtype=np.int32), np.zeros(self.lanes - t,dtype=np.int32)])
+            grid[i] += np.hstack([np.zeros(self.lanes - t,dtype=np.int32), -np.ones(t,dtype=np.int32)])
         return grid
 
     # Return an Array with the Indicies of the last free space
@@ -184,6 +185,8 @@ class RoRoDeck(object):
             return self.getCurrentState(), -1, self.isTerminalState(), None
         else:
             reward = 0#self.calculateReward()
+            numberOfShifts = self.getNumberOfShifts(action)
+            reward -= numberOfShifts * 6  # +self.action2vehicleLength[action]*0.6
             #Remove Switching-Option
             if self.actionSpace[action] == -1:
                 self.currentLane = self.switchCurrentLane()
@@ -193,7 +196,7 @@ class RoRoDeck(object):
                 slot = self.endOfLanes[self.currentLane]
                 self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
 
-                numberOfShifts = self.getNumberOfShifts(action)
+
 
                 if self.mandatoryCargo[action] > 0:
                     self.mandatoryCargo[action]-=1
@@ -204,7 +207,7 @@ class RoRoDeck(object):
                     self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
 
 
-                reward -= numberOfShifts*6#+self.action2vehicleLength[action]*0.6
+
 
                 self.frontier = self.getFrontier()
                 self.sequence_no += 1
@@ -225,21 +228,11 @@ class RoRoDeck(object):
         return np.random.choice(self.possibleActions)
 
     def getNumberOfShifts(self, action):
-        shifts = 0
         destination = self.action2destination[action]
-        destination1 = len(np.where(self.gridDestination.T[self.currentLane] == 1))
-        destination2 = len(np.where(self.gridDestination.T[self.currentLane] == 2))
+        #TODO speed up here by doing: len(self.gridDestination.T[self.currentLane] == 1)
+        noVehDest1 = len(np.argwhere(self.gridDestination.T[self.currentLane] == 1))
 
-        if destination == 2:
-            if destination1 !=0:
-                shifts = destination1 + destination2
-
-        if destination == 1:
-            if destination2 !=0 :
-                shifts = destination1
-
-
-        #if destination == 2:
-        return shifts
-        #else:
-        #    return 0
+        if destination == 2 and noVehDest1 !=0:
+            return 1
+        else:
+            return 0

@@ -4,14 +4,20 @@ import matplotlib.pyplot as plt
 import tqdm
 import time
 import logging
-
+import pickle
+import csv
 
 class TDQLearning(object):
-    def __init__(self, numGames=20000, GAMMA = 0.999):
+    def __init__(self, path, numGames=20000, help= True, GAMMA = 0.999):
+        #help only for timing
+        self.help = help
         logging.info("Initilise TD-Q-Learning Agent")
         self.numGames=numGames
+        self.q_table = {}
+
         self.GAMMA = GAMMA
         #self.env = env
+        self.path = path
 
 
     #TODO Output QTable
@@ -31,8 +37,9 @@ class TDQLearning(object):
         #    ix_Actions[i] = ix
         #   action_list += [i]
 
-        logging.getLogger('log1').info("initilise Q table")
-        self.q_table = {initState.tobytes(): np.zeros(self.actionSpace_length)}
+        #logging.getLogger('log1').info("initilise Q table")
+        self.q_table[initState.tobytes()] = np.zeros(self.actionSpace_length)
+
 
         self.ALPHA = 0.1
         self.GAMMA = 0.999
@@ -91,12 +98,12 @@ class TDQLearning(object):
 
                 self.observation = self.observation_
 
-                if i == self.numGames - 1:
-                    print(self.action)
+                if i == self.numGames - 1 and self.done == True:
                     env.render()
-                    print(self.epReward)
+                    logging.getLogger('log1').info(env.render())
+                    print("The reward of the last training episode was "+str(self.epReward))
                     print("The Terminal reward was "+ str(self.reward))
-
+                    env.saveStowagePlan(self.path)
 
 
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
@@ -117,17 +124,47 @@ class TDQLearning(object):
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
 
 
+
     #TODO Warum so kompliziert... and slow
     def maxAction(self, Q, state, actions):
-        argSorted_qValues = np.flipud(np.argsort(Q[state.tobytes()]))
-        if np.size(np.nonzero(Q[state.tobytes()]))== 0:
-            if np.size(actions)==0:
-                return None
-            elif np.size(actions)==1:
-                return actions[0]
+        if self.help == True:
+            argSorted_qValues = np.flipud(np.argsort(Q[state.tobytes()]))
+            if np.size(np.nonzero(Q[state.tobytes()]))== 0:
+                if np.size(actions)==0:
+                    return None
+                elif np.size(actions)==1:
+                    return actions[0]
+                else:
+                    return np.random.choice(actions)
+            for ix_q_values in argSorted_qValues:
+                if ix_q_values in actions:
+                    #print(ix_q_values)
+                    return ix_q_values
+
+        #TODO check why this is not working -> possible actions -> redunadant when going to use Accept / reject logic
+        else:
+            return np.argmax(Q[state.tobytes()])
+
+    #TODO try feather
+    def load(self,path):
+        try:
+            self.q_table = pickle.load(open(path, "rb"))
+        except:
+            logging.getLogger("log1").error("Could not load pickle file")
+
+    def save(self,path,type='pickle'):
+        #path = path + '_qTablePickled.p'
+        print(path)
+        try:
+            if type == pickle:
+                pickle.dump(self.q_table, open(path+'_qTablePickled.p', "wb"))
             else:
-                return np.random.choice(actions)
-        for ix_q_values in argSorted_qValues:
-            if ix_q_values in actions:
-                #print(ix_q_values)
-                return ix_q_values
+                with open(path+'_qTable.csv', 'w') as f:
+                    for key in self.q_table.keys():
+                        f.write("%s,%s\n" % (key,  self.q_table[key]))
+        except:
+            if type==pickle:
+                logging.getLogger("log1").error("Could not save pickle file to+ " + path)
+            else:
+                logging.getLogger("log1").error("Could not save csv file to+ " + path)
+

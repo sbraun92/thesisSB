@@ -3,8 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import logging
 
+np.random.seed(0)
 class RoRoDeck(object):
-    def __init__(self, lanes=10, rows=12):
+    def __init__(self, help, lanes=8, rows=10):
+        #just to compare runtimes
+        #TODO delete helper from
+        self.help = help
+
+
         logging.getLogger('log1').info('Initilise Enviroment')
         self.lanes = lanes
         self.rows = rows
@@ -12,8 +18,16 @@ class RoRoDeck(object):
         self.grid = self.createGrid()
         self.gridDestination = self.createGrid()
         self.endOfLanes = self.getEndOfLane(self.grid)
-        self.capacity = self.getFreeCapacity(self.grid)
         self.currentLane = self.getMinimalLanes()[0]
+
+        #Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
+        self.vehicleData = np.array([[0, 1, 2, 3], #vehicle id
+                                     [1, 2, 1, 2], #destination
+                                     [1, 1, 0, 0], #madatory
+                                     [2, 3, 2, 3], #length
+                                     [5, 5,-1,-1]]) #number of vehicles on yard (-1 denotes there are infinite vehicles of that type
+
+        self.capacity = self.getFreeCapacity(self.grid)
         self.frontier = self.getFrontier()
 
         #for shifts TODO not a good name
@@ -21,7 +35,7 @@ class RoRoDeck(object):
         #self.prevVeh = self.endOfLanes.copy()
 
         #mandatory cargo, must be loaded
-        self.mandatoryCargo = 8*np.ones(2)
+        self.mandatoryCargo = 5*np.ones(2)
 
         # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self.getCurrentState()
@@ -85,6 +99,8 @@ class RoRoDeck(object):
                 else:
                     print(str(int(col)), end='\t')
             print('\n')
+
+
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
 
@@ -229,10 +245,61 @@ class RoRoDeck(object):
 
     def getNumberOfShifts(self, action):
         destination = self.action2destination[action]
-        #TODO speed up here by doing: len(self.gridDestination.T[self.currentLane] == 1)
+
         noVehDest1 = len(np.argwhere(self.gridDestination.T[self.currentLane] == 1))
 
         if destination == 2 and noVehDest1 !=0:
             return 1
         else:
             return 0
+
+
+
+
+    def heuristic(self):
+        # 1. Destination
+        # 2. Mandatory
+        # 3. Length
+        pass
+
+
+
+    #TODO Test, make sure this is not envoked during simulations
+    def add_CargoType(self, destination, mandatory, length, number):
+        assert destination == 1 or destination == 2
+        assert mandatory == 0 or mandatory == 1
+        assert length > 0 and length < len(self.grid[0])-4
+        assert number == -1 or number > 0
+
+        typeNo = self.vehicleData[0][-1] + 1
+        newCargo = np.array([typeNo,destination,mandatory,length,number])
+        self.vehicleData = np.vstack((self.vehicleData.T,newCargo)).T
+
+
+    def saveStowagePlan(self,path):
+        stowagePlan = open(path+"_StowagePlan.txt", 'w')
+        stowagePlan.write('Stowage Plan and Loading Sequence \n')
+        stowagePlan.write('-----------Loading Sequence---------------------------------------------------------------- \n')
+        for row in self.grid:
+            # Loading Sequence
+            for col in row:
+                if col == -1:
+                    stowagePlan.write('X \t')
+                elif col == 0:
+                    stowagePlan.write('- \t')
+                else:
+                    stowagePlan.write(str(int(col))+' \t')
+            stowagePlan.write(' \n\n')
+        stowagePlan.write('-------Destination-------------------------------------------------------------------- \n')
+        for row in self.gridDestination:
+            for col in row:
+                if col == -1:
+                    stowagePlan.write('X \t')
+                elif col == 0:
+                    stowagePlan.write('- \t')
+                else:
+                    stowagePlan.write(str(int(col))+' \t')
+            stowagePlan.write('\n\n')
+
+        # Close the file
+        stowagePlan.close()

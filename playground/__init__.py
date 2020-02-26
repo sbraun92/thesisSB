@@ -3,7 +3,13 @@ from agent.TDQLearning import TDQLearning
 from viz.Plotter import Plotter
 import os
 from datetime import datetime
+import pandas as pd
+import time
 import logging
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 date = str(datetime.utcnow().date().strftime("%Y%m%d"))
 time = str(datetime.now().strftime("%H%M"))
 
@@ -28,18 +34,54 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
+it = 100
+logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
-it = 1000000
-logging.getLogger('log1').info("Train for "+str(it)+" iterations.")
+smoothing_window = int(it / 100)
 
-smoothing_window = int(it/100)
-
-env = RoRoDeck()
-#Training
-agent = TDQLearning(it)
+env = RoRoDeck(True)
+# Training
+agent = TDQLearning(module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
 
 
+#For RunTimeComparison
+
+'''
+ds1 = []
+ds2 = []
+for i in range(15):
+    #old version
+    start = datetime.now()
+
+    it = 2000
+    logging.getLogger('log1').info("Train for "+str(it)+" iterations.")
+
+    smoothing_window = int(it/100)
+
+    env = RoRoDeck(True)
+    #Training
+    agent = TDQLearning(it)
+    q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
+    ds1+=[(datetime.now() - start).total_seconds()]
+
+    #Changed version
+    start = datetime.now()
+
+    env2 = RoRoDeck(False)
+    #Training
+    #Try false to check method maxAction
+    agent2 = TDQLearning(it,True)
+    q_table, totalRewards, stateExpantion, stepsToExit = agent2.train(env2)
+    ds2+=[(datetime.now() - start).total_seconds()]
+
+df = pd.DataFrame()
+df['orig']= ds1
+df['faster'] = ds2
+print(df)
+sns.lineplot(data=df)
+plt.show()
+'''
 #Plotting
 plotter = Plotter(module_path, it)
 plotter.plot(totalRewards, stateExpantion, stepsToExit)

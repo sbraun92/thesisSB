@@ -1,5 +1,5 @@
 import pandas as pd
-import seaborn as sns
+import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt
 import logging
 
@@ -12,7 +12,8 @@ class Plotter(object):
         self.stateExpPlot = stateExpPlot
         self.stepPlot = stepPlot
         self.it = it
-        self.smoothingWindow = int(it/100)
+        #self.smoothingWindow = int(it/100)
+        self.smoothingWindow = 200
         if self.smoothingWindow == 0:
             self.smoothingWindow = 1
         logging.getLogger('log1').info("Setting path for plots to:"+ path)
@@ -30,13 +31,23 @@ class Plotter(object):
         logging.getLogger('log1').info("prepare reward plot...")
         fig2 = plt.figure(figsize=(10, 5))
         rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).mean()
-        ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False, color="blue")
-        plt.plot(rewards_smoothed)
+        rewards_q75 = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).quantile(0.75)
+        rewards_q25 = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).quantile(0.25)
+        rewardsDf = pd.DataFrame(totalRewards)
+        ax = sns.lineplot(data=rewards_smoothed, linewidth=2.5, dashes=False, )
+
+        #ax = sns.lineplot(data=rewards_smoothed+rewards_std, linewidth=2.5, dashes=False,ax=ax)
+
+        plt.fill_between(rewards_smoothed.index,rewards_smoothed,  rewards_q75, color='gray', alpha=0.2)
+        plt.fill_between(rewards_smoothed.index, rewards_smoothed, rewards_q25, color='gray',alpha=0.2)
+        #plt.savefig(self.path + '_Rewards.png')
+        #plt.show()
+        #plt.plot(rewards_smoothed)
         plt.xlabel("Episode")
         plt.ylabel("Episode Reward (Smoothed)")
-        plt.title("Episode Reward over Time (Smoothed over window size {})".format(self.smoothingWindow))
+        plt.title("Episode Reward over Time (Smoothed over window size {} and IQR)".format(self.smoothingWindow))
         plt.savefig(self.path + '_Rewards.png')
-        plt.close(fig2)
+        #plt.close(fig2)
         logging.getLogger('log1').info("finished plot")
 
     # Plot StateExpantion

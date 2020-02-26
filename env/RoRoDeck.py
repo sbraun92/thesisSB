@@ -29,13 +29,13 @@ class RoRoDeck(object):
 
         self.capacity = self.getFreeCapacity(self.grid)
         self.frontier = self.getFrontier()
-
+        self.numberOfVehicles = self.vehicleData[4].copy()
         #for shifts TODO not a good name
         self.shiftHelper = self.endOfLanes.copy()
         #self.prevVeh = self.endOfLanes.copy()
 
         #mandatory cargo, must be loaded
-        self.mandatoryCargo = 5*np.ones(2)
+        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2]==1]
 
         # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self.getCurrentState()
@@ -49,7 +49,11 @@ class RoRoDeck(object):
         #self.actionSpace_names = {0: 'Switch', 1: 'Type1', 2: 'Type2'}
         #self.actionSpace = np.array([0,1,2])
         #self.action2vehicleLength = np.array([0, 2, 3])
-        self.minimalPackage = np.min(self.action2vehicleLength[np.where(self.action2vehicleLength > 0)])
+        #TODO unnoetig??
+        #self.minimalPackage = np.min(self.action2vehicleLength[np.where(self.action2vehicleLength > 0)])
+
+
+        self.minimalPackage = np.min(self.vehicleData[3])
         self.possibleActions = self.possibleActionsOfState()
         self.maxSteps = 0
         self.TerminalStateCounter = 0
@@ -61,12 +65,15 @@ class RoRoDeck(object):
         self.grid = self.createGrid()
         self.gridDestination = self.createGrid()
         self.endOfLanes = self.getEndOfLane(self.grid)
+        self.numberOfVehicles = self.vehicleData[4].copy()
+
         self.capacity = self.getFreeCapacity(self.grid)
         self.currentLane = self.getMinimalLanes()[0]
         self.frontier = self.getFrontier()
         #self.currentState = np.hstack((self.frontier, self.endOfLanes, self.currentLane))
         self.currentState = self.getCurrentState()
         self.possibleActions = self.possibleActionsOfState()
+
 
         self.maxSteps = 0
         self.TerminalStateCounter = 0
@@ -155,7 +162,7 @@ class RoRoDeck(object):
         return np.argwhere(self.endOfLanes == np.min(self.endOfLanes)).flatten()
 
     def isActionLegal(self, action):
-        if self.endOfLanes[self.currentLane] + self.action2vehicleLength[action] <= self.rows:
+        if self.endOfLanes[self.currentLane] + self.vehicleData[3][action] <= self.rows:
             return True
         else:
             return False
@@ -214,13 +221,17 @@ class RoRoDeck(object):
 
 
 
-                if self.mandatoryCargo[action] > 0:
-                    self.mandatoryCargo[action]-=1
+                if self.numberOfVehicles[action] > 0 and self.vehicleData[2][action]== 1:
+                    self.numberOfVehicles[action]-=1
                     reward+=2
 
-                for i in range(self.action2vehicleLength[action]):
+                #if self.mandatoryCargo[action] > 0:
+                 #   self.mandatoryCargo[action]-=1
+                  #  reward+=2
+
+                for i in range(self.vehicleData[3][action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
-                    self.gridDestination.T[self.currentLane][slot + i] = self.action2destination[action]
+                    self.gridDestination.T[self.currentLane][slot + i] = self.vehicleData[1][action]
 
 
 
@@ -236,15 +247,14 @@ class RoRoDeck(object):
 
             if self.isTerminalState():
                 reward = -2*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows))
-                reward -= np.sum(self.mandatoryCargo)*20
-                #print(1*np.sum(-self.endOfLanes + np.ones(self.lanes) * (self.rows)))
+                reward -= np.sum(self.numberOfVehicles[self.vehicleData[2]==1])*20
             return self.getCurrentState(), reward, self.isTerminalState(), None
 
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
 
     def getNumberOfShifts(self, action):
-        destination = self.action2destination[action]
+        destination = self.vehicleData[1][action]
 
         noVehDest1 = len(np.argwhere(self.gridDestination.T[self.currentLane] == 1))
 

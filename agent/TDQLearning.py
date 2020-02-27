@@ -8,7 +8,7 @@ import pickle
 import csv
 
 class TDQLearning(object):
-    def __init__(self, path, numGames=20000, help= True, GAMMA = 0.999):
+    def __init__(self, env, path, numGames=20000, help= True, GAMMA = 0.999):
         #help only for timing
         self.help = help
         logging.info("Initilise TD-Q-Learning Agent")
@@ -18,17 +18,17 @@ class TDQLearning(object):
         self.GAMMA = GAMMA
         #self.env = env
         self.path = path
-
+        self.env = env
 
     #TODO Output QTable
     #TODO Load QTable
 
 
-    def train(self,env):
+    def train(self):
         logging.getLogger('log1').info("prepare training...")
-        initState = env.reset()
+        initState = self.env.reset()
 
-        self.actionSpace_length = len(env.actionSpace)
+        self.actionSpace_length = len(self.env.actionSpace)
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
         self.action_list = []
@@ -58,16 +58,16 @@ class TDQLearning(object):
         for i in tqdm.tqdm(range(self.numGames)):
             self.done = False
             self.epReward = 0
-            self.observation = env.reset()
+            self.observation = self.env.reset()
             self.steps = 0
 
             while not self.done:
                 # Show for visualisation the last training epoch
                 self.rand = np.random.random()
-                self.action = self.maxAction(self.q_table, self.observation, env.possibleActions) if self.rand < (1 - self.EPS) \
-                    else env.actionSpaceSample()
+                self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (1 - self.EPS) \
+                    else self.env.actionSpaceSample()
 
-                self.observation_, self.reward, self.done, self.info = env.step(self.action)
+                self.observation_, self.reward, self.done, self.info = self.env.step(self.action)
                 self.steps += 1
 
                 #Log Loading Sequence
@@ -79,7 +79,7 @@ class TDQLearning(object):
 
                 self.epReward += self.reward
 
-                self.action_ = self.maxAction(self.q_table, self.observation_, env.possibleActions)
+                self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possibleActions)
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not self.done:
@@ -99,11 +99,11 @@ class TDQLearning(object):
                 self.observation = self.observation_
 
                 if i == self.numGames - 1 and self.done == True:
-                    env.render()
-                    logging.getLogger('log1').info(env.render())
+                    self.env.render()
+                    logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was "+str(self.epReward))
                     print("The Terminal reward was "+ str(self.reward))
-                    env.saveStowagePlan(self.path)
+                    self.env.saveStowagePlan(self.path)
 
 
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
@@ -128,7 +128,7 @@ class TDQLearning(object):
     #TODO Warum so kompliziert... and slow
     def maxAction(self, Q, state, actions):
         if self.help == True:
-            argSorted_qValues = np.flipud(np.argsort(Q[state.tobytes()]))
+            argSorted_qValues = np.flipud(np.argsort(self.q_table[state.tobytes()]))
             if np.size(np.nonzero(Q[state.tobytes()]))== 0:
                 if np.size(actions)==0:
                     return None
@@ -168,3 +168,14 @@ class TDQLearning(object):
             else:
                 logging.getLogger("log1").error("Could not save csv file to+ " + path)
 
+    def execute(self, humanInteraction = False):
+        self.observation = self.env.reset()
+        self.done = False
+
+        while not self.done:
+            self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions)
+            self.observation, self.reward, self.done, self.info = self.env.step(self.action)
+            self.epReward += self.reward
+
+
+        self.env.render()

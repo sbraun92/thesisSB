@@ -265,13 +265,19 @@ class RoRoDeck(object):
 
 
 
-
+    #Return a action recommendation for the currentLane
     def heuristic(self):
-        # 1. Destination
-        # 2. Mandatory
-        # 3. Length
+        points = np.ones(len(self.vehicleData[0]))
+        for vehicle in self.vehicleData[0]:
+            # 1. Destination
+            #points[vehicle] +=
+            # 2. Mandatory
+            points[vehicle] += self.vehicleData[2][vehicle] * self.numberOfVehicles[vehicle]*10
+            # 3. Length
+            points[vehicle] += self.vehicleData[3]*5
         pass
 
+    #TODO
 
 
     #TODO Test, make sure this is not envoked during simulations

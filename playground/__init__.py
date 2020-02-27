@@ -9,6 +9,8 @@ import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+env = RoRoDeck(True)
+print(env.__doc__)
 
 date = str(datetime.utcnow().date().strftime("%Y%m%d"))
 time = str(datetime.now().strftime("%H%M"))
@@ -34,7 +36,7 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
-it = 100
+it = 100000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)

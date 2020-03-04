@@ -10,12 +10,13 @@ Master thesis repository
 2. Clone or copy the repository to your machine
 
 3. Open the Anaconda Prompt and navigate to you local copy of the repository
+
    Basic Navigation in command window:
-      *cd YourFolder       -> navigate to the Folder YourFolder
-      *cd ..               -> navigate to the parentfolder
+   
+      *`cd YourFolder`       -> navigate to the Folder YourFolder
       
-4. Install dependencies by typing: pip3 install -r requirements.txt
+      *`cd ..`               -> navigate to the parentfolder
+      
+4. Install dependencies by typing: `pip3 install -r requirements.txt`
 
-5. Type jupyter notebook and open file example/example_notebook.ipynb
-
-`<addr>`
+5. Type `jupyter notebook` and open file example/example_notebook.ipynb

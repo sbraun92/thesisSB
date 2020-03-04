@@ -20,4 +20,4 @@ Master thesis repository
       
 4. Install dependencies by typing: `pip3 install -r requirements.txt`
 
-5. Type `jupyter notebook` and open file example/example_notebook.ipynb
+5. Type `jupyter notebook` and open file *examples/example_notebook.ipynb*

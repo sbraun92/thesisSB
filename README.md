@@ -10,7 +10,7 @@ Master thesis repository
 2. Clone or copy the repository to your machine
 
 2. Open the Anaconda Prompt and navigate to you local copy of the repository
-   Basic Navigation in command window:
+   Basic Navigation in command window:\\
       #cd YourFolder#       -> navigate to the Folder YourFolder
       #cd ..#               -> navigate to the parentfolder
       

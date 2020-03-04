@@ -49,8 +49,8 @@ class RoRoDeck(object):
                                      [1, 2, 1, 2],  # destination
                                      [1, 1, 0, 0],  # madatory
                                      [2, 3, 2, 3],  # length
-                                     [5, 5, -1,
-                                      -1]])  # number of vehicles on yard (-1 denotes there are infinite vehicles of that type
+                                     [5, 5, -1,-1]])  # number of vehicles on yard
+                                                      # (-1 denotes there are infinite vehicles of that type)
 
         self.capacity = self._getFreeCapacity(self.grid)
         self.frontier = self._getFrontier()

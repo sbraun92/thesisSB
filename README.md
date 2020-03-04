@@ -9,6 +9,7 @@ Master thesis repository
 
 2. Clone or copy the repository to your machine
 
+
 3. Open the Anaconda Prompt and navigate to you local copy of the repository
 
    Basic Navigation in command window:

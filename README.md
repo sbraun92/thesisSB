@@ -13,9 +13,9 @@ Master thesis repository
 
    Basic Navigation in command window:
    
-      *`cd YourFolder`       -> navigate to the Folder YourFolder
+      * `cd YourFolder`       -> navigate to the Folder YourFolder
       
-      *`cd ..`               -> navigate to the parentfolder
+      * `cd ..`               -> navigate to the parentfolder
       
 4. Install dependencies by typing: `pip3 install -r requirements.txt`
 

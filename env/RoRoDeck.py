@@ -55,27 +55,27 @@ class RoRoDeck(object):
                                      [2, 3, 2, 3],  # length
                                      [5, 5, -1,-1]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
-
+        self.mandatoryCargoMask = self.vehicleData[2] == 1
         self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
         self.vehicleCounter = np.zeros(self.lanes,dtype=np.int16)
 
 
         self.capacity = self._getFreeCapacity(self.grid)
         self.frontier = self._getFrontier()
-        self.numberOfVehicles = self.vehicleData[4].copy()
+        self.numberOfVehiclesLoaded = np.zeros(len(self.vehicleData[0]),dtype=np.int16)
         # for shifts TODO not a good name
         self.shiftHelper = self.endOfLanes.copy()
         # self.prevVeh = self.endOfLanes.copy()
 
         # mandatory cargo, must be loaded
-        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
         # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self._getCurrentState()
 
         # Test without switching
         self.actionSpace_names = {0: 'Type1', 1: 'Type2'}
-        self.actionSpace = np.array([0, 1])
+        self.actionSpace = self.vehicleData[0]
         self.action2vehicleLength = np.array([2, 3])
         self.action2destination = np.array([1, 2])
 
@@ -99,7 +99,7 @@ class RoRoDeck(object):
         self.gridVehicleType = self._createGrid()-1
 
         self.endOfLanes = self._getEndOfLane(self.grid)
-        self.numberOfVehicles = self.vehicleData[4].copy()
+        self.numberOfVehiclesLoaded = np.zeros(len(self.vehicleData[0]),dtype=np.int16)
 
         self.capacity = self._getFreeCapacity(self.grid)
         self.currentLane = self._getMinimalLanes()[0]
@@ -113,7 +113,7 @@ class RoRoDeck(object):
 
         self.shiftHelper = self.endOfLanes.copy()
 
-        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
 
         self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
@@ -200,7 +200,12 @@ class RoRoDeck(object):
 
     def _isActionLegal(self, action):
         if self.endOfLanes[self.currentLane] + self.vehicleData[3][action] <= self.rows:
-            return True
+            if self.vehicleData[4][action] == -1: # infinite Vehicles in parkinglot
+                return True
+            elif self.numberOfVehiclesLoaded[action]< self.vehicleData[4][action]: #enough vehicles in parking lot
+                return True
+            else:
+                return False
         else:
             return False
 
@@ -208,9 +213,7 @@ class RoRoDeck(object):
     def possibleActionsOfState(self):
         possibleActions = []
         for action in range(len(self.actionSpace)):
-            if not self._isActionLegal(action):
-                break
-            else:
+            if self._isActionLegal(action):
                 possibleActions += [action]
         return np.array(possibleActions)
 
@@ -227,7 +230,7 @@ class RoRoDeck(object):
             return False
 
     def _getCurrentState(self):
-        return np.hstack((self.frontier, self.endOfLanes, self.mandatoryCargo, self.currentLane)).astype(np.int32)
+        return np.hstack((self.frontier, self.endOfLanes, self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane)).astype(np.int32)
 
     def step(self, action):
         # Must return new State, reward, if it is a TerminalState
@@ -255,10 +258,18 @@ class RoRoDeck(object):
                 # self.TerminalStateCounter += 1
             else:
                 slot = self.endOfLanes[self.currentLane]
-                self.endOfLanes[self.currentLane] += self.action2vehicleLength[action]
+                self.endOfLanes[self.currentLane] += self.vehicleData[3][action]
 
-                if self.numberOfVehicles[action] > 0 and self.vehicleData[2][action] == 1:
-                    self.numberOfVehicles[action] -= 1
+               # if self.numberOfVehiclesLoaded[action] > 0 and self.vehicleData[2][action] == 1:
+                #    self.numberOfVehiclesLoaded[action] -= 1
+                 #   reward += 2
+
+
+                if self.vehicleData[4][action] == -1: #infinite vehicles on car park
+                    self.numberOfVehiclesLoaded[action] += 1
+                    reward += 2
+                elif self.numberOfVehiclesLoaded[action] < self.vehicleData[4][action]:
+                    self.numberOfVehiclesLoaded[action] += 1
                     reward += 2
 
                 # if self.mandatoryCargo[action] > 0:
@@ -286,8 +297,14 @@ class RoRoDeck(object):
             self.possibleActions = self.possibleActionsOfState()
 
             if self._isTerminalState():
+                #Space Utilisation
                 reward = -2 * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
-                reward -= np.sum(self.numberOfVehicles[self.vehicleData[2] == 1]) * 20
+                #Mandatory Vehicles Loaded?
+                #TODO seperate method for this
+                mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
+                                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
+
+                reward -= np.sum(mandatoryVehiclesLeft2Load) * 20
             return self._getCurrentState(), reward, self._isTerminalState(), None
 
     def actionSpaceSample(self):
@@ -312,7 +329,7 @@ class RoRoDeck(object):
             # 1. Destination
             # points[vehicle] +=
             # 2. Mandatory
-            points[vehicle] += self.vehicleData[2][vehicle] * self.numberOfVehicles[vehicle] * 10
+            points[vehicle] += self.vehicleData[2][vehicle] * self.numberOfVehiclesLoaded[vehicle] * 10
             # 3. Length
             points[vehicle] += self.vehicleData[3] * 5
         pass

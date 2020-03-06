@@ -23,7 +23,7 @@ def test_Evaluator_MadatoryCargoLoaded():
     evaluator = Evaluator(env.vehicleData)
     evaluator.evaluate(env.getStowagePlan())
 
-    assert evaluator.calculateMandatoryCargoLoaded() <=0
+    assert evaluator.calculateMandatoryCargoLoaded() <= 1
 
 def test_Evaluator_SpaceUtilisation():
     evaluator = Evaluator(env.vehicleData)

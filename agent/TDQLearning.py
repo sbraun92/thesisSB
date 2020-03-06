@@ -8,7 +8,7 @@ import pickle
 import csv
 
 class TDQLearning(object):
-    def __init__(self, env,path, orig, numGames=20000, help= True, GAMMA = 0.999):
+    def __init__(self, env,path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
         logging.info("Initilise TD-Q-Learning Agent")

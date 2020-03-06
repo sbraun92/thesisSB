@@ -68,7 +68,7 @@ class RoRoDeck(object):
         # self.prevVeh = self.endOfLanes.copy()
 
         # mandatory cargo, must be loaded
-        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
         # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self._getCurrentState()
@@ -113,7 +113,7 @@ class RoRoDeck(object):
 
         self.shiftHelper = self.endOfLanes.copy()
 
-        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
 
         self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
@@ -230,7 +230,7 @@ class RoRoDeck(object):
             return False
 
     def _getCurrentState(self):
-        return np.hstack((self.frontier, self.endOfLanes, self.mandatoryCargo, self.currentLane)).astype(np.int32)
+        return np.hstack((self.frontier, self.endOfLanes, self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane)).astype(np.int32)
 
     def step(self, action):
         # Must return new State, reward, if it is a TerminalState

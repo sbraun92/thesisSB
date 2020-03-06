@@ -53,6 +53,10 @@ agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train()
 
 agent.execute()
+print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+env.render()
+print(env.gridVehicleType)
+print(env.loadedVehicles)
 #For RunTimeComparison
 
 '''

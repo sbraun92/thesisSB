@@ -4,13 +4,17 @@ from viz.Plotter import Plotter
 import os
 from datetime import datetime
 import pandas as pd
-import time
 import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 env = RoRoDeck(True)
-print(env.__doc__)
+
+print(env.grid.shape)
+print(env.loadedVehicles.shape)
+
+for col in env.grid.T:
+    print(col)
 
 date = str(datetime.utcnow().date().strftime("%Y%m%d"))
 time = str(datetime.now().strftime("%H%M"))
@@ -42,6 +46,8 @@ logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 smoothing_window = int(it / 100)
 
 env = RoRoDeck(True)
+print(env.gridVehicleType)
+
 # Training
 agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train()

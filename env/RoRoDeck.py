@@ -41,6 +41,10 @@ class RoRoDeck(object):
         self.sequence_no = 1
         self.grid = self._createGrid()
         self.gridDestination = self._createGrid()
+        self.gridVehicleType = self._createGrid()-1
+
+
+
         self.endOfLanes = self._getEndOfLane(self.grid)
         self.currentLane = self._getMinimalLanes()[0]
 
@@ -51,6 +55,10 @@ class RoRoDeck(object):
                                      [2, 3, 2, 3],  # length
                                      [5, 5, -1,-1]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
+
+        self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
+        self.vehicleCounter = np.zeros(self.lanes,dtype=np.int16)
+
 
         self.capacity = self._getFreeCapacity(self.grid)
         self.frontier = self._getFrontier()
@@ -88,6 +96,8 @@ class RoRoDeck(object):
         self.sequence_no = 1
         self.grid = self._createGrid()
         self.gridDestination = self._createGrid()
+        self.gridVehicleType = self._createGrid()-1
+
         self.endOfLanes = self._getEndOfLane(self.grid)
         self.numberOfVehicles = self.vehicleData[4].copy()
 
@@ -103,7 +113,12 @@ class RoRoDeck(object):
 
         self.shiftHelper = self.endOfLanes.copy()
 
-        self.mandatoryCargo = 5 * np.ones(2)
+        self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+
+
+        self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
+        self.vehicleCounter = np.zeros(self.lanes,dtype=np.int16)
+
 
         return self._getCurrentState()
 
@@ -250,9 +265,16 @@ class RoRoDeck(object):
                 #   self.mandatoryCargo[action]-=1
                 #  reward+=2
 
+
+                self.loadedVehicles[self.currentLane][self.vehicleCounter[self.currentLane]] = action
+                self.vehicleCounter[self.currentLane]+= 1
+
+
+
                 for i in range(self.vehicleData[3][action]):
                     self.grid.T[self.currentLane][slot + i] = self.sequence_no
                     self.gridDestination.T[self.currentLane][slot + i] = self.vehicleData[1][action]
+                    self.gridVehicleType.T[self.currentLane][slot+i] = self.vehicleData[0][action]
 
                 self.frontier = self._getFrontier()
                 self.sequence_no += 1
@@ -336,3 +358,7 @@ class RoRoDeck(object):
 
         # Close the file
         stowagePlan.close()
+
+
+    def getStowagePlan(self):
+        return (self.grid, self.loadedVehicles)

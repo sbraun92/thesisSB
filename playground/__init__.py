@@ -67,10 +67,10 @@ for i in range(15):
 
     smoothing_window = int(it/100)
 
-    env = RoRoDeck(True)
+    env = RoRoDeck(False)
     #Training
-    agent = TDQLearning(it)
-    q_table, totalRewards, stateExpantion, stepsToExit = agent.train(env)
+    agent = TDQLearning(env,module_path,it,True)
+    q_table, totalRewards, stateExpantion, stepsToExit = agent.train()
     ds1+=[(datetime.now() - start).total_seconds()]
 
     #Changed version
@@ -79,8 +79,8 @@ for i in range(15):
     env2 = RoRoDeck(False)
     #Training
     #Try false to check method maxAction
-    agent2 = TDQLearning(it,True)
-    q_table, totalRewards, stateExpantion, stepsToExit = agent2.train(env2)
+    agent2 = TDQLearning(env,module_path,it,False)
+    q_table, totalRewards, stateExpantion, stepsToExit = agent2.train()
     ds2+=[(datetime.now() - start).total_seconds()]
 
 df = pd.DataFrame()

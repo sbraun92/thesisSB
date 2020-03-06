@@ -8,9 +8,9 @@ import pickle
 import csv
 
 class TDQLearning(object):
-    def __init__(self, env, path, numGames=20000, help= True, GAMMA = 0.999):
+    def __init__(self, env,path, orig, numGames=20000, help= True, GAMMA = 0.999):
         #help only for timing
-        self.help = help
+        self.orig = orig
         logging.info("Initilise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
@@ -29,6 +29,7 @@ class TDQLearning(object):
         initState = self.env.reset()
 
         self.actionSpace_length = len(self.env.actionSpace)
+        self.action_ix = np.arange(self.actionSpace_length)
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
         self.action_list = []
@@ -79,10 +80,12 @@ class TDQLearning(object):
 
                 self.epReward += self.reward
 
-                self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possibleActions)
+
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not self.done:
+                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possibleActions)
+
                     self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
                                 - self.q_table[self.observation.tobytes()][self.action])
@@ -125,25 +128,12 @@ class TDQLearning(object):
 
 
 
-    #TODO Warum so kompliziert... and slow
     def maxAction(self, Q, state, actions):
-        if self.help == True:
-            argSorted_qValues = np.flipud(np.argsort(self.q_table[state.tobytes()]))
-            if np.size(np.nonzero(Q[state.tobytes()]))== 0:
-                if np.size(actions)==0:
-                    return None
-                elif np.size(actions)==1:
-                    return actions[0]
-                else:
-                    return np.random.choice(actions)
-            for ix_q_values in argSorted_qValues:
-                if ix_q_values in actions:
-                    #print(ix_q_values)
-                    return ix_q_values
+        possibleActions = self.action_ix[self.env.possibleActions]
+        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possibleActions])
 
-        #TODO check why this is not working -> possible actions -> redunadant when going to use Accept / reject logic
-        else:
-            return np.argmax(Q[state.tobytes()])
+        return possibleActions[positionsOfBestPossibleAction]
+
 
     #TODO try feather
     def load(self,path):

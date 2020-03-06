@@ -200,7 +200,12 @@ class RoRoDeck(object):
 
     def _isActionLegal(self, action):
         if self.endOfLanes[self.currentLane] + self.vehicleData[3][action] <= self.rows:
-            return True
+            if self.vehicleData[4][action] == -1: # infinite Vehicles in parkinglot
+                return True
+            elif self.numberOfVehiclesLoaded[action]< self.vehicleData[4][action]: #enough vehicles in parking lot
+                return True
+            else:
+                return False
         else:
             return False
 

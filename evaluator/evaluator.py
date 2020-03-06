@@ -22,6 +22,7 @@ class Evaluator(object):
 
     def evaluate(self,stowagePlan):
         self.stowagePlan = stowagePlan
+        print(stowagePlan[1])
 
 
     def _calculateNumberOfShifts(self):
@@ -30,7 +31,7 @@ class Evaluator(object):
     def calculateMandatoryCargoLoaded(self):
         for i in range(len(self.numberOfVehicle)):
             self.numberOfVehicle[i] = len(np.where(self.stowagePlan[1].flatten()==i)[0])
-
+        print(self.numberOfVehicle)
         loadedMandatoryVeh = np.sum(self.numberOfVehicle[self.mandatoryVeh])
         allMandatoryVeh = np.sum(self.vehicleData[4][self.mandatoryVeh])
 

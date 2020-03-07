@@ -3,30 +3,75 @@ from evaluator.evaluator import Evaluator
 import pytest
 import numpy as np
 
+
+#Preperation for Tests
 np.random.seed(0)
 
 #Create a random stowagePlan
-env = RoRoDeck(True)
-env.render()
-done = False
+env1 = RoRoDeck(True)
+env2 = RoRoDeck(True)
 
-print(env.loadedVehicles)
+done = False
+totalrewards_env1 = 0
 
 while (not done):
-    action = env.actionSpaceSample()
-    observation_, reward, done, info = env.step(action)
+    action = env1.actionSpaceSample()
+    observation_, reward, done, info = env1.step(action)
+    totalrewards_env1 += reward
+
+done = False
+totalrewards_env2 = 0
+
+while (not done):
+    action = env2.actionSpaceSample()
+    observation_, reward, done, info = env2.step(action)
+    totalrewards_env2 += reward
 
 
 
-
+#Test if the mandatory Cargo Loaded is reasonable
 def test_Evaluator_MadatoryCargoLoaded():
-    evaluator = Evaluator(env.vehicleData)
-    evaluator.evaluate(env.getStowagePlan())
+    evaluator1 = Evaluator(env1.vehicleData)
+    evaluator1.stowagePlan = env1.getStowagePlan()
+    mandatoryCargoLoaded_env1 = evaluator1.calculateMandatoryCargoLoaded()
 
-    assert evaluator.calculateMandatoryCargoLoaded() <= 1
+    evaluator2 = Evaluator(env2.vehicleData)
+    evaluator2.stowagePlan = env2.getStowagePlan()
+    mandatoryCargoLoaded_env2 = evaluator2.calculateMandatoryCargoLoaded()
 
+    assert mandatoryCargoLoaded_env1 <= 1
+    assert mandatoryCargoLoaded_env1 >= 0
+
+    assert mandatoryCargoLoaded_env2 <= 1
+    assert mandatoryCargoLoaded_env2 >= 0
+
+
+#Test if the space utilisation of stowage plans is reasonable
 def test_Evaluator_SpaceUtilisation():
-    evaluator = Evaluator(env.vehicleData)
-    evaluator.evaluate(env.getStowagePlan())
+    evaluator1 = Evaluator(env1.vehicleData)
+    evaluator1.stowagePlan = env1.getStowagePlan()
+    spaceUtilisation_env1 = evaluator1.calculateSpaceUtilisations()
 
-    assert evaluator.calculateSpaceUtilisations()<=1
+    evaluator2 = Evaluator(env2.vehicleData)
+    evaluator2.stowagePlan = env2.getStowagePlan()
+    spaceUtilisation_env2 = evaluator2.calculateSpaceUtilisations()
+
+    assert spaceUtilisation_env1 <= 1
+    assert spaceUtilisation_env1 >= 0
+
+    assert spaceUtilisation_env2 <= 1
+    assert spaceUtilisation_env2 >= 0
+
+
+#Test if the Evaluator and the agents estimate are consensually
+
+def test_AgentEvaluatorConsensus():
+    evaluator1 = Evaluator(env1.vehicleData)
+    evaluation1 = evaluator1.evaluate(env1.getStowagePlan())
+    evaluator2 = Evaluator(env2.vehicleData)
+    evaluation2 = evaluator2.evaluate(env2.getStowagePlan())
+
+    if evaluation1 >= evaluation2:
+        assert totalrewards_env1 >= totalrewards_env2
+    else:
+        assert totalrewards_env1 < totalrewards_env2

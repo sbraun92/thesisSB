@@ -22,7 +22,6 @@ class Evaluator(object):
 
     def evaluate(self,stowagePlan):
         self.stowagePlan = stowagePlan
-        print(stowagePlan[1])
 
 
     def _calculateNumberOfShifts(self):

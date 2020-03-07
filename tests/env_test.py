@@ -12,5 +12,10 @@ def test_RORODeck():
         i+=1
         assert i <= 100
 
+def test_envParam():
+    env = RoRoDeck(False)
+    env.reset()
+
+
 
 

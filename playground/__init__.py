@@ -33,10 +33,11 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
-it = 300000
+it = 100000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
+smoothing_window =200
 
 env = RoRoDeck(True)
 

@@ -31,13 +31,11 @@ while (not done):
 
 #Test if the mandatory Cargo Loaded is reasonable
 def test_Evaluator_MadatoryCargoLoaded():
-    evaluator1 = Evaluator(env1.vehicleData)
-    evaluator1.stowagePlan = env1.getStowagePlan()
-    mandatoryCargoLoaded_env1 = evaluator1.calculateMandatoryCargoLoaded()
+    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
+    mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.getStowagePlan())[3]
 
-    evaluator2 = Evaluator(env2.vehicleData)
-    evaluator2.stowagePlan = env2.getStowagePlan()
-    mandatoryCargoLoaded_env2 = evaluator2.calculateMandatoryCargoLoaded()
+    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
+    mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.getStowagePlan())[3]
 
     assert mandatoryCargoLoaded_env1 <= 1
     assert mandatoryCargoLoaded_env1 >= 0
@@ -48,13 +46,11 @@ def test_Evaluator_MadatoryCargoLoaded():
 
 #Test if the space utilisation of stowage plans is reasonable
 def test_Evaluator_SpaceUtilisation():
-    evaluator1 = Evaluator(env1.vehicleData)
-    evaluator1.stowagePlan = env1.getStowagePlan()
-    spaceUtilisation_env1 = evaluator1.calculateSpaceUtilisations()
+    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
+    spaceUtilisation_env1 = evaluator1.evaluate(env1.getStowagePlan())[2]
 
-    evaluator2 = Evaluator(env2.vehicleData)
-    evaluator2.stowagePlan = env2.getStowagePlan()
-    spaceUtilisation_env2 = evaluator2.calculateSpaceUtilisations()
+    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
+    spaceUtilisation_env2 = evaluator2.evaluate(env2.getStowagePlan())[2]
 
     assert spaceUtilisation_env1 <= 1
     assert spaceUtilisation_env1 >= 0
@@ -66,9 +62,9 @@ def test_Evaluator_SpaceUtilisation():
 #Test if the Evaluator and the agents estimate are consensually
 
 def test_AgentEvaluatorConsensus():
-    evaluator1 = Evaluator(env1.vehicleData)
+    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
     evaluation1 = evaluator1.evaluate(env1.getStowagePlan())
-    evaluator2 = Evaluator(env2.vehicleData)
+    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
     evaluation2 = evaluator2.evaluate(env2.getStowagePlan())
 
     if evaluation1 >= evaluation2:

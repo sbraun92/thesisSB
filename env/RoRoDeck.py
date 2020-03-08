@@ -51,7 +51,7 @@ class RoRoDeck(object):
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         self.vehicleData = np.array([[0, 1, 2, 3],  # vehicle id
                                      [1, 2, 1, 2],  # destination
-                                     [1, 1, 0, 0],  # madatory
+                                     [1, 1, 0, 0],  # mandatory
                                      [2, 3, 2, 3],  # length
                                      [5, 5, -1,-1]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
@@ -221,13 +221,23 @@ class RoRoDeck(object):
         return np.size(np.where(self.endOfLanes + (np.ones(self.lanes) * self.minimalPackage) <= self.rows)) == 0
 
     def _isTerminalState(self):
-        if self.frontier + self.minimalPackage < self.rows:
+        # Check if the smallest Element still fits after the frontier element and
+        # if there are still vehicles in the parking lot to be loaded
+        if self.frontier + self.minimalPackage < self.rows and np.size(self.possibleActions) != 0:
             return False
-        if self._isVesselFull() or np.size(
-                self.possibleActions) == 0:  # or (self.TerminalStateCounter > np.size(self.getMinimalLanes()) * 5) or (self.maxSteps > 500):
+
+        if (self._isVesselFull() or \
+                 np.all((self.vehicleData[4]- self.numberOfVehiclesLoaded)==0)) or \
+                np.size(self.possibleActions) == 0:
             return True
         else:
             return False
+        #TODO Check if _isVesselFull method is redundant
+        #if self._isVesselFull() or np.size(
+        #        self.possibleActions) == 0:  # or (self.TerminalStateCounter > np.size(self.getMinimalLanes()) * 5) or (self.maxSteps > 500):
+        #    return True
+        #else:
+        #    return False
 
     def _getCurrentState(self):
         return np.hstack((self.frontier, self.endOfLanes, self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane)).astype(np.int32)

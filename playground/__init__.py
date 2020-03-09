@@ -33,7 +33,7 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 #logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
 #log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)
 
-it = 100000
+it = 10000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
@@ -45,16 +45,8 @@ env = RoRoDeck(True)
 agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train()
 
-
-print(env.gridVehicleType)
-print(env.numberOfVehiclesLoaded)
 env.render()
-#agent.execute()
-#print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-#env.render()
-#print(env.gridVehicleType)
-#print(env.loadedVehicles)
-#For RunTimeComparison
+
 
 '''
 ds1 = []

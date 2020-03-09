@@ -1,15 +1,17 @@
+from sympy.combinatorics import Permutation
+from sympy.combinatorics.partitions import Partition
+import numpy as np
 class Analysor(object):
     def __init__(self):
         pass
 
-    def calculateInversionNumber(self,sequence):
-        inversionNo = 0
-        seq = sequence.flatten()
-        size = len(sequence)
+    def calculateInversionNumber(self,seq):
 
-        for i in range(size):
-            for j in range(i+1,size):
-                if seq[i] > seq[j]:
-                    inversionNo += 1
+        size = len(seq)
+        inversionNo = Permutation(seq).inversions()
 
-        return inversionNo
+        maxInversionNo = size*(size-1.)/2.
+
+        degreeOfSort = 1. - inversionNo / maxInversionNo #degree of sorting 1:perfectly sorted 0: reversed sorted - everything is opposite
+
+        return inversionNo, degreeOfSort

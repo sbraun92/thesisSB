@@ -64,3 +64,7 @@ class Evaluation(object):
             return True
         else:
             return False
+
+    def __hash__(self):
+        return hash((self.spaceUtilisation,self.mandatoryCargoLoaded,self.shifts,
+                     str(self.vehicleData),str(self.deckLayout)))

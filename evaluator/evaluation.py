@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class Evaluation(object):
     def __init__(self, evaluation):
@@ -60,7 +60,7 @@ class Evaluation(object):
             return False
 
     def _arePlansComparable(self,other):
-        if self.vehicleData == other.vehicleData and self.deckLayout == other.deckLayout:
+        if np.array_equal(self.vehicleData,other.vehicleData) and np.array_equal(self.deckLayout,other.deckLayout):
             return True
         else:
             return False

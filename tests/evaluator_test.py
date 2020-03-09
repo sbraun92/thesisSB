@@ -1,5 +1,6 @@
 from env.RoRoDeck import RoRoDeck
 from evaluator.evaluator import Evaluator
+from algorithms.analyser import Analysor
 import pytest
 import numpy as np
 
@@ -32,10 +33,10 @@ while (not done):
 #Test if the mandatory Cargo Loaded is reasonable
 def test_Evaluator_MadatoryCargoLoaded():
     evaluator1 = Evaluator(env1.vehicleData,env1.grid)
-    mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.getStowagePlan())[3]
+    mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.getStowagePlan()).mandatoryCargoLoaded
 
     evaluator2 = Evaluator(env2.vehicleData,env2.grid)
-    mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.getStowagePlan())[3]
+    mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.getStowagePlan()).mandatoryCargoLoaded
 
     assert mandatoryCargoLoaded_env1 <= 1
     assert mandatoryCargoLoaded_env1 >= 0
@@ -47,10 +48,10 @@ def test_Evaluator_MadatoryCargoLoaded():
 #Test if the space utilisation of stowage plans is reasonable
 def test_Evaluator_SpaceUtilisation():
     evaluator1 = Evaluator(env1.vehicleData,env1.grid)
-    spaceUtilisation_env1 = evaluator1.evaluate(env1.getStowagePlan())[2]
+    spaceUtilisation_env1 = evaluator1.evaluate(env1.getStowagePlan()).spaceUtilisation
 
     evaluator2 = Evaluator(env2.vehicleData,env2.grid)
-    spaceUtilisation_env2 = evaluator2.evaluate(env2.getStowagePlan())[2]
+    spaceUtilisation_env2 = evaluator2.evaluate(env2.getStowagePlan()).spaceUtilisation
 
     assert spaceUtilisation_env1 <= 1
     assert spaceUtilisation_env1 >= 0

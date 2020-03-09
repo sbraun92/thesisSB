@@ -30,7 +30,7 @@ class RoRoDeck(object):
 
     """
 
-    def __init__(self, help, lanes=8, rows=10):
+    def __init__(self, help, lanes=8, rows=10, rewardSystem = None):
         # just to compare runtimes
         # TODO delete helper from
         self.help = help
@@ -43,7 +43,10 @@ class RoRoDeck(object):
         self.gridDestination = self._createGrid()
         self.gridVehicleType = self._createGrid()-1
 
-
+        self.rewardSystem = np.array([2,        #simple Loading
+                                      -6,       #caused shifts
+                                      -2,       #terminal: Space left unsed
+                                      -20])     #terminal: mand. cargo not loaded
 
         self.endOfLanes = self._getEndOfLane(self.grid)
         self.currentLane = self._getMinimalLanes()[0]
@@ -260,7 +263,7 @@ class RoRoDeck(object):
         else:
             reward = 0  # self.calculateReward()
             numberOfShifts = self._getNumberOfShifts(action)
-            reward -= numberOfShifts * 6  # +self.action2vehicleLength[action]*0.6
+            reward -= numberOfShifts * self.rewardSystem[1]  # +self.action2vehicleLength[action]*0.6
             # Remove Switching-Option
             if self.actionSpace[action] == -1:
                 self.currentLane = self._switchCurrentLane()
@@ -277,10 +280,10 @@ class RoRoDeck(object):
 
                 if self.vehicleData[4][action] == -1: #infinite vehicles on car park
                     self.numberOfVehiclesLoaded[action] += 1
-                    reward += 2
+                    reward += self.rewardSystem[0]
                 elif self.numberOfVehiclesLoaded[action] < self.vehicleData[4][action]:
                     self.numberOfVehiclesLoaded[action] += 1
-                    reward += 2
+                    reward += self.rewardSystem[0]
 
                 # if self.mandatoryCargo[action] > 0:
                 #   self.mandatoryCargo[action]-=1
@@ -308,13 +311,13 @@ class RoRoDeck(object):
 
             if self._isTerminalState():
                 #Space Utilisation
-                reward = -2 * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
+                reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
                 #Mandatory Vehicles Loaded?
                 #TODO seperate method for this
                 mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
                                           - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
 
-                reward -= np.sum(mandatoryVehiclesLeft2Load) * 20
+                reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
             return self._getCurrentState(), reward, self._isTerminalState(), None
 
     def actionSpaceSample(self):

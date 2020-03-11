@@ -40,7 +40,7 @@ smoothing_window = int(it / 100)
 smoothing_window =200
 
 env = RoRoDeck(True)
-
+env.render()
 # Training
 agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit = agent.train()

@@ -311,13 +311,18 @@ class RoRoDeck(object):
 
             if self._isTerminalState():
                 #Space Utilisation
-                reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
+                #reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
+                freeSpaces = np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
+                reward += self.rewardSystem[2] * freeSpaces
                 #Mandatory Vehicles Loaded?
                 #TODO seperate method for this
-                mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
-                                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
+                #mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
+                #                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
+                mandatoryVehiclesLeft2Load = np.sum(self.vehicleData[4][self.mandatoryCargoMask] \
+                                                    - self.numberOfVehiclesLoaded[self.mandatoryCargoMask])
 
-                reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
+                #reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
+                reward += mandatoryVehiclesLeft2Load * self.rewardSystem[3]
             return self._getCurrentState(), reward, self._isTerminalState(), None
 
     def actionSpaceSample(self):

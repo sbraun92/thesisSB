@@ -1,6 +1,6 @@
 from env.roroDeck import RoRoDeck
 from valuation.evaluator import Evaluator
-from algorithms.inversionNumber import Analysor
+from algorithms.inversionNumber import InversionNumberCalculator
 import pytest
 import numpy as np
 
@@ -14,7 +14,7 @@ def test_Inversionnumber():
 
     sequences = [seq1,seq2]#,seq3,seq4]
 
-    analysor = Analysor()
+    analysor = InversionNumberCalculator()
 
     for seq in sequences:
         estimated_invNo, degreeOfSort = analysor.calculateInversionNumber(seq[0])

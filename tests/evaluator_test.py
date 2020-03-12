@@ -1,6 +1,6 @@
 from env.roroDeck import RoRoDeck
 from valuation.evaluator import Evaluator
-from algorithms.inversionNumber import Analysor
+#from algorithms.inversionNumber import InversionNumberCalculator
 import pytest
 import numpy as np
 

@@ -263,7 +263,7 @@ class RoRoDeck(object):
         else:
             reward = 0  # self.calculateReward()
             numberOfShifts = self._getNumberOfShifts(action)
-            reward -= numberOfShifts * self.rewardSystem[1]  # +self.action2vehicleLength[action]*0.6
+            reward += numberOfShifts * self.rewardSystem[1]  # +self.action2vehicleLength[action]*0.6
             # Remove Switching-Option
             if self.actionSpace[action] == -1:
                 self.currentLane = self._switchCurrentLane()

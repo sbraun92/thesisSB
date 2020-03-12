@@ -3,7 +3,8 @@ from sympy.combinatorics.partitions import Partition
 import numpy as np
 class Analysor(object):
     def __init__(self):
-        pass
+        return
+
 
     def calculateInversionNumber(self,seq):
 

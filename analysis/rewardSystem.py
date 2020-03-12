@@ -1,6 +1,6 @@
 import numpy as np
 from evaluator.evaluator import Evaluator
-from env.RoRoDeck import RoRoDeck
+from env.roroDeck import RoRoDeck
 from algorithms.analyser import Analysor
 import pandas as pd
 import tqdm

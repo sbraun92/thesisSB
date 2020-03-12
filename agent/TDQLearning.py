@@ -1,4 +1,4 @@
-from env.RoRoDeck import RoRoDeck
+from env.roroDeck import RoRoDeck
 import numpy as np
 import matplotlib.pyplot as plt
 import tqdm

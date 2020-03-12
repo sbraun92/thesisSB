@@ -16,6 +16,11 @@ def test_envParam():
     env = RoRoDeck(False)
     env.reset()
 
+    assert env.vehicleData.size[0] == 4
+    assert env.currentLane >= 0 and env.currentLane <= env.lanes<=0
+    assert env.grid.size == (env.rows,env.lanes)
+    assert env.sequence_no >= 0 and type(env.sequence_no)==type(0)
+    assert len(env.rewardSystem) == 4
 
 
 

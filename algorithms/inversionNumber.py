@@ -1,7 +1,7 @@
 from sympy.combinatorics import Permutation
 from sympy.combinatorics.partitions import Partition
 import numpy as np
-class Analysor(object):
+class InversionNumberCalculator(object):
     def __init__(self):
         return
 

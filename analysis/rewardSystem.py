@@ -1,7 +1,7 @@
 import numpy as np
-from evaluator.evaluator import Evaluator
+from valuation.evaluator import Evaluator
 from env.roroDeck import RoRoDeck
-from algorithms.analyser import Analysor
+from algorithms.inversionNumber import Analysor
 import pandas as pd
 import tqdm
 

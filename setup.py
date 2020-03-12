@@ -15,11 +15,11 @@ setuptools.setup(
                 "- Reinforcement Learning for Stowage PLanning of RORO-vessels",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/",
+    url="https://github.com/sbraun92/thesisSB",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        #"License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',

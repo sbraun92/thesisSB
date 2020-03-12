@@ -1,5 +1,5 @@
 import numpy as np
-from env.evaluation import Evaluation
+from evaluator.evaluation import Evaluation
 
 
 class Evaluator(object):

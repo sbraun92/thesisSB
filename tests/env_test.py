@@ -1,4 +1,5 @@
 from env.roroDeck import RoRoDeck
+import numpy as np
 import pytest
 
 
@@ -7,6 +8,7 @@ def test_RORODeck():
     env.reset()
     done = False
     i = 0
+
     while(not done):
         observation_, reward, done, info = env.step(env.actionSpaceSample())
         i+=1
@@ -36,23 +38,23 @@ def test_envParam():
 #After the reset all variables should have the same value as after __init__
 def test_resetMethod():
     env = RoRoDeck(False)
-    vehicleData = env.vehicleData
-    endOFLanes = env.endOfLanes
-    grid = env.grid
-    gridDestination = env.gridDestination
-    gridVehicleType = env.gridVehicleType
+    vehicleData = env.vehicleData.copy()
+    endOFLanes = env.endOfLanes.copy()
+    grid = env.grid.copy()
+    gridDestination = env.gridDestination.copy()
+    gridVehicleType = env.gridVehicleType.copy()
     #TODO add a expanded grid for vehicle Type
-    capacity = env.capacity
-    vehicleCounter =env.vehicleCounter
-    mandatoryCargoMask = env.mandatoryCargoMask
-    loadedVehicles = env.loadedVehicles
-    rewardSystem = env.rewardSystem
-    frontier = env.frontier
+    capacity = env.capacity.copy()
+    vehicleCounter =env.vehicleCounter.copy()
+    mandatoryCargoMask = env.mandatoryCargoMask.copy()
+    loadedVehicles = env.loadedVehicles.copy()
+    rewardSystem = env.rewardSystem.copy()
+    frontier = env.frontier.copy()
     sequence_no = env.sequence_no
-    currentLane= env.currentLane
-    actionSpace = env.actionSpace
-    possibleActions = env.possibleActions
-    numberOfVehiclesLoaded = env.numberOfVehiclesLoaded
+    currentLane= env.currentLane.copy()
+    actionSpace = env.actionSpace.copy()
+    possibleActions = env.possibleActions.copy()
+    numberOfVehiclesLoaded = env.numberOfVehiclesLoaded.copy()
 
     env.reset()
     env.step(env.actionSpaceSample())
@@ -94,4 +96,77 @@ def test_resetMethod():
     assert (_possibleActions == possibleActions).all()
     assert (_numberOfVehiclesLoaded == numberOfVehiclesLoaded).all()
 
+
+def test_stepMethod():
+    env = RoRoDeck(False)
+    env.reset()
+
+    vehicleData = env.vehicleData.copy()
+    endOFLanes = env.endOfLanes.copy()
+    grid = env.grid.copy()
+    gridDestination = env.gridDestination.copy()
+    gridVehicleType = env.gridVehicleType.copy()
+    # TODO add a expanded grid for vehicle Type
+    capacity = env.capacity.copy()
+    vehicleCounter = env.vehicleCounter.copy()
+    mandatoryCargoMask = env.mandatoryCargoMask.copy()
+    loadedVehicles = env.loadedVehicles.copy()
+    rewardSystem = env.rewardSystem.copy()
+    frontier = env.frontier.copy()
+    sequence_no = env.sequence_no
+    currentLane = env.currentLane.copy()
+    actionSpace = env.actionSpace.copy()
+    possibleActions = env.possibleActions.copy()
+    numberOfVehiclesLoaded = env.numberOfVehiclesLoaded.copy()
+
+    np.random.seed(0)
+
+
+    action = actionSpace[mandatoryCargoMask][0]
+    if action not in possibleActions:
+        action = env.actionSpaceSample()
+
+    env.step(action)
+
+
+
+    destination = vehicleData[1][action]
+    mandatory = vehicleData[2][action]
+    length = vehicleData[3][action]
+
+    for i in range(length):
+        grid.T[currentLane][endOFLanes[currentLane]+i] = sequence_no
+        gridDestination.T[currentLane][endOFLanes[currentLane]+i] = destination
+
+    loadedVehicles[currentLane][vehicleCounter[currentLane]] = action
+
+
+    print(env.grid)
+    print(grid)
+
+    assert (env.grid == grid).all()
+    assert (env.gridDestination == gridDestination).all()
+    assert env.endOfLanes[currentLane] == endOFLanes[currentLane]+length
+    assert env.sequence_no == sequence_no+1
+    assert (env.loadedVehicles == loadedVehicles).all()
+    assert (env.vehicleCounter[currentLane] == vehicleCounter[currentLane]+1)
+    _vehicleData = env.vehicleData
+    _grid = env.grid
+    _gridDestination = env.gridDestination
+    _gridVehicleType = env.gridVehicleType
+    _capacity = env.capacity
+    _vehicleCounter = env.vehicleCounter
+    _mandatoryCargoMask = env.mandatoryCargoMask
+    _loadedVehicles = env.loadedVehicles
+    _rewardSystem = env.rewardSystem
+    _frontier = env.frontier
+    _sequence_no = env.sequence_no
+    _currentLane = env.currentLane
+    _actionSpace = env.actionSpace
+    _possibleActions = env.possibleActions
+    _numberOfVehiclesLoaded = env.numberOfVehiclesLoaded
+
+
+    assert (_vehicleData == vehicleData).all()
+    assert (_rewardSystem == rewardSystem).all()
 

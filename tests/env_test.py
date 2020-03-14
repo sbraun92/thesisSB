@@ -150,6 +150,11 @@ def test_stepMethod():
     assert env.sequence_no == sequence_no+1
     assert (env.loadedVehicles == loadedVehicles).all()
     assert (env.vehicleCounter[currentLane] == vehicleCounter[currentLane]+1)
+
+
+    #TODO teste weiter ab
+
+
     _vehicleData = env.vehicleData
     _grid = env.grid
     _gridDestination = env.gridDestination
@@ -170,3 +175,9 @@ def test_stepMethod():
     assert (_vehicleData == vehicleData).all()
     assert (_rewardSystem == rewardSystem).all()
 
+
+
+    #TODO weitere TEst
+    #testen wenn eine illigale Action gewählt wurde -> Was soll da überhaupt passieren
+    #testen wenn done dann env unveränderbar
+    # ....

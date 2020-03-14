@@ -43,10 +43,10 @@ class RoRoDeck(object):
         self.gridDestination = self._createGrid()
         self.gridVehicleType = self._createGrid()-1
 
-        self.rewardSystem = np.array([2,        #simple Loading
-                                      -6,       #caused shifts
+        self.rewardSystem = np.array([0.1,      #simple Loading
+                                      -8,       #caused shifts
                                       -2,       #terminal: Space left unsed
-                                      -20])     #terminal: mand. cargo not loaded
+                                      -40])     #terminal: mand. cargo not loaded
 
         self.endOfLanes = self._getEndOfLane(self.grid)
         self.currentLane = self._getMinimalLanes()[0]
@@ -137,6 +137,19 @@ class RoRoDeck(object):
                 else:
                     print(str(int(col)), end='\t')
             print('\n')
+
+        print('-----------VehicleType----------------------------------------------------------------')
+        for row in self.gridVehicleType:
+            # Loading Sequence
+            for col in row:
+                if col == -2:
+                    print('X', end='\t')
+                elif col == -1:
+                    print('-', end='\t')
+                else:
+                    print(str(int(col)), end='\t')
+            print('\n')
+
         print('-------Destination--------------------------------------------------------------------')
         for row in self.gridDestination:
             for col in row:
@@ -151,7 +164,6 @@ class RoRoDeck(object):
     def actionSpaceSample(self):
         return np.random.choice(self.possibleActions)
 
-    # Done
     # Return a grid world with a arrow shaped ships hule
     def _createGrid(self):
         grid = np.zeros((self.rows, self.lanes), dtype=np.int32)

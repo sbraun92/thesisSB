@@ -12,7 +12,7 @@ class Plotter(object):
         self.stateExpPlot = stateExpPlot
         self.stepPlot = stepPlot
         self.it = it
-        self.smoothingWindow = int(it/20)
+        self.smoothingWindow = int(it/200)
         #self.smoothingWindow = 200
         #if self.smoothingWindow == 0:
         #    self.smoothingWindow = 1

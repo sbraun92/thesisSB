@@ -59,7 +59,8 @@ class RoRoDeck(object):
                                      [5, 5, -1,-1]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
         self.mandatoryCargoMask = self.vehicleData[2] == 1
-        self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
+        #Todo dele np.min(self.vehleData
+        self.loadedVehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicleCounter = np.zeros(self.lanes,dtype=np.int16)
 
 
@@ -73,7 +74,7 @@ class RoRoDeck(object):
         # mandatory cargo, must be loaded
         #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
-        # State-Repräsentation Frontier, BackLook,mandatory cargo, CurrentLane
+        # State representation Frontier, BackLook,mandatory cargo, CurrentLane
         self.currentState = self._getCurrentState()
 
         # Test without switching
@@ -81,12 +82,6 @@ class RoRoDeck(object):
         self.actionSpace = self.vehicleData[0]
         self.action2vehicleLength = np.array([2, 3])
         self.action2destination = np.array([1, 2])
-
-        # self.actionSpace_names = {0: 'Switch', 1: 'Type1', 2: 'Type2'}
-        # self.actionSpace = np.array([0,1,2])
-        # self.action2vehicleLength = np.array([0, 2, 3])
-        # TODO unnoetig??
-        # self.minimalPackage = np.min(self.action2vehicleLength[np.where(self.action2vehicleLength > 0)])
 
         self.minimalPackage = np.min(self.vehicleData[3])
         self.possibleActions = self.possibleActionsOfState()
@@ -119,7 +114,7 @@ class RoRoDeck(object):
         #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
 
-        self.loadedVehicles = -np.ones((self.lanes, np.min(self.vehicleData[3]) * self.rows), dtype=np.int16)
+        self.loadedVehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicleCounter = np.zeros(self.lanes,dtype=np.int16)
 
 
@@ -255,7 +250,10 @@ class RoRoDeck(object):
         #    return False
 
     def _getCurrentState(self):
-        return np.hstack((self.frontier, self.endOfLanes, self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane)).astype(np.int32)
+        if self.help:
+            return np.hstack((self.frontier, self.endOfLanes, self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane)).astype(np.int32)
+        else:
+            return np.hstack((self.loadedVehicles.flatten(), self.numberOfVehiclesLoaded[self.mandatoryCargoMask], self.currentLane))
 
     def step(self, action):
         # Must return new State, reward, if it is a TerminalState

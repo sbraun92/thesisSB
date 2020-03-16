@@ -8,10 +8,10 @@ from analysis.loggingUnit import LoggingBase
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(True)
+    env = RoRoDeck(True,lanes=10,rows=20)
     input_dims = np.shape(env.reset())[0]
-    n_games = 2500
-    agent = Agent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=100000, batch_size=32, epsilon_end=0.01, epsilon_dec= 0.99999)
+    n_games = 8000
+    agent = Agent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=1000000, batch_size=32, epsilon_end=0.01, epsilon_dec= 0.99997)
 
     #agent.load_model()
 

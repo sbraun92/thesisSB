@@ -19,6 +19,7 @@ class TDQLearning(object):
         #self.env = env
         self.path = path
         self.env = env
+        self.eps_history = []
 
     #TODO Output QTable
     #TODO Load QTable
@@ -120,11 +121,14 @@ class TDQLearning(object):
             else:
                 self.EPS = 0
 
+            self.eps_history.append(self.EPS)
+
+
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
         logging.getLogger('log1').info("End training process")
-        return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
+        return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
 
 

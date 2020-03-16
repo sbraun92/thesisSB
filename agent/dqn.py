@@ -1,5 +1,6 @@
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Conv1D
 from keras.models import Sequential, load_model
+from keras.regularizers import l2
 from keras.optimizers import Adam
 import numpy as np
 import logging
@@ -29,7 +30,7 @@ class ReplayBuffer(object):
         self.state_memory[index] = state
         self.new_state_memory[index] = state_
         self.reward_memory[index] = reward
-        self.terminal_memory[index] = int(done)
+        self.terminal_memory[index] = done
 
         if self.discrete:
             actions = np.zeros(self.action_memory[1].size)
@@ -67,11 +68,13 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
 
     model = Sequential([Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
-                        Dense(fc2_dims),
+                        Dense(fcl_dims, activity_regularizer=l2(0.)),
                         Activation('relu'),
-                        Dense(fcl_dims),
+                        Dense(fc2_dims,activity_regularizer= l2(0.)),
                         Activation('relu'),
-                        Dense(n_actions)])
+                        Dense(fcl_dims, activity_regularizer= l2(0.)),
+                        Activation('relu'),
+                        Dense(n_actions,activity_regularizer= l2(0.))])
 
     logging.getLogger('log1').info("Compile NN")
     model.compile(optimizer=Adam(lr=lr), loss='mse')
@@ -96,19 +99,19 @@ class Agent(object):
         self.memory = ReplayBuffer(mem_size,input_dims,n_actions,discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 300,300)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 400,450)
 
 
 
         #Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 300,300)
+        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 400,450)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
         self.target_update_counter = 0
 
-        self.UPDATE_TARGET = 4
+        self.UPDATE_TARGET = 50
 
 
     def remember(self,state, action, reward, new_state, done):
@@ -126,7 +129,6 @@ class Agent(object):
             action_space_red = np.array(self.action_space.copy())[possibleactions]
             action_qVal_red = actions[0][possibleactions]
             action = action_space_red[np.argmax(action_qVal_red)]
-
         return action
 
     def learn(self):

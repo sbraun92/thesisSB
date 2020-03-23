@@ -1,15 +1,20 @@
 from keras.layers import Dense, Activation, Conv1D
 from keras.models import Sequential, load_model
-from keras.regularizers import l2
+from keras.regularizers import l2,l1
 from keras.optimizers import Adam
+import tensorflow as tf
+#from tensorflow.random import set_seed
 import numpy as np
 import logging
 
 
-np.random.seed(0)
+
+
 #Replay Buffer
 class ReplayBuffer(object):
     def __init__(self,max_size, input_shape, n_actions, discrete=False):
+        np.random.seed(0)
+
         logging.getLogger('log1').info("Init Replay Buffer: Max. Size: " + str(max_size)+ " Input Shape: "+str(input_shape) + " Number of actions: "+ str(n_actions)+"Discrete Action Space: "+str(discrete))
 
         self.mem_size = max_size
@@ -23,19 +28,31 @@ class ReplayBuffer(object):
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
 
 
+        #TODO added this to eliminate illigal actions
+        self.possibleActions_state = np.zeros((self.mem_size, n_actions),dtype='bool')
+        self.possibleActions_new_state = np.zeros((self.mem_size, n_actions), dtype='bool')
 
 
-    def store_transition(self, state, action, reward, state_, done):
+
+    def store_transition(self, state, action, reward, state_, done, possible_Actions_state, possible_Actions_new_state):
         index = self.mem_cntr % self.mem_size
         self.state_memory[index] = state
         self.new_state_memory[index] = state_
         self.reward_memory[index] = reward
         self.terminal_memory[index] = done
 
+        #TODO possible actions -> delete discrete than??
+
         if self.discrete:
             actions = np.zeros(self.action_memory[1].size)
             actions[action] = 1.0
             self.action_memory[index] = actions
+
+
+            #ToDO added this to avoid estimating  illgeal actions
+            self.possibleActions_state[index][possible_Actions_state] = True
+            if not done:
+                self.possibleActions_new_state[index][possible_Actions_new_state] = True
         else:
             self.action_memory[index] = action
         self.mem_cntr += 1
@@ -50,7 +67,10 @@ class ReplayBuffer(object):
         actions = self.action_memory[batch]
         terminal = self.terminal_memory[batch]
 
-        return states, actions, rewards, states_, terminal
+        possible_actions_state = self.possibleActions_state[batch]
+        possible_actions_new_state = self.possibleActions_new_state[batch]
+
+        return states, actions, rewards, states_, terminal, possible_actions_state, possible_actions_new_state
 
 def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
     logging.getLogger('log1').info("Build a NN:  Input Shape: " + str(input_dims) + " Output Shape: " + str(n_actions) + "Layer: 3 Optimiser: Adam")
@@ -68,13 +88,11 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
 
     model = Sequential([Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
-                        Dense(fcl_dims, activity_regularizer=l2(0.)),
+                        Dense(fc2_dims, activity_regularizer=l2(0.001)),
                         Activation('relu'),
-                        Dense(fc2_dims,activity_regularizer= l2(0.)),
+                        Dense(fcl_dims,activity_regularizer= l2(0.001)),
                         Activation('relu'),
-                        Dense(fcl_dims, activity_regularizer= l2(0.)),
-                        Activation('relu'),
-                        Dense(n_actions,activity_regularizer= l2(0.))])
+                        Dense(n_actions,activity_regularizer= l1(0.001))])
 
     logging.getLogger('log1').info("Compile NN")
     model.compile(optimizer=Adam(lr=lr), loss='mse')
@@ -83,7 +101,10 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
 
 
 class Agent(object):
-    def __init__(self,alpha, gamma, n_actions, epsilon, batch_size, input_dims,epsilon_dec=0.996, epsilon_end=0.01, mem_size=1000_000, fname='dqn_model.h5'):
+    def __init__(self,alpha, gamma, n_actions, epsilon, batch_size, input_dims,epsilon_dec=0.996, epsilon_end=0.01, mem_size=1000_000, fname='dqn_model.h5.22032020'):
+        np.random.seed(0)
+        tf.random.set_seed(0)
+
         logging.getLogger('log1').info("Init DQN-Agent: ALPHA: " + str(alpha) + " GAMMA: " + str(gamma)
                                        +" Replay Buffer Memory Size: "+str(mem_size)+" Model name: "+fname+
                                        " Epsilon Decrement: "+str(epsilon_dec)+" Batch Size: "+str(batch_size))
@@ -99,23 +120,23 @@ class Agent(object):
         self.memory = ReplayBuffer(mem_size,input_dims,n_actions,discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 400,450)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 350,400)
 
 
 
         #Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 400,450)
+        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 350,400)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
         self.target_update_counter = 0
 
-        self.UPDATE_TARGET = 50
+        self.UPDATE_TARGET = 20
 
 
-    def remember(self,state, action, reward, new_state, done):
-        self.memory.store_transition(state,action,reward,new_state,done)
+    def remember(self,state, action, reward, new_state, done,possible_Actions_state,possible_Actions_new_state):
+        self.memory.store_transition(state,action,reward,new_state,done,possible_Actions_state,possible_Actions_new_state)
 
     def choose_action(self,state,possibleactions):
         state = state[np.newaxis, :]
@@ -137,8 +158,9 @@ class Agent(object):
 
         logging.getLogger('log1').info("Learning Step - sample from replay buffer")
 
-        state, action, reward, new_state, done = \
-                        self.memory.sample_buffer(self.batch_size)
+        state, action, reward, new_state, done, possible_actions_state, possible_actions_new_state = \
+                                        self.memory.sample_buffer(self.batch_size)
+
 
         action_values = np.array(self.action_space, dtype=np.int8)
         action_indices = np.dot(action, action_values)
@@ -152,10 +174,19 @@ class Agent(object):
         q_eval = self.q_eval.predict(state)
         q_next = self.q_eval.predict(new_state)
 
+
         #q_target = q_eval.copy()
         #q_target = q_eval[:]
 
         q_target = self.q_target_model.predict(state)
+
+        q_target[possible_actions_state] = 0.
+        q_next[possible_actions_new_state] = -5.
+
+
+
+        #print(q_target[possible_actions_state])
+
 
         #self.q_target_model.set_weights(self.q_eval.get_weights())
 

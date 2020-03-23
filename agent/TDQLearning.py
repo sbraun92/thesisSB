@@ -14,7 +14,8 @@ class TDQLearning(object):
         logging.info("Initilise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
-
+        self.EPSdec = 0.99999
+        self.EPSmin = 0.001
         self.GAMMA = GAMMA
         #self.env = env
         self.path = path
@@ -116,10 +117,20 @@ class TDQLearning(object):
 
             logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
-            if 1. - i / (self.numGames - 50) > 0:
-                self.EPS -= 1. / (self.numGames - 50)
-            else:
-                self.EPS = 0
+
+
+
+
+           # if 1. - i / (self.numGames - 50) > 0:
+            #    self.EPS -= 1. / (self.numGames - 50)
+            #else:
+            #    self.EPS = 0
+
+            if self.EPS > self.EPSmin:
+                self.EPS *= self.EPSdec
+            #else:
+            #    self.EPS = self.EPSmin
+
 
             self.eps_history.append(self.EPS)
 

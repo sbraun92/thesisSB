@@ -8,10 +8,10 @@ from analysis.loggingUnit import LoggingBase
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(True,lanes=10,rows=20)
+    env = RoRoDeck(True,lanes=8,rows=12)
     input_dims = np.shape(env.reset())[0]
-    n_games = 8000
-    agent = Agent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=1000000, batch_size=32, epsilon_end=0.01, epsilon_dec= 0.99997)
+    n_games = 3500
+    agent = Agent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99999)
 
     #agent.load_model()
 
@@ -25,9 +25,11 @@ if __name__ == '__main__':
         while not done:
             #possible_actions = env.possibleActions
             action = agent.choose_action(observation, env.possibleActions) ## add possible actions here
+            state_actions = env.possibleActions
             observation_, reward, done, info = env.step(action)
+            new_state_actions = env.possibleActions
             score += reward
-            agent.remember(observation,action, reward, observation_,done)
+            agent.remember(observation, action, reward, observation_, done, state_actions,new_state_actions)
             observation = observation_
             agent.learn()
 

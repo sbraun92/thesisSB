@@ -43,8 +43,6 @@ class RoRoDeck(object):
         self.gridDestination = self._createGrid()
         self.gridVehicleType = self._createGrid()-1
 
-        logging.getLogger('log1').info('Initilise Reward System: Time step reward: '+str(self.rewardSystem[0])+
-                                       " Reward for caused shift: "+ str(rows))
         self.rewardSystem = np.array([0.1,      #simple Loading
                                       -8,       #caused shifts
                                       -2,       #terminal: Space left unsed

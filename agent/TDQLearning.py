@@ -8,13 +8,13 @@ import pickle
 import csv
 
 class TDQLearning(object):
-    def __init__(self, env,path,  numGames=20000, orig= True, GAMMA = 0.999):
+    def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
         logging.info("Initilise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
-        self.EPSdec = 0.99999
+        self.EPSdec = 0.999995
         self.EPSmin = 0.001
         self.GAMMA = GAMMA
         #self.env = env
@@ -108,7 +108,9 @@ class TDQLearning(object):
                     logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was "+str(self.epReward))
                     print("The Terminal reward was "+ str(self.reward))
-                    self.env.saveStowagePlan(self.path)
+                    print(self.path)
+                    if self.path!=None:
+                        self.env.saveStowagePlan(self.path)
 
 
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
@@ -138,6 +140,9 @@ class TDQLearning(object):
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
+
+            print(len(self.q_table.keys()))
+
         logging.getLogger('log1').info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 

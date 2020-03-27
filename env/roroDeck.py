@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
-
+import gym
 np.random.seed(0)
 
 

@@ -393,6 +393,16 @@ class RoRoDeck(object):
     def saveStowagePlan(self, path):
         stowagePlan = open(path + "_StowagePlan.txt", 'w')
         stowagePlan.write('Stowage Plan and Loading Sequence \n')
+        stowagePlan.write('-------Vehicle Type-------------------------------------------------------------------- \n')
+        for row in self.gridVehicleType:
+            for col in row:
+                if col == -1:
+                    stowagePlan.write('X \t')
+                elif col == 0:
+                    stowagePlan.write('- \t')
+                else:
+                    stowagePlan.write(str(int(col)) + ' \t')
+            stowagePlan.write('\n\n')
         stowagePlan.write(
             '-----------Loading Sequence---------------------------------------------------------------- \n')
         for row in self.grid:
@@ -415,7 +425,6 @@ class RoRoDeck(object):
                 else:
                     stowagePlan.write(str(int(col)) + ' \t')
             stowagePlan.write('\n\n')
-
         # Close the file
         stowagePlan.close()
 

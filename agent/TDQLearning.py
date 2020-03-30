@@ -11,7 +11,7 @@ class TDQLearning(object):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
-        logging.info("Initilise TD-Q-Learning Agent")
+        logging.info("Initialise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
         self.EPSdec = 0.999995
@@ -140,8 +140,8 @@ class TDQLearning(object):
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
-
-            print(len(self.q_table.keys()))
+            if i%500 == 0:
+                print(len(self.q_table.keys()))
 
         logging.getLogger('log1').info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)

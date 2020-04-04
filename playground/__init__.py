@@ -1,5 +1,6 @@
 from env.roroDeck import RoRoDeck
 from agent.TDQLearning import TDQLearning
+from agent.SARSA import SARSA
 from viz.Plotter import Plotter
 from analysis.loggingUnit import LoggingBase
 import os
@@ -39,7 +40,7 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 800000
+it = 400000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
@@ -54,14 +55,21 @@ vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
                         [2, 3, 2, 3, 5],  # length
                         [7, 7, -1,-1, 2]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
-
-print(env.vehicleData)
-env.render()
-# Training
+#######################################################################
+# TDQ Training
 agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
-
-env.render()
+#Plotting
+plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
+plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+##########################################################################
+# SARSA Training
+agent = SARSA(env,module_path,it)
+q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+#Plotting
+plotter = Plotter(module_path, it,algorithm="SARSA")
+plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+#########################################################################
 
 
 '''
@@ -99,9 +107,7 @@ print(df)
 sns.lineplot(data=df)
 plt.show()
 '''
-#Plotting
-plotter = Plotter(module_path, it)
-plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+
 
 
 logging.getLogger('log1').info("SHUTDOWN")

@@ -38,8 +38,6 @@ if __name__ == '__main__':
 
         avg_score = np.mean(scores[max(0,i-100):(i+1)])
 
-
-
         if i % 10 == 0 and i > 0:
             print('episode ', i, 'score %.2f' % score, 'avg. score %.2f' % avg_score)
             agent.save_model()

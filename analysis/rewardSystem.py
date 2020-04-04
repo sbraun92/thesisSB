@@ -33,8 +33,8 @@ if __name__ == '__main__':
         evaluations = []
 
         env = RoRoDeck(True)
-        env.rewardSystem = system
-        evaluator = Evaluator(env.vehicleData,env.grid)
+        env.reward_System = system
+        evaluator = Evaluator(env.vehicle_Data, env.grid)
 
         unique_CumRrewards = set()
         unique_eval = set()

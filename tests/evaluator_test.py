@@ -32,10 +32,10 @@ while (not done):
 
 #Test if the mandatory Cargo Loaded is reasonable
 def test_Evaluator_MadatoryCargoLoaded():
-    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
+    evaluator1 = Evaluator(env1.vehicle_Data, env1.grid)
     mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.getStowagePlan()).mandatoryCargoLoaded
 
-    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
+    evaluator2 = Evaluator(env2.vehicle_Data, env2.grid)
     mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.getStowagePlan()).mandatoryCargoLoaded
 
     assert mandatoryCargoLoaded_env1 <= 1
@@ -47,10 +47,10 @@ def test_Evaluator_MadatoryCargoLoaded():
 
 #Test if the space utilisation of stowage plans is reasonable
 def test_Evaluator_SpaceUtilisation():
-    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
+    evaluator1 = Evaluator(env1.vehicle_Data, env1.grid)
     spaceUtilisation_env1 = evaluator1.evaluate(env1.getStowagePlan()).spaceUtilisation
 
-    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
+    evaluator2 = Evaluator(env2.vehicle_Data, env2.grid)
     spaceUtilisation_env2 = evaluator2.evaluate(env2.getStowagePlan()).spaceUtilisation
 
     assert spaceUtilisation_env1 <= 1
@@ -63,9 +63,9 @@ def test_Evaluator_SpaceUtilisation():
 #Test if the Evaluator and the agents estimate are consensually
 
 def test_AgentEvaluatorConsensus():
-    evaluator1 = Evaluator(env1.vehicleData,env1.grid)
+    evaluator1 = Evaluator(env1.vehicle_Data, env1.grid)
     evaluation1 = evaluator1.evaluate(env1.getStowagePlan())
-    evaluator2 = Evaluator(env2.vehicleData,env2.grid)
+    evaluator2 = Evaluator(env2.vehicle_Data, env2.grid)
     evaluation2 = evaluator2.evaluate(env2.getStowagePlan())
 
     if evaluation1 >= evaluation2:

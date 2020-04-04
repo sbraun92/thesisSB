@@ -14,7 +14,7 @@ plt.tight_layout()
 
 
 class Plotter(object):
-    def __init__(self, path, it, rewardPlot = True, stateExpPlot = True, stepPlot=True, epsHistory=True):
+    def __init__(self, path, it, rewardPlot = True, stateExpPlot = True, stepPlot=True, epsHistory=True, algorithm=None):
         logging.getLogger('log1').info("Initialise Plotting Unit")
         self.rewardPlot = rewardPlot
         self.stateExpPlot = stateExpPlot
@@ -27,6 +27,8 @@ class Plotter(object):
         #    self.smoothingWindow = 1
         logging.getLogger('log1').info("Setting path for plots to:"+ path)
         self.path = path
+        self.algorithm = algorithm
+
 
     def plot(self, rewards, states, steps, eps_history):
         if self.rewardPlot == True:
@@ -64,9 +66,11 @@ class Plotter(object):
         xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
         ax.set_xticklabels(xlabels)
 
-
-        #plt.title("Episode Reward over Time (smoothed over window size {})".format(self.smoothingWindow))
-        plt.savefig(self.path + '_Rewards.png',dpi=600, bbox_inches = "tight")
+        if self.algorithm is not None:
+            plt.title(self.algorithm+ ": Rewards over time")
+            plt.savefig(self.path + "_" + self.algorithm + '_Rewards.pdf', dpi=600, bbox_inches="tight")
+        else:
+            plt.savefig(self.path + '_Rewards.pdf',dpi=600, bbox_inches = "tight")
         #plt.close(fig2)
         logging.getLogger('log1').info("finished plot")
 
@@ -77,9 +81,14 @@ class Plotter(object):
         ax = sns.lineplot(data=pd.Series(stateExpantion), linewidth=2.5, dashes=False, color="black")
         plt.xlabel("Episode")
         plt.ylabel("States Explored")
-        plt.title("State Expansion over time")
+        if self.algorithm is not None:
+            plt.title(self.algorithm+ ": State Expansion over time")
+            fi3.savefig(self.path +"_" + self.algorithm +  '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
+
+        else:
+            fi3.savefig(self.path + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
+            plt.title("State Expansion over time")
         # plt.show()
-        fi3.savefig(self.path + '_StateExpansion.pdf',dpi=600, bbox_inches = "tight")
         logging.getLogger('log1').info("finished plot")
 
     # Plot smoothed Steps to Exit
@@ -91,8 +100,12 @@ class Plotter(object):
         ax = sns.lineplot(data=steps_smoothed, linewidth=2.5, dashes=False, color="green")
         plt.xlabel("Episode")
         plt.ylabel("Steps to Finish (Smoothed)")
-        plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
-        fi4.savefig(self.path + '_StepsToFinish.pdf',dpi=600, bbox_inches = "tight")
+        if self.algorithm is not None:
+            plt.title(self.algorithm+ ": Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
+            fi4.savefig(self.path +"_"+ self.algorithm+'_StepsToFinish.pdf', dpi=600, bbox_inches="tight")
+        else:
+            plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
+            fi4.savefig(self.path + '_StepsToFinish.pdf',dpi=600, bbox_inches = "tight")
         logging.getLogger('log1').info("finished plot")
 
     def plotEPSHistory(self,eps_history):
@@ -101,7 +114,10 @@ class Plotter(object):
         ax = sns.lineplot(data=pd.Series(eps_history), linewidth=2.5, dashes=False, color="blue")
         plt.xlabel("Episode")
         plt.ylabel("Epsilon development")
-        plt.title("Epsilon Development per episode")
-        # plt.show()
-        fi3.savefig(self.path + '_EPSDevelopment.pdf',dpi=600, bbox_inches = "tight")
+        if self.algorithm is not None:
+            plt.title(self.algorithm+ ": Epsilon Development per episode")
+            fi3.savefig(self.path +"_"+ self.algorithm+'_EPSDevelopment.pdf', dpi=600, bbox_inches="tight")
+        else:
+            plt.title("Epsilon Development per episode")
+            fi3.savefig(self.path + '_EPSDevelopment.pdf',dpi=600, bbox_inches = "tight")
         logging.getLogger('log1').info("finished plot")

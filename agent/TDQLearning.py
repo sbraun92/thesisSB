@@ -7,6 +7,8 @@ import logging
 import pickle
 import csv
 
+from agent.agent import Agent
+
 class TDQLearning(object):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
@@ -14,13 +16,17 @@ class TDQLearning(object):
         logging.info("Initialise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
-        self.EPSdec = 0.999995
+        self.EPSdec = 0.9999
         self.EPSmin = 0.001
         self.GAMMA = GAMMA
         #self.env = env
         self.path = path
         self.env = env
         self.eps_history = []
+        self.ALPHA = 0.1
+        self.EPS = 1.0
+        self.MAX_IT = 400
+
 
     #TODO Output QTable
     #TODO Load QTable
@@ -43,12 +49,6 @@ class TDQLearning(object):
         #logging.getLogger('log1').info("initilise Q table")
         self.q_table[initState.tobytes()] = np.zeros(self.actionSpace_length)
 
-
-        self.ALPHA = 0.1
-        self.GAMMA = 0.999
-        self.EPS = 1.0
-        self.MAX_IT = 400
-
         logging.getLogger('log1').info("Use param: ALPHA: "+ str(self.ALPHA)+" GAMMA: "+str(self.GAMMA))
 
 
@@ -58,7 +58,7 @@ class TDQLearning(object):
 
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
-        for i in tqdm.tqdm(range(self.numGames)):
+        for i in range(self.numGames):
             self.done = False
             self.epReward = 0
             self.observation = self.env.reset()
@@ -123,13 +123,13 @@ class TDQLearning(object):
 
 
 
-           # if 1. - i / (self.numGames - 50) > 0:
-            #    self.EPS -= 1. / (self.numGames - 50)
-            #else:
-            #    self.EPS = 0
+            if 1. - i / (self.numGames - 200) > 0:
+                self.EPS -= 1. / (self.numGames - 200)
+            else:
+                self.EPS = 0.001
 
-            if self.EPS > self.EPSmin:
-                self.EPS *= self.EPSdec
+            #if self.EPS > self.EPSmin:
+            #    self.EPS *= self.EPSdec
             #else:
             #    self.EPS = self.EPSmin
 
@@ -140,8 +140,14 @@ class TDQLearning(object):
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
-            if i%500 == 0:
-                print(len(self.q_table.keys()))
+
+            avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
+            std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+            if i % 100 == 0 and i > 0:
+                print('episode ', i, 'score %.2f' % self.epReward, 'avg. score %.2f' % avg_reward, 'std of score %.2f' % std_reward)
+
+            #if i%500 == 0:
+            #    print(len(self.q_table.keys()))
 
         logging.getLogger('log1').info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
@@ -149,9 +155,12 @@ class TDQLearning(object):
 
 
     def maxAction(self, Q, state, actions):
+        #print(self.env.possibleActions)
         possibleActions = self.action_ix[self.env.possibleActions]
+        #print(possibleActions)
+        #print(Q[state.tobytes()])
         positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possibleActions])
-
+        #print(positionsOfBestPossibleAction)
         return possibleActions[positionsOfBestPossibleAction]
 
 

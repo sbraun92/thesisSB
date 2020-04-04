@@ -8,17 +8,19 @@ import pickle
 import csv
 
 class TDQLearning(object):
-    def __init__(self, env,path,  numGames=20000, orig= True, GAMMA = 0.999):
+    def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
-        logging.info("Initilise TD-Q-Learning Agent")
+        logging.info("Initialise TD-Q-Learning Agent")
         self.numGames=numGames
         self.q_table = {}
-
+        self.EPSdec = 0.999995
+        self.EPSmin = 0.001
         self.GAMMA = GAMMA
         #self.env = env
         self.path = path
         self.env = env
+        self.eps_history = []
 
     #TODO Output QTable
     #TODO Load QTable
@@ -106,7 +108,9 @@ class TDQLearning(object):
                     logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was "+str(self.epReward))
                     print("The Terminal reward was "+ str(self.reward))
-                    self.env.saveStowagePlan(self.path)
+                    print(self.path)
+                    if self.path!=None:
+                        self.env.saveStowagePlan(self.path)
 
 
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
@@ -115,16 +119,32 @@ class TDQLearning(object):
 
             logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
-            if 1. - i / (self.numGames - 50) > 0:
-                self.EPS -= 1. / (self.numGames - 50)
-            else:
-                self.EPS = 0
+
+
+
+
+           # if 1. - i / (self.numGames - 50) > 0:
+            #    self.EPS -= 1. / (self.numGames - 50)
+            #else:
+            #    self.EPS = 0
+
+            if self.EPS > self.EPSmin:
+                self.EPS *= self.EPSdec
+            #else:
+            #    self.EPS = self.EPSmin
+
+
+            self.eps_history.append(self.EPS)
+
 
             self.totalRewards[i] = self.epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = self.steps
+            if i%500 == 0:
+                print(len(self.q_table.keys()))
+
         logging.getLogger('log1').info("End training process")
-        return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit
+        return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
 
 

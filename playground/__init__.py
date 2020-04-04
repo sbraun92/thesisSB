@@ -39,27 +39,27 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 100000
+it = 800000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
 smoothing_window =200
 
 #Test with a bigger configuration
-env = RoRoDeck(True,15,20)
+env = RoRoDeck(True,8,10)
 
 vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
                         [1, 2, 1, 2,2],  # destination
                         [1, 1, 0, 0,1],  # mandatory
                         [2, 3, 2, 3, 5],  # length
-                        [15, 25, -1,-1, 10]])  # number of vehicles on yard
+                        [7, 7, -1,-1, 2]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
 
 print(env.vehicleData)
 env.render()
 # Training
 agent = TDQLearning(env,module_path,it)
-q_table, totalRewards, stateExpantion, stepsToExit = agent.train()
+q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
 
 env.render()
 
@@ -101,7 +101,7 @@ plt.show()
 '''
 #Plotting
 plotter = Plotter(module_path, it)
-plotter.plot(totalRewards, stateExpantion, stepsToExit)
+plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
 
 
 logging.getLogger('log1').info("SHUTDOWN")

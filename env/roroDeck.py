@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
-
+#import gym
 np.random.seed(0)
 
 
@@ -35,7 +35,7 @@ class RoRoDeck(object):
         # TODO delete helper from
         self.help = help
 
-        logging.getLogger('log1').info('Initilise Enviroment')
+        logging.getLogger('log1').info('Initilise RORO-Deck enviroment: Lanes'+str(lanes)+" Rows: "+ str(rows))
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
@@ -47,6 +47,11 @@ class RoRoDeck(object):
                                       -8,       #caused shifts
                                       -2,       #terminal: Space left unsed
                                       -40])     #terminal: mand. cargo not loaded
+        logging.getLogger('log1').info('Initilise Reward System with parameters: \n'+
+                                        'Time step reward: '+str(self.rewardSystem[0]) +"\n"+
+                                        'Reward for caused shift: '+ str(self.rewardSystem[1])+"\n" +
+                                        '@Terminal - reward for Space Utilisation: '+str(self.rewardSystem[2])+"\n"+
+                                        '@Terminal - reward for mandatory cargo not loaded: '+ str(self.rewardSystem[3])+"\n"+"done...")
 
         self.endOfLanes = self._getEndOfLane(self.grid)
         self.currentLane = self._getMinimalLanes()[0]
@@ -58,6 +63,16 @@ class RoRoDeck(object):
                                      [2, 3, 2, 3],  # length
                                      [5, 5, -1,-1]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
+
+        logging.getLogger('log1').info('Initilise Input Vehicle Data...')
+        for vehicleId in self.vehicleData[0]:
+            logging.getLogger('log1').info('Vehicle id ' + str(vehicleId)
+                                           +" Destination: "+str(self.vehicleData[1][vehicleId])
+                                           + ", is mandatory: " + str(bool(self.vehicleData[2][vehicleId]))
+                                           +", Length: " +str(self.vehicleData[3][vehicleId])
+                                           + ", Number on yard: " +str(self.vehicleData[4][vehicleId] if self.vehicleData[4][vehicleId] != -1 else "inf"))
+
+
         self.mandatoryCargoMask = self.vehicleData[2] == 1
         #Todo dele np.min(self.vehleData
         self.loadedVehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
@@ -378,6 +393,16 @@ class RoRoDeck(object):
     def saveStowagePlan(self, path):
         stowagePlan = open(path + "_StowagePlan.txt", 'w')
         stowagePlan.write('Stowage Plan and Loading Sequence \n')
+        stowagePlan.write('-------Vehicle Type-------------------------------------------------------------------- \n')
+        for row in self.gridVehicleType:
+            for col in row:
+                if col == -1:
+                    stowagePlan.write('X \t')
+                elif col == 0:
+                    stowagePlan.write('- \t')
+                else:
+                    stowagePlan.write(str(int(col)) + ' \t')
+            stowagePlan.write('\n\n')
         stowagePlan.write(
             '-----------Loading Sequence---------------------------------------------------------------- \n')
         for row in self.grid:
@@ -400,7 +425,6 @@ class RoRoDeck(object):
                 else:
                     stowagePlan.write(str(int(col)) + ' \t')
             stowagePlan.write('\n\n')
-
         # Close the file
         stowagePlan.close()
 

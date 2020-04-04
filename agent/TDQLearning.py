@@ -26,7 +26,11 @@ class TDQLearning(object):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-
+        self.actionSpace_length = len(self.env.actionSpace)
+        self.action_ix = np.arange(self.actionSpace_length)
+        # ix_Actions = np.arange(len(env.actionSpace))
+        # print(env.actionSpace)
+        self.action_list = []
 
     #TODO Output QTable
     #TODO Load QTable
@@ -35,12 +39,6 @@ class TDQLearning(object):
     def train(self):
         logging.getLogger('log1').info("prepare training...")
         initState = self.env.reset()
-
-        self.actionSpace_length = len(self.env.actionSpace)
-        self.action_ix = np.arange(self.actionSpace_length)
-        # ix_Actions = np.arange(len(env.actionSpace))
-        # print(env.actionSpace)
-        self.action_list = []
 
         # for ix, i in enumerate(env.actionSpace.keys()):
         #    ix_Actions[i] = ix
@@ -143,7 +141,7 @@ class TDQLearning(object):
 
             avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
             std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
-            if i % 100 == 0 and i > 0:
+            if i % 500 == 0 and i > 0:
                 print('episode ', i, 'score %.2f' % self.epReward, 'avg. score %.2f' % avg_reward, 'std of score %.2f' % std_reward)
 
             #if i%500 == 0:

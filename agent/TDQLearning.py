@@ -1,7 +1,7 @@
 from env.roroDeck import RoRoDeck
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
+#import tqdm
 import time
 import logging
 import pickle

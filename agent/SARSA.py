@@ -26,7 +26,8 @@ class SARSA(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-
+        self.actionSpace_length = len(self.env.actionSpace)
+        self.action_ix = np.arange(self.actionSpace_length)
 
     #TODO Output QTable
     #TODO Load QTable
@@ -36,11 +37,10 @@ class SARSA(Agent):
         logging.getLogger('log1').info("prepare training...")
         initState = self.env.reset()
 
-        self.actionSpace_length = len(self.env.actionSpace)
-        self.action_ix = np.arange(self.actionSpace_length)
+
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
-        self.action_list = []
+        #self.action_list = []
 
         # for ix, i in enumerate(env.actionSpace.keys()):
         #    ix_Actions[i] = ix

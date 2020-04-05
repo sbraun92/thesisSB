@@ -4,7 +4,6 @@ from valuation.evaluator import Evaluator
 import pytest
 import numpy as np
 
-
 #Preperation for Tests
 np.random.seed(0)
 
@@ -61,7 +60,6 @@ def test_Evaluator_SpaceUtilisation():
 
 
 #Test if the Evaluator and the agents estimate are consensually
-
 def test_AgentEvaluatorConsensus():
     evaluator1 = Evaluator(env1.vehicle_Data, env1.grid)
     evaluation1 = evaluator1.evaluate(env1.getStowagePlan())

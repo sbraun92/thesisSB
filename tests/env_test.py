@@ -202,7 +202,18 @@ def test_switch_current_lane():
     pass
 
 def test_is_action_legal():
-    pass
+    env = RoRoDeck(True)
+    env.reset()
+    number_vehicle = env.vehicle_Data[4][0]
+
+    assert env._isActionLegal(0) == True
+    for i in range(number_vehicle):
+        assert env._isActionLegal(0) == True
+        env.step(0)
+    assert env._isActionLegal(0) == False
+
+
+
 
 def test_is_terminal_state():
     env = RoRoDeck(True)

@@ -227,15 +227,15 @@ def test_get_Current_State():
     env = RoRoDeck(True)
 
     state = env.current_state
-    assert np.shape(state) == (12,1)
+    assert np.shape(state) == (12,)
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (12,1)
+    assert np.shape(state) == (12,)
 
     env = RoRoDeck(False)
 
     state = env.current_state
-    assert np.shape(state) == (32, 1)
+    assert np.shape(state) == (32,)
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (32, 1)
+    assert np.shape(state) == (32,)

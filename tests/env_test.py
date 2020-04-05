@@ -210,14 +210,14 @@ def test_is_terminal_state():
     assert env._isTerminalState() == False
 
     for i in range(4):
-        state, reward, done, info = env.step(env.possibleActions)
+        state, reward, done, info = env.step(env.actionSpaceSample())
     assert env._isTerminalState() == False
 
     while not done:
-        env.step(env.possibleActions)
+        env.step(env.actionSpaceSample())
     assert env._isTerminalState() == True
 
-    env.step(env.possibleActions)
+    env.step(env.actionSpaceSample())
     assert env._isTerminalState() == True
 
 
@@ -227,10 +227,10 @@ def test_get_Current_State():
     env = RoRoDeck(True)
 
     state = env.current_state
-    assert np.shape(state) == (32,1)
+    assert np.shape(state) == (12,1)
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (32,1)
+    assert np.shape(state) == (12,1)
 
     env = RoRoDeck(False)
 

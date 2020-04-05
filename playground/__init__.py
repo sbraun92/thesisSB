@@ -40,7 +40,7 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 4000
+it = 800000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)

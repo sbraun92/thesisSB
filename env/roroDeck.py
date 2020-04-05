@@ -200,10 +200,25 @@ class RoRoDeck(object):
             print('\n')
 
     def actionSpaceSample(self):
+        """
+        Randomly picks a possible action
+        Returns
+        -------
+        one action
+        """
         return np.random.choice(self.possibleActions)
 
     # Return a grid world with a arrow shaped ships hule
     def _createGrid(self):
+        """
+        Creates a grid representation of a RORO deck with vessel hull
+        0:  empty space
+        -1: unusable space
+
+        Returns
+        -------
+        a numpy array:  size of lanes times rows
+        """
         grid = np.zeros((self.rows, self.lanes), dtype=np.int32)
         for i in range(4):
             t = 4 - i

@@ -17,7 +17,7 @@ def test_TDQagent():
     agent.numGames=1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 48
+    assert len(agent.q_table.keys()) == 46
 
 
 
@@ -54,7 +54,7 @@ def test_SARSAagent():
     agent.numGames = 1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 51
+    assert len(agent.q_table.keys()) == 49
 
 
 def test_max_action_method():

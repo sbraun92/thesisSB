@@ -216,7 +216,7 @@ def test_is_terminal_state():
     assert env._isTerminalState() == False
 
     while not done:
-        env.step(env.actionSpaceSample())
+        state, reward, done, info = env.step(env.actionSpaceSample())
     assert env._isTerminalState() == True
 
 

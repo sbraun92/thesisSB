@@ -33,7 +33,7 @@ class RoRoDeck(object):
 
     def __init__(self, help, lanes=8, rows=10, reward_System = None):
         """
-        Initilise environment
+        Initialise environment
 
         Args:
             lanes: Number of Lanes on RORO-Deck
@@ -164,6 +164,12 @@ class RoRoDeck(object):
         return self._getCurrentState()
 
     def render(self):
+        """
+        Print a representation of an environment (grids of loading sequence, vehicle type and destination)
+        Returns
+        -------
+        None
+        """
         print('-----------Loading Sequence----------------------------------------------------------------')
         for row in self.grid:
             # Loading Sequence
@@ -204,11 +210,10 @@ class RoRoDeck(object):
         Randomly picks a possible action
         Returns
         -------
-        one action
+        an action
         """
         return np.random.choice(self.possibleActions)
 
-    # Return a grid world with a arrow shaped ships hule
     def _createGrid(self):
         """
         Creates a grid representation of a RORO deck with vessel hull
@@ -229,6 +234,17 @@ class RoRoDeck(object):
     # Return an Array with the Indicies of the last free space
     # Find indcies of last free slot in lane (if full set -1)
     def _getEndOfLane(self, grid):
+        """
+        Returns the first free row number of each lane
+
+        Parameters
+        ----------
+        grid:   A grid of loading sequence representation
+
+        Returns
+        -------
+        numpy array (length: lanes)
+        """
         endOfLanes = np.zeros(len(grid.T), dtype=np.int32)
         for idx, lane in enumerate(grid.T):
             emptySpaceInLanes = np.argwhere(lane != 0)
@@ -241,11 +257,27 @@ class RoRoDeck(object):
 
     # Return Array of which indicates how much space is free in each lane
     def _getFreeCapacity(self, grid):
+        """
+        get free capacity of each lane
+        Parameters
+        ----------
+        grid:   A grid of loading sequence representation
+
+        Returns
+        -------
+        numpy array (length: lanes)
+        """
         capacity = np.ones(len(grid.T)) * len(grid)
         capacity -= np.count_nonzero(grid, axis=0)
         return capacity
 
     def _getFrontier(self):
+        """
+        get the highest row number of the end_of_lanes array
+        Returns
+        -------
+
+        """
         return np.max(self.end_of_Lanes)
 
     def _findCurrentLane(self, endOfLanes):
@@ -314,15 +346,31 @@ class RoRoDeck(object):
             return np.hstack((self.loaded_Vehicles.flatten(), self.number_of_vehicles_loaded[self.mandatory_Cargo_Mask], self.current_Lane))
 
     def step(self, action):
-        # Must return new State, reward, if it is a TerminalState
+        """
+        Must return new State, reward, if it is a TerminalState
 
-        # 1. Check if action was legal
-        # 2. Calculate reward
-        # 3. Update grid
-        # 4. Update EndOfLane
-        # 5. Update Frontier
-        # 6. Update CurrentLane
-        # 7. Update SequenceNumber
+        1. Check if action was legal
+        2. Calculate reward
+        3. Update grid
+        4. Update EndOfLane
+        5. Update Frontier
+        6. Update CurrentLane
+        7. Update SequenceNumber
+
+        Parameters
+        ----------
+        action:    one action
+
+        Returns
+        -------
+        next state:     the next state after one simulation step
+        reward:         reward of taking this action
+        is_Terminal:    true if the ship is fully loaded or there is no possible action left to take
+        None:           additional info for debugging - not implemented in this version
+        """
+
+
+
 
         # self.maxSteps += 0.1
         if not self._isActionLegal(action):
@@ -394,9 +442,27 @@ class RoRoDeck(object):
             return self._getCurrentState(), reward, self._isTerminalState(), None
 
     def actionSpaceSample(self):
+        """
+        sample a random action
+
+        Returns
+        -------
+
+        an action
+        """
         return np.random.choice(self.possibleActions)
 
     def _getNumberOfShifts(self, action):
+        """
+        Calculate how many shifts are caused by action - only implemented for two different destinations
+        Parameters
+        ----------
+        action:     action taken by agent
+
+        Returns
+        -------
+        integer:    0 or 1 in the two destination case
+        """
         destination = self.vehicle_Data[1][action]
 
         noVehDest1 = len(np.argwhere(self.grid_Destination.T[self.current_Lane] == 1))

@@ -66,14 +66,16 @@ class SARSA(Agent):
             self.epReward = 0
             self.observation = self.env.reset()
             self.steps = 0
-
+            self.rand = np.random.random()
+            current_action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (
+                        1 - self.EPS) \
+                else self.env.actionSpaceSample()
             while not self.done:
                 # Show for visualisation the last training epoch
-                self.rand = np.random.random()
-                self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (1 - self.EPS) \
-                    else self.env.actionSpaceSample()
 
-                self.observation_, self.reward, self.done, self.info = self.env.step(self.action)
+
+
+                self.observation_, self.reward, self.done, self.info = self.env.step(current_action)
 
 
                 self.steps += 1
@@ -97,6 +99,8 @@ class SARSA(Agent):
                     self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
                                 - self.q_table[self.observation.tobytes()][self.action])
+
+                    current_action = self.action_
 
                 #Value of Terminal State is zero
                 else:

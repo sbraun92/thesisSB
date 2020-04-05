@@ -186,7 +186,17 @@ def test_stepMethod():
 
 
 def test_possible_actions():
-    pass
+    env = RoRoDeck(True)
+    env.reset()
+    number_vehicle = env.vehicle_Data[4][0]
+
+    assert len(env.vehicle_Data.T) == len(env.possibleActions) == 4
+
+    for i in range(number_vehicle):
+        assert len(env.vehicle_Data.T) == len(env.possibleActions) == 4
+        env.step(0)
+
+    assert len(env.possibleActions) == len(env.vehicle_Data.T)-1
 
 
 def test_end_of_lane_Method():

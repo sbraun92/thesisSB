@@ -40,7 +40,7 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 800000
+it = 50000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
@@ -57,11 +57,11 @@ vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
                                                       # (-1 denotes there are infinite vehicles of that type)
 #######################################################################
 # TDQ Training
-agent = TDQLearning(env,module_path,it)
-q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+#agent = TDQLearning(env,module_path,it)
+#q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
 #Plotting
-plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
-plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+#plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
+#plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
 ##########################################################################
 # SARSA Training
 agent = SARSA(env,module_path,it)

@@ -30,7 +30,7 @@ class TDQLearning(object):
         self.action_ix = np.arange(self.actionSpace_length)
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
-        self.action_list = []
+        #self.action_list = []
 
     #TODO Output QTable
     #TODO Load QTable
@@ -54,6 +54,8 @@ class TDQLearning(object):
         self.stateExpantion = np.zeros(self.numGames)
         self.stepsToExit = np.zeros(self.numGames)
 
+
+
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
         for i in range(self.numGames):
@@ -67,6 +69,11 @@ class TDQLearning(object):
                 self.rand = np.random.random()
                 self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (1 - self.EPS) \
                     else self.env.actionSpaceSample()
+
+                if i == self.numGames - 1:
+                    print("----")
+                    print(self.q_table[self.observation.tobytes()])
+                    print(self.action)
 
                 self.observation_, self.reward, self.done, self.info = self.env.step(self.action)
                 self.steps += 1
@@ -121,10 +128,10 @@ class TDQLearning(object):
 
 
 
-            if 1. - i / (self.numGames - 200) > 0:
-                self.EPS -= 1. / (self.numGames - 200)
+            if 1. - i / (self.numGames - 100) > 0:
+                self.EPS -= 1. / (self.numGames - 100)
             else:
-                self.EPS = 0.001
+                self.EPS = 0
 
             #if self.EPS > self.EPSmin:
             #    self.EPS *= self.EPSdec

@@ -1,7 +1,9 @@
 from env.roroDeck import RoRoDeck
 import numpy as np
 import pytest
+import numpy as np
 
+np.random.seed(0)
 
 def test_RORODeck():
     env = RoRoDeck(False)
@@ -217,8 +219,6 @@ def test_is_terminal_state():
         env.step(env.actionSpaceSample())
     assert env._isTerminalState() == True
 
-    env.step(env.actionSpaceSample())
-    assert env._isTerminalState() == True
 
 
 

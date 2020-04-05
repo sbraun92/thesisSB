@@ -9,6 +9,9 @@ import csv
 
 from agent.agent import Agent
 
+np.random.seed(0)
+
+
 class TDQLearning(object):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing

@@ -9,6 +9,8 @@ import csv
 
 from agent.agent import Agent
 
+np.random.seed(0)
+
 class SARSA(Agent):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
@@ -82,7 +84,7 @@ class SARSA(Agent):
 
                 #Log Loading Sequence
                 if i == self.numGames-1:
-                   logging.getLogger('log2').info("Current Lane:"+str(self.observation[-1])+" Action:"+str(self.action))
+                   logging.getLogger('log2').info("Current Lane:"+str(self.observation[-1])+" Action:"+str(current_action))
 
                 if self.observation_.tobytes() not in self.q_table:
                     self.q_table[self.observation_.tobytes()] = np.zeros(self.actionSpace_length)
@@ -93,19 +95,19 @@ class SARSA(Agent):
 
                 # SARSA with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if np.random.random() < (1 - self.EPS) \
+                    self.action_ = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if np.random.random() < (1 - self.EPS) \
                                     else self.env.actionSpaceSample()
 
-                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
+                    self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
-                                - self.q_table[self.observation.tobytes()][self.action])
+                                - self.q_table[self.observation.tobytes()][current_action])
 
                     current_action = self.action_
 
                 #Value of Terminal State is zero
                 else:
-                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
-                                self.reward - self.q_table[self.observation.tobytes()][self.action])
+                    self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (
+                                self.reward - self.q_table[self.observation.tobytes()][current_action])
 
                 #if not self.done:
                 #    self.q_table[self.observation.tobytes()][self.action] = self.reward \

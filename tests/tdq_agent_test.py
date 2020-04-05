@@ -17,7 +17,7 @@ def test_TDQagent():
     agent.numGames=1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 46
+    assert len(agent.q_table.keys()) == 48
 
 
 

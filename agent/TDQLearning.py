@@ -12,7 +12,7 @@ from agent.agent import Agent
 np.random.seed(0)
 
 
-class TDQLearning(object):
+class TDQLearning(Agent):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
@@ -73,10 +73,11 @@ class TDQLearning(object):
                 self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (1 - self.EPS) \
                     else self.env.actionSpaceSample()
 
-                if i == self.numGames - 1:
-                    print("----")
-                    print(self.q_table[self.observation.tobytes()])
-                    print(self.action)
+                #TODO delete
+                #if i == self.numGames - 1:
+                #    print("----")
+                #    print(self.q_table[self.observation.tobytes()])
+                #    print(self.action)
 
                 self.observation_, self.reward, self.done, self.info = self.env.step(self.action)
                 self.steps += 1

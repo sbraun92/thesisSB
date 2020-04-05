@@ -181,3 +181,61 @@ def test_stepMethod():
     #testen wenn eine illigale Action gewählt wurde -> Was soll da überhaupt passieren
     #testen wenn done dann env unveränderbar
     # ....
+
+
+def test_possible_actions():
+    pass
+
+
+def test_end_of_lane_Method():
+    pass
+
+def test_shifts_caused():
+    pass
+
+def test_findCurrentLane():
+    pass
+
+def test_switch_current_lane():
+    pass
+
+def test_is_action_legal():
+    pass
+
+def test_is_terminal_state():
+    env = RoRoDeck(True)
+    assert env._isTerminalState() == False
+
+    env.reset()
+    assert env._isTerminalState() == False
+
+    for i in range(4):
+        state, reward, done, info = env.step(env.possibleActions)
+    assert env._isTerminalState() == False
+
+    while not done:
+        env.step(env.possibleActions)
+    assert env._isTerminalState() == True
+
+    env.step(env.possibleActions)
+    assert env._isTerminalState() == True
+
+
+
+
+def test_get_Current_State():
+    env = RoRoDeck(True)
+
+    state = env.current_state
+    assert np.shape(state) == (32,1)
+    env.reset()
+    state = env.current_state
+    assert np.shape(state) == (32,1)
+
+    env = RoRoDeck(False)
+
+    state = env.current_state
+    assert np.shape(state) == (32, 1)
+    env.reset()
+    state = env.current_state
+    assert np.shape(state) == (32, 1)

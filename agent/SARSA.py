@@ -115,7 +115,7 @@ class SARSA(Agent):
 
                 self.observation = self.observation_
 
-                if i == self.numGames - 1 and self.done == True:
+                if i == self.numGames - 1 and self.done:
                     self.env.render()
                     logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was "+str(self.epReward))

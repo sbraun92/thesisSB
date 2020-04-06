@@ -24,10 +24,10 @@ if __name__ == '__main__':
         observation = env.reset()
         while not done:
             #possible_actions = env.possibleActions
-            action = agent.choose_action(observation, env.possibleActions) ## add possible actions here
-            state_actions = env.possibleActions
+            action = agent.choose_action(observation, env.possible_actions) ## add possible actions here
+            state_actions = env.possible_actions
             observation_, reward, done, info = env.step(action)
-            new_state_actions = env.possibleActions
+            new_state_actions = env.possible_actions
             score += reward
             agent.remember(observation, action, reward, observation_, done, state_actions,new_state_actions)
             observation = observation_

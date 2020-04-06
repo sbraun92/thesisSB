@@ -70,8 +70,8 @@ class TDQLearning(Agent):
             while not self.done:
                 # Show for visualisation the last training epoch
                 self.rand = np.random.random()
-                self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (1 - self.EPS) \
-                    else self.env.actionSpaceSample()
+                self.action = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if self.rand < (1 - self.EPS) \
+                    else self.env.action_space_sample()
 
                 #TODO delete
                 #if i == self.numGames - 1:
@@ -95,7 +95,7 @@ class TDQLearning(Agent):
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possibleActions)
+                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possible_actions)
 
                     self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
@@ -161,14 +161,13 @@ class TDQLearning(Agent):
         logging.getLogger('log1').info("End training process")
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
-
-
+    # TODO cleanup
     def maxAction(self, Q, state, actions):
         #print(self.env.possibleActions)
-        possibleActions = self.action_ix[self.env.possibleActions]
+        possibleActions = self.action_ix[self.env.possible_actions]
         #print(possibleActions)
         #print(Q[state.tobytes()])
-        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possibleActions])
+        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possible_actions])
         #print(positionsOfBestPossibleAction)
         return possibleActions[positionsOfBestPossibleAction]
 
@@ -201,7 +200,7 @@ class TDQLearning(Agent):
         self.done = False
 
         while not self.done:
-            self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions)
+            self.action = self.maxAction(self.q_table, self.observation, self.env.possible_actions)
             self.observation, self.reward, self.done, self.info = self.env.step(self.action)
             self.epReward += self.reward
 

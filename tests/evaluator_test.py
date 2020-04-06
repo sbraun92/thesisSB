@@ -15,7 +15,7 @@ done = False
 totalrewards_env1 = 0
 
 while (not done):
-    action = env1.actionSpaceSample()
+    action = env1.action_space_sample()
     observation_, reward, done, info = env1.step(action)
     totalrewards_env1 += reward
 
@@ -23,7 +23,7 @@ done = False
 totalrewards_env2 = 0
 
 while (not done):
-    action = env2.actionSpaceSample()
+    action = env2.action_space_sample()
     observation_, reward, done, info = env2.step(action)
     totalrewards_env2 += reward
 

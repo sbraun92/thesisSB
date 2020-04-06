@@ -69,9 +69,9 @@ class SARSA(Agent):
             self.observation = self.env.reset()
             self.steps = 0
             self.rand = np.random.random()
-            current_action = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if self.rand < (
+            current_action = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if self.rand < (
                         1 - self.EPS) \
-                else self.env.actionSpaceSample()
+                else self.env.action_space_sample()
             while not self.done:
                 # Show for visualisation the last training epoch
 
@@ -95,8 +95,8 @@ class SARSA(Agent):
 
                 # SARSA with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.q_table, self.observation, self.env.possibleActions) if np.random.random() < (1 - self.EPS) \
-                                    else self.env.actionSpaceSample()
+                    self.action_ = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if np.random.random() < (1 - self.EPS) \
+                                    else self.env.action_space_sample()
 
                     self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
@@ -162,10 +162,10 @@ class SARSA(Agent):
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
 
-
+    #TODO cleanup
     def maxAction(self, Q, state, actions):
-        possibleActions = self.action_ix[self.env.possibleActions]
-        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possibleActions])
+        possibleActions = self.action_ix[self.env.possible_actions]
+        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possible_actions])
 
         return possibleActions[positionsOfBestPossibleAction]
 
@@ -198,7 +198,7 @@ class SARSA(Agent):
         self.done = False
 
         while not self.done:
-            self.action = self.maxAction(self.q_table, self.observation, self.env.possibleActions)
+            self.action = self.maxAction(self.q_table, self.observation, self.env.possible_actions)
             self.observation, self.reward, self.done, self.info = self.env.step(self.action)
             self.epReward += self.reward
 

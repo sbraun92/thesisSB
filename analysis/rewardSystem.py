@@ -33,7 +33,7 @@ if __name__ == '__main__':
         evaluations = []
 
         env = RoRoDeck(True)
-        env.reward_System = system
+        env.reward_system = system
         evaluator = Evaluator(env.vehicle_Data, env.grid)
 
         unique_CumRrewards = set()
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             done = False
 
             while not done:
-                action = env.actionSpaceSample()
+                action = env.action_space_sample()
                 observation_, reward, done, info = env.step(action)
                 cumReward += reward
 

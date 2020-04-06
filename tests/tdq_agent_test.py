@@ -38,7 +38,7 @@ def test_max_action_method():
 
     assert agent.maxAction(agent.q_table,state,None) == 3
 
-    env.possibleActions = np.array([0,1,2])
+    env.possible_actions = np.array([0, 1, 2])
 
     assert agent.maxAction(agent.q_table, state, None) == 2
 
@@ -73,6 +73,6 @@ def test_max_action_method():
 
     assert agent.maxAction(agent.q_table,state,None) == 3
 
-    env.possibleActions = np.array([0,1,2])
+    env.possible_actions = np.array([0, 1, 2])
 
     assert agent.maxAction(agent.q_table, state, None) == 2

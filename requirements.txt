@@ -3,4 +3,5 @@ pandas
 matplotlib
 seaborn
 sympy
+tensorflow
 keras

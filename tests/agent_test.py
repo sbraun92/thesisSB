@@ -18,7 +18,7 @@ def test_TDQagent():
     agent.numGames=1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 46
+    assert len(agent.q_table.keys()) == 48
 
 def test_max_action_method():
     env = RoRoDeck(False)

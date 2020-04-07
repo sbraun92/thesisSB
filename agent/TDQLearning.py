@@ -9,11 +9,11 @@ import csv
 
 from agent.agentInterface import Agent
 
-np.random.seed(0)
 
 
 class TDQLearning(Agent):
     def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
+        np.random.seed(0)
         #help only for timing
         self.orig = orig
         logging.info("Initialise TD-Q-Learning Agent")

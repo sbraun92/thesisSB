@@ -10,3 +10,9 @@
   
   script:
     - pytest
+
+
+  notifications:
+    email:
+      recipients:
+      - braun@vsp.tu-berlin.de

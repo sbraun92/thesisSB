@@ -7,7 +7,7 @@ import logging
 import pickle
 import csv
 
-from agent.agent import Agent
+from agent.agentInterface import Agent
 
 np.random.seed(0)
 

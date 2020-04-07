@@ -1,5 +1,5 @@
 import numpy as np
-from valuation.evaluation import Evaluation
+from valuation.evaluation import StowagePlan
 
 
 class Evaluator(object):
@@ -38,7 +38,7 @@ class Evaluator(object):
         mandatoryCargoLoaded = self.calculateMandatoryCargoLoaded()
 
 
-        return Evaluation((shifts,spaceUtilisation,mandatoryCargoLoaded,self.vehicleData,self.deckLayout))
+        return StowagePlan((shifts, spaceUtilisation, mandatoryCargoLoaded, self.vehicleData, self.deckLayout))
 
 
     def calculateNumberOfShifts(self):

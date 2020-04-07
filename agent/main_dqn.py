@@ -1,4 +1,4 @@
-from agent.dqn import Agent
+from agent.dqn import DQNAgent
 import numpy as np
 from env.roroDeck import RoRoDeck
 from viz.Plotter import Plotter
@@ -11,7 +11,7 @@ if __name__ == '__main__':
     env = RoRoDeck(True,lanes=8,rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 3500
-    agent = Agent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99999)
+    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99999)
 
     #agent.load_model()
 

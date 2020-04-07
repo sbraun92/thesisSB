@@ -1,7 +1,7 @@
 import numpy as np
 
-class Evaluation(object):
-    def __init__(self, evaluation):
+class StowagePlan(object):
+    def __init__(self, evaluation=None):
         self.shifts = evaluation[0]
         self.spaceUtilisation = evaluation[1]
         self.mandatoryCargoLoaded = evaluation[2]

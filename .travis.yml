@@ -16,3 +16,5 @@
     email:
       recipients:
       - braun@vsp.tu-berlin.de
+      on_success: always
+      on_failure: always

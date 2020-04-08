@@ -9,7 +9,7 @@ class StowagePlan(object):
         self.deckLayout = evaluation[4]
 
     def __str__(self):
-        return "Number of Shifts: "+str(self.shifts) +" Space Utilisation: "+ str(self.spaceUtilisation) + ", Mandatory Cargo Loaded: " + str(self.mandatoryCargoLoaded) +" "
+        return "Number of Shifts: "+str(self.shifts) +"\nSpace Utilisation: "+ str(self.spaceUtilisation) + "\nMandatory Cargo Loaded: " + str(self.mandatoryCargoLoaded) +" "
 
 
     #Comparision of two StowagePlan Evaluations

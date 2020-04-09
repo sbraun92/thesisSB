@@ -5,3 +5,4 @@ seaborn
 sympy
 tensorflow
 keras
+gym

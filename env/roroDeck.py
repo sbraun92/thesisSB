@@ -1,12 +1,11 @@
 # RORO-Terminal Enviroment based on a GridWorld; is OpenAI Gym complying
 import numpy as np
 import logging
-#import gym
+import gym
 np.random.seed(0)
 
 
-class RoRoDeck(object):
-
+class RoRoDeck(gym.Env):
     """
     Enviroment-Class of a RORO-Deck
 
@@ -27,7 +26,7 @@ class RoRoDeck(object):
 
     """
 
-    def __init__(self, help, lanes=8, rows=10, reward_system=None):
+    def __init__(self, help=False, lanes=8, rows=10, reward_system=None):
         """
         Initialise environment
 

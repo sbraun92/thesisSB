@@ -2,8 +2,14 @@ from env.roroDeck import RoRoDeck
 import numpy as np
 import pytest
 import numpy as np
-
+import gym
+import env
 np.random.seed(0)
+
+def test_OpenAiCompliance():
+    env = gym.make('RORODeck-v0')
+    env.reset()
+    env.step(env.actionSpaceSample())
 
 def test_RORODeck():
     env = RoRoDeck(False)

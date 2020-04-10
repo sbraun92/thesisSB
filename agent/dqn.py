@@ -105,6 +105,7 @@ class DQNAgent(object):
         np.random.seed(0)
         tf.random.set_seed(0)
 
+
         logging.getLogger('log1').info("Init DQN-Agent: ALPHA: " + str(alpha) + " GAMMA: " + str(gamma)
                                        +" Replay Buffer Memory Size: "+str(mem_size)+" Model name: "+fname+
                                        " Epsilon Decrement: "+str(epsilon_dec)+" Batch Size: "+str(batch_size))
@@ -142,14 +143,15 @@ class DQNAgent(object):
         state = state[np.newaxis, :]
         rand = np.random.random()
         if rand < self.epsilon:
-            #action = np.random.choice(self.action_space)
-            action = np.random.choice(possibleactions)
+            action = np.random.choice(self.action_space)
+            #action = np.random.choice(possibleactions)
             #action = actionSample
         else:
             actions = self.q_eval.predict(state)
-            action_space_red = np.array(self.action_space.copy())[possibleactions]
-            action_qVal_red = actions[0][possibleactions]
-            action = action_space_red[np.argmax(action_qVal_red)]
+            #action_space_red = np.array(self.action_space.copy())[possibleactions]
+            #action_qVal_red = actions[0][possibleactions]
+            #action = action_space_red[np.argmax(action_qVal_red)]
+            action = np.argmax(actions)
         return action
 
     def learn(self):
@@ -180,8 +182,8 @@ class DQNAgent(object):
 
         q_target = self.q_target_model.predict(state)
 
-        q_target[possible_actions_state] = 0.
-        q_next[possible_actions_new_state] = -5.
+        #q_target[possible_actions_state] = 0.
+        #q_next[possible_actions_new_state] = -5.
 
 
 

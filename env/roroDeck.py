@@ -26,7 +26,7 @@ class RoRoDeck(gym.Env):
 
     """
 
-    def __init__(self, help=False, lanes=8, rows=10, reward_system=None):
+    def __init__(self, help=False, lanes=8, rows=10, limit_actions=True, reward_system=None):
         """
         Initialise environment
 
@@ -363,8 +363,8 @@ class RoRoDeck(gym.Env):
 
         # self.maxSteps += 0.1
         if not self._is_action_legal(action):
-            print("Action was not Legal. There is an error in the legal action machine")
-            return self._get_current_state(), -1, self._is_terminal_state(), None
+            #print("Action was not Legal. There is an error in the legal action machine")
+            return self._get_current_state(), -50, self._is_terminal_state(), None
         else:
             reward = 0  # self.calculateReward()
             number_of_shifts = self._get_number_of_shifts(action)

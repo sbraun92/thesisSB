@@ -8,7 +8,7 @@ class LoggingBase(object):
         date = str(datetime.utcnow().date().strftime("%Y%m%d"))
         time = str(datetime.now().strftime("%H%M"))
 
-        self.module_path = str(os.path.dirname(os.path.realpath(__file__))) + '\\out\\' + date + '\\'
+        self.module_path = str(os.path.dirname(os.path.realpath(__file__))) + '\\out\\' + date + '\\' +time +'\\'
         os.makedirs(self.module_path, exist_ok=True)
         self.module_path += time
 

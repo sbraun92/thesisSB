@@ -4,10 +4,12 @@ import pytest
 import numpy as np
 import gym
 import env
+#from stable_baselines.common.env_checker import check_env
 np.random.seed(0)
 
 def test_OpenAiCompliance():
     env = gym.make('RORODeck-v0')
+    #check_env(env)
     env.reset()
     env.step(env.actionSpaceSample())
 

@@ -98,5 +98,5 @@ def test_dqnAgent():
 
 
 
-    assert np.shape(np.nonzero(agent.memory.reward_memory))[1]==59
+    assert np.shape(np.nonzero(agent.memory.reward_memory))[1]==91 #TODO was 59 before remving possible action filtre
     assert np.shape(np.nonzero(agent.memory.terminal_memory))[1]==2

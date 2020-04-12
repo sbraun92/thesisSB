@@ -47,6 +47,8 @@ class RoRoDeck(gym.Env):
         self.grid = self._create_grid()
         self.grid_destination = self._create_grid()
         self.grid_vehicle_type = self._create_grid() - 1
+        self.end_of_lanes = self._get_end_of_lane(self.grid)
+        self.current_Lane = self._get_minimal_lanes()[0]
 
         if reward_system == None:
             self.reward_system = np.array([0.2,  #simple Loading
@@ -61,8 +63,7 @@ class RoRoDeck(gym.Env):
                                         '@Terminal - reward for Space Utilisation: ' + str(self.reward_system[2]) + "\n" +
                                         '@Terminal - reward for mandatory cargo not loaded: ' + str(self.reward_system[3]) + "\n" + "done...")
 
-        self.end_of_lanes = self._get_end_of_lane(self.grid)
-        self.current_Lane = self._get_minimal_lanes()[0]
+
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         self.vehicle_Data = np.array([[0, 1, 2, 3],  # vehicle id
@@ -93,12 +94,12 @@ class RoRoDeck(gym.Env):
         # for shifts TODO not a good name
         self.shift_helper = self.end_of_lanes.copy()
         # self.prevVeh = self.endOfLanes.copy()
-
+        self.minimal_package = np.min(self.vehicle_Data[3])
+        self.maximal_package = np.max(self.vehicle_Data[3])
         # mandatory cargo, must be loaded
         #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
-        # State representation Frontier, BackLook,mandatory cargo, CurrentLane
-        self.current_state = self._get_current_state()
+
 
         # Test without switching
         self.actionSpace_names = {0: 'Type1', 1: 'Type2'}
@@ -106,10 +107,14 @@ class RoRoDeck(gym.Env):
         self.action2vehicleLength = np.array([2, 3])
         self.action2destination = np.array([1, 2])
 
-        self.minimal_package = np.min(self.vehicle_Data[3])
+
         self.possible_actions = self.possible_actions_of_state()
         self.maxSteps = 0
         self.TerminalStateCounter = 0
+        self.lowest_destination = np.ones(self.lanes)*8 #TODO
+
+        # State representation Frontier, BackLook,mandatory cargo, CurrentLane
+        self.current_state = self._get_current_state()
 
     def reset(self):
         """
@@ -135,7 +140,7 @@ class RoRoDeck(gym.Env):
         self.current_Lane = self._get_minimal_lanes()[0]
         self.frontier = self._get_frontier()
         # self.currentState = np.hstack((self.frontier, self.endOfLanes, self.currentLane))
-        self.current_state = self._get_current_state()
+
         self.possible_actions = self.possible_actions_of_state()
 
         self.maxSteps = 0
@@ -148,9 +153,11 @@ class RoRoDeck(gym.Env):
 
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
+        self.lowest_destination = np.ones(self.lanes)*8 #TODO
 
+        self.current_state = self._get_current_state()
 
-        return self._get_current_state()
+        return self.current_state
 
     def render(self):
         """
@@ -332,7 +339,13 @@ class RoRoDeck(gym.Env):
         if self.help:
             return np.hstack((self.frontier, self.end_of_lanes, self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane)).astype(np.int32)
         else:
-            return np.hstack((self.loaded_Vehicles.flatten(), self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
+            if np.max(self.end_of_lanes)>(self.rows-self.maximal_package-self.minimal_package-1):
+                return np.hstack((self.frontier,self.end_of_lanes, self.lowest_destination,self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
+            else:
+                return np.hstack((self.frontier,np.zeros(self.lanes), self.lowest_destination, self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
+            #return np.hstack((self.loaded_Vehicles.flatten(), self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
+
+
 
     def step(self, action):
         """
@@ -404,6 +417,9 @@ class RoRoDeck(gym.Env):
                     self.grid.T[self.current_Lane][slot + i] = self.sequence_no
                     self.grid_destination.T[self.current_Lane][slot + i] = self.vehicle_Data[1][action]
                     self.grid_vehicle_type.T[self.current_Lane][slot + i] = self.vehicle_Data[0][action]
+
+                if self.vehicle_Data[1][action] < self.lowest_destination[self.current_Lane]:
+                    self.lowest_destination[self.current_Lane] = self.vehicle_Data[1][action]
 
                 self.frontier = self._get_frontier()
                 self.sequence_no += 1

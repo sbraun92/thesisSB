@@ -8,7 +8,7 @@ from valuation.evaluator import Evaluator
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(True,lanes=8,rows=12)
+    env = RoRoDeck(False,lanes=8,rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 5000
     agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99996)
@@ -42,6 +42,8 @@ if __name__ == '__main__':
         scores.append(score)
 
         avg_score = np.mean(scores[max(0,i-100):(i+1)])
+
+        #TODO plot to logger
 
         if i % 10 == 0 and i > 0:
             print('episode ', i, 'score %.2f' % score, 'avg. score %.2f' % avg_score)

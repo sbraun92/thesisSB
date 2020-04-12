@@ -11,6 +11,9 @@ np.random.seed(0)
 env1 = RoRoDeck(True)
 env2 = RoRoDeck(True)
 
+env1.reset()
+env2.reset()
+
 done = False
 totalrewards_env1 = 0
 

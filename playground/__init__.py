@@ -2,6 +2,7 @@ from env.roroDeck import RoRoDeck
 from agent.TDQLearning import TDQLearning
 from agent.SARSA import SARSA
 from viz.Plotter import Plotter
+from valuation.evaluator import Evaluator
 from analysis.loggingUnit import LoggingBase
 import os
 from datetime import datetime
@@ -40,14 +41,14 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 50000
+it = 80000
 logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
 
 smoothing_window = int(it / 100)
 smoothing_window =200
 
 #Test with a bigger configuration
-env = RoRoDeck(False,8,10)
+env = RoRoDeck(True,8,10)
 
 vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
                         [1, 2, 1, 2,2],  # destination
@@ -59,6 +60,10 @@ vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
 # TDQ Training
 agent = TDQLearning(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+agent.save_model(module_path,type='pickle')
+evaluator = Evaluator(env.vehicle_Data, env.grid)
+evaluation = evaluator.evaluate(env.getStowagePlan())
+print(evaluation)
 #Plotting
 plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
 plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)

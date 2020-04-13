@@ -175,11 +175,11 @@ class TDQLearning(Agent):
     #TODO try feather
     def load(self,path):
         try:
-            self.q_table = pickle.load(open(path, "rb"))
+            self.q_table = pickle.load(open(path+'_qTablePickled.p', "rb"))
         except:
             logging.getLogger("log1").error("Could not load pickle file")
 
-    def save(self,path,type='pickle'):
+    def save_model(self,path,type='pickle'):
         #path = path + '_qTablePickled.p'
         print(path)
         try:

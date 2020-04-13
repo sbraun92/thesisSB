@@ -267,4 +267,4 @@ def test_get_Current_State():
     assert np.shape(state) == (20,) #was 83 TODO
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (29,)
+    assert np.shape(state) == (20,)

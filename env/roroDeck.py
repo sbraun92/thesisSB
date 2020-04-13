@@ -429,7 +429,7 @@ class RoRoDeck(gym.Env):
                 self.TerminalStateCounter = 0
 
             self.possible_actions = self.possible_actions_of_state()
-
+            self.current_state = self._get_current_state()
             if self._is_terminal_state():
                 #Space Utilisation
                 #reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)

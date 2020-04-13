@@ -1,4 +1,4 @@
-from keras.layers import Dense, Activation, Conv1D
+from keras.layers import Dense, Activation, Conv1D, Conv2D
 from keras.models import Sequential, load_model
 from keras.regularizers import l2,l1
 from keras.optimizers import Adam
@@ -86,7 +86,8 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
     logging.getLogger('log1').info("Loss function: Mean Square Error")
 
 
-    model = Sequential([Dense(fcl_dims, input_shape=(input_dims, )),
+    model = Sequential([Conv1D(input_shape=(input_dims, )),
+                        #,Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
                         Dense(fc2_dims, activity_regularizer=l2(0.001)),
                         Activation('relu'),
@@ -216,10 +217,10 @@ class DQNAgent(object):
 
         self.target_update_counter += 1
 
-    def save_model(self):
+    def save_model(self,path):
         ##file path
-        self.q_eval.save(self.model_file)
+        self.q_eval.save(path+self.model_file)
 
-    def load_model(self):
-        self.q_eval = load_model(self.model_file)
+    def load_model(self,path):
+        self.q_eval = load_model(path+self.model_file)
 

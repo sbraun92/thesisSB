@@ -8,10 +8,11 @@ from valuation.evaluator import Evaluator
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(False,lanes=12,rows=16)
+    env = RoRoDeck(False,lanes=14,rows=18)
+    env.vehicle_Data[4][env.mandatory_cargo_mask]+=20
     input_dims = np.shape(env.reset())[0]
-    n_games = 1400
-    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.9996)
+    n_games = 2500
+    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99997)
 
     #agent.load_model()
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
             agent.remember(observation, action, reward, observation_, done, state_actions,new_state_actions)
             observation = observation_
             agent.learn()
-            if bad_moves_counter > 7:
+            if bad_moves_counter >  5:
                 #print("aaa")
                 break
         eps_history.append(agent.epsilon)
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
         if i % 10 == 0 and i > 0:
             print('episode ', i, 'score %.2f' % score, 'avg. score %.2f' % avg_score)
-            agent.save_model()
+            agent.save_model(loggingBase.module_path)
 
     #loggingBase = LoggingBase()
     module_path = loggingBase.module_path
@@ -66,7 +67,8 @@ if __name__ == '__main__':
         state, reward, done, info = env.step(action)
         best_score += reward
     env.render()
-
+    env.saveStowagePlan(module_path)
+    agent.save_model(module_path)
     evaluator = Evaluator(env.vehicle_Data, env.grid)
     evaluation = evaluator.evaluate(env.getStowagePlan())
 

@@ -8,10 +8,10 @@ from valuation.evaluator import Evaluator
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(False,lanes=8,rows=12)
+    env = RoRoDeck(False,lanes=12,rows=16)
     input_dims = np.shape(env.reset())[0]
-    n_games = 5000
-    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.99996)
+    n_games = 1400
+    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.01, epsilon_dec= 0.9996)
 
     #agent.load_model()
 
@@ -51,9 +51,9 @@ if __name__ == '__main__':
 
     #loggingBase = LoggingBase()
     module_path = loggingBase.module_path
-    #plotter = Plotter(module_path,n_games)
-    #plotter.plotRewardPlot(scores)
-    #plotter.plotEPSHistory(np.array(eps_history))
+    plotter = Plotter(module_path,n_games)
+    plotter.plotRewardPlot(scores)
+    plotter.plotEPSHistory(np.array(eps_history))
 
     #Show the execution mode
     best_score = 0

@@ -86,14 +86,14 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
     logging.getLogger('log1').info("Loss function: Mean Square Error")
 
 
-    model = Sequential([#Conv1D(input_shape=(input_dims, )),
-                        Dense(fcl_dims, input_shape=(input_dims, )),
+    model = Sequential([Conv1D(input_shape=(input_dims, )),
+                        #,Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
-                        Dense(fc2_dims, activity_regularizer=l2(0.002)),
+                        Dense(fc2_dims, activity_regularizer=l2(0.001)),
                         Activation('relu'),
-                        Dense(fcl_dims,activity_regularizer= l2(0.002)),
+                        Dense(fcl_dims,activity_regularizer= l2(0.001)),
                         Activation('relu'),
-                        Dense(n_actions,activity_regularizer= l1(0.002))])
+                        Dense(n_actions,activity_regularizer= l1(0.001))])
 
     logging.getLogger('log1').info("Compile NN")
     model.compile(optimizer=Adam(lr=lr), loss='mse')
@@ -122,50 +122,44 @@ class DQNAgent(object):
         self.memory = ReplayBuffer(mem_size,input_dims,n_actions,discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 550,400)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 350,400)
 
 
 
         #Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 550,400)
+        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 350,400)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
         self.target_update_counter = 0
 
-        self.UPDATE_TARGET = 30
+        self.UPDATE_TARGET = 20
 
 
     def remember(self,state, action, reward, new_state, done,possible_Actions_state,possible_Actions_new_state):
         self.memory.store_transition(state,action,reward,new_state,done,possible_Actions_state,possible_Actions_new_state)
 
-    def choose_action(self,state,possibleactions,only_legal_actions = False):
+    def choose_action(self,state,possibleactions):
         state = state[np.newaxis, :]
         rand = np.random.random()
         if rand < self.epsilon:
-            if not only_legal_actions:
-                action = np.random.choice(self.action_space)
-            else:
-                action = np.random.choice(possibleactions)
+            action = np.random.choice(self.action_space)
+            #action = np.random.choice(possibleactions)
             #action = actionSample
         else:
             actions = self.q_eval.predict(state)
-            if not only_legal_actions:
-                action = np.argmax(actions)
-            else:
-                logging.getLogger('log1').info("Use only possible actions for finer tuning")
-                action_space_red = np.array(self.action_space.copy())[possibleactions]
-                action_qVal_red = actions[0][possibleactions]
-                action = action_space_red[np.argmax(action_qVal_red)]
-
+            #action_space_red = np.array(self.action_space.copy())[possibleactions]
+            #action_qVal_red = actions[0][possibleactions]
+            #action = action_space_red[np.argmax(action_qVal_red)]
+            action = np.argmax(actions)
         return action
 
     def learn(self):
         if self.memory.mem_cntr <= self.batch_size:
             return
 
-        logging.getLogger('log1').info("Learning Step - sample from replay buffer; EPS: "+str(self.epsilon))
+        logging.getLogger('log1').info("Learning Step - sample from replay buffer")
 
         state, action, reward, new_state, done, possible_actions_state, possible_actions_new_state = \
                                         self.memory.sample_buffer(self.batch_size)

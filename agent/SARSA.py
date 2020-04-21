@@ -95,7 +95,7 @@ class SARSA(Agent):
 
                 # SARSA with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if np.random.random() < (1 - self.EPS) \
+                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possible_actions) if np.random.random() < (1 - self.EPS) \
                                     else self.env.action_space_sample()
 
                     self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (

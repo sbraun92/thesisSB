@@ -86,14 +86,13 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
     logging.getLogger('log1').info("Loss function: Mean Square Error")
 
 
-    model = Sequential([Conv1D(input_shape=(input_dims, )),
-                        #,Dense(fcl_dims, input_shape=(input_dims, )),
+    model = Sequential([Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
-                        Dense(fc2_dims, activity_regularizer=l2(0.001)),
+                        Dense(fc2_dims, activity_regularizer=l2(0.002)),
                         Activation('relu'),
-                        Dense(fcl_dims,activity_regularizer= l2(0.001)),
+                        Dense(fcl_dims,activity_regularizer= l2(0.002)),
                         Activation('relu'),
-                        Dense(n_actions,activity_regularizer= l1(0.001))])
+                        Dense(n_actions,activity_regularizer= l1(0.002))])
 
     logging.getLogger('log1').info("Compile NN")
     model.compile(optimizer=Adam(lr=lr), loss='mse')
@@ -122,13 +121,13 @@ class DQNAgent(object):
         self.memory = ReplayBuffer(mem_size,input_dims,n_actions,discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 350,400)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 550,400)
 
 
 
         #Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 350,400)
+        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 550,400)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 

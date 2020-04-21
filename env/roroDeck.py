@@ -104,7 +104,7 @@ class RoRoDeck(gym.Env):
 
         # Test without switching
         #self.actionSpace_names = {0: 'Type1', 1: 'Type2'}
-        #self.actionSpace = self.vehicle_Data[0]
+        self.actionSpace = self.vehicle_Data[0]
         #self.action2vehicleLength = np.array([2, 3])
         #self.action2destination = np.array([1, 2])
 

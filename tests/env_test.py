@@ -261,6 +261,9 @@ def test_get_Current_State():
     state = env.current_state
     assert np.shape(state) == (12,)
 
+    env.step(env.actionSpaceSample())
+    assert not np.all(state==env.current_state)
+
     env = RoRoDeck(False)
 
     state = env.current_state
@@ -268,3 +271,6 @@ def test_get_Current_State():
     env.reset()
     state = env.current_state
     assert np.shape(state) == (20,)
+
+    env.step(env.actionSpaceSample())
+    assert not np.all(state == env.current_state)

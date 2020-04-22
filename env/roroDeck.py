@@ -85,35 +85,23 @@ class RoRoDeck(gym.Env):
                                            +", Length: " + str(self.vehicle_Data[3][vehicleId])
                                            + ", Number on yard: " + str(self.vehicle_Data[4][vehicleId] if self.vehicle_Data[4][vehicleId] != -1 else "inf"))
 
-
         self.mandatory_cargo_mask = self.vehicle_Data[2] == 1
         #Todo dele np.min(self.vehleData
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
-
-
         self.capacity = self._get_free_capacity(self.grid)
         self.frontier = self._get_frontier()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_Data[0]), dtype=np.int16)
         # for shifts TODO not a good name
         self.shift_helper = self.end_of_lanes.copy()
-        # self.prevVeh = self.endOfLanes.copy()
         self.minimal_package = np.min(self.vehicle_Data[3])
         self.maximal_package = np.max(self.vehicle_Data[3])
         # mandatory cargo, must be loaded
         #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
-
-
         # Test without switching
-        #self.actionSpace_names = {0: 'Type1', 1: 'Type2'}
         self.actionSpace = self.vehicle_Data[0]
-        #self.action2vehicleLength = np.array([2, 3])
-        #self.action2destination = np.array([1, 2])
-
-
         self.possible_actions = self.possible_actions_of_state()
-        #self.maxSteps = 0
         self.TerminalStateCounter = 0
         self.lowest_destination = np.ones(self.lanes)*8 #TODO
         #self.maximal_shifts = np.sum(self.vehicle_Data[1][np.where(self.vehicle_Data[1]>1)])
@@ -139,31 +127,22 @@ class RoRoDeck(gym.Env):
         self.grid_vehicle_type = self._create_grid() - 1
         self.grid_reefer = self._create_grid()
         self.grid_reefer.T[0][4:(self.rows)] = 1
-
-
+        self.actionSpace = self.vehicle_Data[0]
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_Data[0]), dtype=np.int16)
-
         self.capacity = self._get_free_capacity(self.grid)
         self.current_Lane = self._get_minimal_lanes()[0]
         self.frontier = self._get_frontier()
-        # self.currentState = np.hstack((self.frontier, self.endOfLanes, self.currentLane))
-
         self.possible_actions = self.possible_actions_of_state()
-
-        self.maxSteps = 0
         self.TerminalStateCounter = 0
-
         self.shift_helper = self.end_of_lanes.copy()
-
-        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
-
-
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
         self.lowest_destination = np.ones(self.lanes)*8 #TODO
-
+        self.mandatory_cargo_mask = self.vehicle_Data[2] == 1
         self.current_state = self._get_current_state()
+        self.minimal_package = np.min(self.vehicle_Data[3])
+        self.maximal_package = np.max(self.vehicle_Data[3])
 
         return self.current_state
 

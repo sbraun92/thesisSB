@@ -45,6 +45,9 @@ class RoRoDeck(gym.Env):
         self.rows = rows
         self.sequence_no = 1
         self.grid = self._create_grid()
+        #Reefer TODo
+        self.grid_reefer = self._create_grid()
+        self.grid_reefer.T[0][4:(rows)] = 1
         self.grid_destination = self._create_grid()
         self.grid_vehicle_type = self._create_grid() - 1
         self.end_of_lanes = self._get_end_of_lane(self.grid)
@@ -67,12 +70,12 @@ class RoRoDeck(gym.Env):
 
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
-        self.vehicle_Data = np.array([[0, 1, 2, 3],  # vehicle id
-                                      [1, 2, 1, 2],  # destination
-                                      [1, 1, 0, 0],  # mandatory
-                                      [2, 3, 2, 3],  # length
-                                      [5, 5, -1,-1]])  # number of vehicles on yard
-                                                      # (-1 denotes there are infinite vehicles of that type)
+        self.vehicle_Data = np.array([[0, 1, 2, 3, 4],  # vehicle id
+                                      [1, 2, 1, 2, 2],  # destination
+                                      [1, 1, 0, 0, 1],  # mandatory
+                                      [2, 3, 2, 3, 2],  # length
+                                      [5, 5, -1,-1, 2], # number of vehicles on yard (-1 denotes there are infinite vehicles of that type)
+                                      [0, 0, 0,  0, 1]]) # Reefer
 
         logging.getLogger('log1').info('Initilise Input Vehicle Data...')
         for vehicleId in self.vehicle_Data[0]:
@@ -134,6 +137,9 @@ class RoRoDeck(gym.Env):
         self.grid = self._create_grid()
         self.grid_destination = self._create_grid()
         self.grid_vehicle_type = self._create_grid() - 1
+        self.grid_reefer = self._create_grid()
+        self.grid_reefer.T[0][4:(self.rows)] = 1
+
 
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_Data[0]), dtype=np.int16)
@@ -297,11 +303,26 @@ class RoRoDeck(gym.Env):
         return np.argwhere(self.end_of_lanes == np.min(self.end_of_lanes)).flatten()
 
     def _is_action_legal(self, action):
-        if self.end_of_lanes[self.current_Lane] + self.vehicle_Data[3][action] <= self.rows:
-            if self.vehicle_Data[4][action] == -1: # infinite Vehicles in parking lot
-                return True
-            elif self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action]: #enough vehicles in parking lot
-                return True
+        loading_position = self.end_of_lanes[self.current_Lane]
+        length_of_vehicle = self.vehicle_Data[3][action]
+
+        if loading_position +length_of_vehicle <= self.rows:
+            if self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action] or \
+                    self.vehicle_Data[4][action] == -1: #enough or infinite Vehicles in parking lot
+                if self.vehicle_Data[5][action]==1: # check reefer position
+                    #TODO check reefer position
+                    #print(self.current_Lane)
+                    #print(loading_position)
+                    #print(self.grid_reefer)
+                    #print(self.grid_reefer.T[self.current_Lane])
+                    designated_loading_area = self.grid_reefer.T[self.current_Lane][loading_position:(loading_position+length_of_vehicle)]
+                    #print(np.all(designated_loading_area==1))
+                    return np.all(designated_loading_area==1)
+                else:
+                    return True
+            #elif self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action]: #enough vehicles in parking lot
+            #    print("AAAAAAAAAAA")
+            #    return True
             else:
                 return False
         else:
@@ -310,7 +331,7 @@ class RoRoDeck(gym.Env):
     # return an array such as [0,2] - possible lengths ordered
     def possible_actions_of_state(self):
         possible_actions = []
-        for action in range(len(self.actionSpace)):
+        for action in self.vehicle_Data[0]:
             if self._is_action_legal(action):
                 possible_actions += [action]
         return np.array(possible_actions)

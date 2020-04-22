@@ -38,7 +38,7 @@ def test_envParam():
     print(env.end_of_lanes)
 
 
-    assert env.vehicle_Data.shape[0] == 5
+    assert env.vehicle_Data.shape[0] == 6
     assert env.current_Lane >= 0 and env.current_Lane <= env.lanes
     assert env.grid.shape == (env.rows,env.lanes)
     assert env.sequence_no >= 0 and type(env.sequence_no)==type(0)
@@ -188,6 +188,7 @@ def test_stepMethod():
 
 
     #TODO weitere TEst
+    #teste reefer position
     #testen wenn eine illigale Action gewählt wurde -> Was soll da überhaupt passieren
     #testen wenn done dann env unveränderbar
     # ....
@@ -195,13 +196,14 @@ def test_stepMethod():
 
 def test_possible_actions():
     env = RoRoDeck(True)
+    env.vehicle_Data[5][4]=0 #disable reefer for test
     env.reset()
     number_vehicle = env.vehicle_Data[4][0]
 
-    assert len(env.vehicle_Data.T) == len(env.possible_actions) == 4
+    assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
 
     for i in range(number_vehicle):
-        assert len(env.vehicle_Data.T) == len(env.possible_actions) == 4
+        assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
         env.step(0)
 
     assert len(env.possible_actions) == len(env.vehicle_Data.T) - 1
@@ -256,10 +258,10 @@ def test_get_Current_State():
     env = RoRoDeck(True)
 
     state = env.current_state
-    assert np.shape(state) == (12,)
+    assert np.shape(state) == (13,)
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (12,)
+    assert np.shape(state) == (13,)
 
     env.step(env.actionSpaceSample())
     assert not np.all(state==env.current_state)
@@ -267,10 +269,10 @@ def test_get_Current_State():
     env = RoRoDeck(False)
 
     state = env.current_state
-    assert np.shape(state) == (20,) #was 83 TODO
+    assert np.shape(state) == (21,) #was 83 TODO
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (20,)
+    assert np.shape(state) == (21,)
 
     env.step(env.actionSpaceSample())
     assert not np.all(state == env.current_state)

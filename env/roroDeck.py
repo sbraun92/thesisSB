@@ -2,6 +2,7 @@
 import numpy as np
 import logging
 import gym
+
 np.random.seed(0)
 
 
@@ -26,7 +27,7 @@ class RoRoDeck(gym.Env):
 
     """
 
-    def __init__(self, help=False, lanes=8, rows=10, limit_actions=True, reward_system=None):
+    def __init__(self, help=False, lanes=8, rows=10, limit_actions=True, reward_system=None, stochastic = False):
         """
         Initialise environment
 
@@ -38,55 +39,63 @@ class RoRoDeck(gym.Env):
         """
         # just to compare runtime
         # TODO delete helper from
+        # if stochastic is True the environment will use with probability p the action chosen by the agent and with
+        # 1-p a random action from the possible actions
+        self.stochastic = stochastic
+        self.p = 0.95
+
         self.help = help
 
-        logging.getLogger('log1').info('Initilise RORO-Deck enviroment: Lanes'+str(lanes)+" Rows: "+ str(rows))
+        logging.getLogger('log1').info('Initilise RORO-Deck enviroment: Lanes' + str(lanes) + " Rows: " + str(rows))
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
         self.grid = self._create_grid()
-        #Reefer TODo
+        # Reefer TODo
         self.grid_reefer = self._create_grid()
         self.grid_reefer.T[0][4:(rows)] = 1
         self.grid_destination = self._create_grid()
         self.grid_vehicle_type = self._create_grid() - 1
         self.end_of_lanes = self._get_end_of_lane(self.grid)
+        self.inital_end_of_lanes = self.end_of_lanes.copy()
         self.current_Lane = self._get_minimal_lanes()[0]
+        self.loading_sequence = "Loading Sequence of RORO-Deck (l: "+str(self.lanes)+" r: "+str(self.rows)+")\n\n"
 
         if reward_system == None:
-            self.reward_system = np.array([0.2,  #simple Loading
-                                           -8,  #caused shifts
-                                           -2,  #terminal: Space left unsed
-                                           -40])     #terminal: mand. cargo not loaded
+            self.reward_system = np.array([0.2,  # simple Loading
+                                           -8,  # caused shifts
+                                           -2,  # terminal: Space left unsed
+                                           -40])  # terminal: mand. cargo not loaded
         else:
             self.reward_system = reward_system
         logging.getLogger('log1').info('Initilise Reward System with parameters: \n' +
-                                        'Time step reward: ' + str(self.reward_system[0]) + "\n" +
-                                        'Reward for caused shift: ' + str(self.reward_system[1]) + "\n" +
-                                        '@Terminal - reward for Space Utilisation: ' + str(self.reward_system[2])+"\n" +
-                                        '@Terminal - reward for mandatory cargo not loaded: '
-                                        +str(self.reward_system[3]) + "\n" + "done...")
-
-
+                                       'Time step reward: ' + str(self.reward_system[0]) + "\n" +
+                                       'Reward for caused shift: ' + str(self.reward_system[1]) + "\n" +
+                                       '@Terminal - reward for Space Utilisation: ' + str(
+            self.reward_system[2]) + "\n" +
+                                       '@Terminal - reward for mandatory cargo not loaded: '
+                                       + str(self.reward_system[3]) + "\n" + "done...")
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         self.vehicle_Data = np.array([[0, 1, 2, 3, 4],  # vehicle id
                                       [1, 2, 1, 2, 2],  # destination
                                       [1, 1, 0, 0, 1],  # mandatory
                                       [2, 3, 2, 3, 2],  # length
-                                      [5, 5, -1,-1, 2], # number of vehicles on yard (-1 denotes there are infinite vehicles of that type)
-                                      [0, 0, 0,  0, 1]]) # Reefer
+                                      [5, 5, -1, -1, 2],
+                                      # number of vehicles on yard (-1 denotes there are infinite vehicles of that type)
+                                      [0, 0, 0, 0, 1]])  # Reefer
 
         logging.getLogger('log1').info('Initilise Input Vehicle Data...')
         for vehicleId in self.vehicle_Data[0]:
             logging.getLogger('log1').info('Vehicle id ' + str(vehicleId)
-                                           +" Destination: " + str(self.vehicle_Data[1][vehicleId])
+                                           + " Destination: " + str(self.vehicle_Data[1][vehicleId])
                                            + ", is mandatory: " + str(bool(self.vehicle_Data[2][vehicleId]))
-                                           +", Length: " + str(self.vehicle_Data[3][vehicleId])
-                                           + ", Number on yard: " + str(self.vehicle_Data[4][vehicleId] if self.vehicle_Data[4][vehicleId] != -1 else "inf"))
+                                           + ", Length: " + str(self.vehicle_Data[3][vehicleId])
+                                           + ", Number on yard: " + str(
+                self.vehicle_Data[4][vehicleId] if self.vehicle_Data[4][vehicleId] != -1 else "inf"))
 
         self.mandatory_cargo_mask = self.vehicle_Data[2] == 1
-        #Todo dele np.min(self.vehleData
+        # Todo dele np.min(self.vehleData
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
         self.capacity = self._get_free_capacity(self.grid)
@@ -97,15 +106,15 @@ class RoRoDeck(gym.Env):
         self.minimal_package = np.min(self.vehicle_Data[3])
         self.maximal_package = np.max(self.vehicle_Data[3])
         # mandatory cargo, must be loaded
-        #self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
+        # self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
         # Test without switching
         self.actionSpace = self.vehicle_Data[0]
         self.possible_actions = self.possible_actions_of_state()
         self.TerminalStateCounter = 0
-        self.lowest_destination = np.ones(self.lanes)*8 #TODO
-        #self.maximal_shifts = np.sum(self.vehicle_Data[1][np.where(self.vehicle_Data[1]>1)])
-        #print(self.maximal_shifts)
+        self.lowest_destination = np.ones(self.lanes) * 8  # TODO
+        # self.maximal_shifts = np.sum(self.vehicle_Data[1][np.where(self.vehicle_Data[1]>1)])
+        # print(self.maximal_shifts)
         # State representation Frontier, BackLook,mandatory cargo, CurrentLane
         self.current_state = self._get_current_state()
 
@@ -120,6 +129,7 @@ class RoRoDeck(gym.Env):
             KeyError: Raises an exception.
         """
         logging.getLogger('log1').info('Reset Environment')
+        self.loading_sequence = "Loading Sequence of RORO-Deck (l: "+str(self.lanes)+" r: "+str(self.rows)+")\n\n"
 
         self.sequence_no = 1
         self.grid = self._create_grid()
@@ -138,7 +148,7 @@ class RoRoDeck(gym.Env):
         self.shift_helper = self.end_of_lanes.copy()
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
-        self.lowest_destination = np.ones(self.lanes)*8 #TODO
+        self.lowest_destination = np.ones(self.lanes) * 8  # TODO
         self.mandatory_cargo_mask = self.vehicle_Data[2] == 1
         self.current_state = self._get_current_state()
         self.minimal_package = np.min(self.vehicle_Data[3])
@@ -285,21 +295,22 @@ class RoRoDeck(gym.Env):
         loading_position = self.end_of_lanes[self.current_Lane]
         length_of_vehicle = self.vehicle_Data[3][action]
 
-        if loading_position +length_of_vehicle <= self.rows:
-            if self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action] or \
-                    self.vehicle_Data[4][action] == -1: #enough or infinite Vehicles in parking lot
-                if self.vehicle_Data[5][action]==1: # check reefer position
-                    #TODO check reefer position
-                    #print(self.current_Lane)
-                    #print(loading_position)
-                    #print(self.grid_reefer)
-                    #print(self.grid_reefer.T[self.current_Lane])
-                    designated_loading_area = self.grid_reefer.T[self.current_Lane][loading_position:(loading_position+length_of_vehicle)]
-                    #print(np.all(designated_loading_area==1))
-                    return np.all(designated_loading_area==1)
+        if loading_position + length_of_vehicle <= self.rows:
+            if self.number_of_vehicles_loaded[action] < self.vehicle_Data[4][action] or \
+                    self.vehicle_Data[4][action] == -1:  # enough or infinite Vehicles in parking lot
+                if self.vehicle_Data[5][action] == 1:  # check reefer position
+                    # TODO check reefer position
+                    # print(self.current_Lane)
+                    # print(loading_position)
+                    # print(self.grid_reefer)
+                    # print(self.grid_reefer.T[self.current_Lane])
+                    designated_loading_area = self.grid_reefer.T[self.current_Lane][
+                                              loading_position:(loading_position + length_of_vehicle)]
+                    # print(np.all(designated_loading_area==1))
+                    return np.all(designated_loading_area == 1)
                 else:
                     return True
-            #elif self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action]: #enough vehicles in parking lot
+            # elif self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action]: #enough vehicles in parking lot
             #    print("AAAAAAAAAAA")
             #    return True
             else:
@@ -330,26 +341,32 @@ class RoRoDeck(gym.Env):
             return True
         else:
             return False
-        #TODO Check if _isVesselFull method is redundant
-        #if self._isVesselFull() or np.size(
+        # TODO Check if _isVesselFull method is redundant
+        # if self._isVesselFull() or np.size(
         #        self.possibleActions) == 0:  # or (self.TerminalStateCounter > np.size(self.getMinimalLanes()) * 5) or (self.maxSteps > 500):
         #    return True
-        #else:
+        # else:
         #    return False
 
     def _get_current_state(self):
         if self.help:
-            return np.hstack((self.frontier, self.end_of_lanes, self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane)).astype(np.int32)
+            return np.hstack((self.frontier, self.end_of_lanes,
+                              self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane)).astype(
+                np.int32)
         else:
-            #if np.max(self.end_of_lanes)>(0.2*self.rows):
-            return np.hstack((self.frontier,self.end_of_lanes, self.lowest_destination,self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
-            #return np.hstack((self.grid_vehicle_type.flatten(), self.lowest_destination,
-             #                 self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
-            #else:
+            # if np.max(self.end_of_lanes)>(0.2*self.rows):
+            possible_actions_one_hot = np.zeros(len(self.vehicle_Data[0]))
+            if len(self.possible_actions) != 0:
+                possible_actions_one_hot[self.possible_actions] = 1
+
+            return np.hstack((self.frontier, self.end_of_lanes, self.lowest_destination,
+                              self.number_of_vehicles_loaded[self.mandatory_cargo_mask], possible_actions_one_hot,
+                              self.current_Lane))
+            # return np.hstack((self.grid_vehicle_type.flatten(), self.lowest_destination,
+            #                 self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
+            # else:
             #    return np.hstack((self.frontier,np.zeros(self.lanes), self.lowest_destination, self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
-            #return np.hstack((self.loaded_Vehicles.flatten(), self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
-
-
+            # return np.hstack((self.loaded_Vehicles.flatten(), self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
 
     def step(self, action):
         """
@@ -375,14 +392,12 @@ class RoRoDeck(gym.Env):
         None:           additional info for debugging - not implemented in this version
         """
 
-
-
-
         # self.maxSteps += 0.1
         if not self._is_action_legal(action):
-            #print("Action was not Legal. There is an error in the legal action machine")
+            # print("Action was not Legal. There is an error in the legal action machine")
             return self._get_current_state(), -50, self._is_terminal_state(), None
         else:
+
             reward = 0  # self.calculateReward()
             number_of_shifts = self._get_number_of_shifts(action)
             reward += number_of_shifts * self.reward_system[1]  # +self.action2vehicleLength[action]*0.6
@@ -392,15 +407,22 @@ class RoRoDeck(gym.Env):
                 # reward = -1
                 # self.TerminalStateCounter += 1
             else:
+                if self.stochastic:
+                    if not np.random.choice([True,False], 1, p=[self.p, 1-self.p]):
+                        action = np.random.choice(self.possible_actions)
+
                 slot = self.end_of_lanes[self.current_Lane]
+                self.loading_sequence += str(self.sequence_no) + ". Load Vehicle Type\t" + str(action) + \
+                                         "\t in Lane: \t" + str(self.current_Lane) +\
+                                         "\tRow:\t" + str(slot) + "\n"
+
                 self.end_of_lanes[self.current_Lane] += self.vehicle_Data[3][action]
 
-               # if self.numberOfVehiclesLoaded[action] > 0 and self.vehicleData[2][action] == 1:
+                # if self.numberOfVehiclesLoaded[action] > 0 and self.vehicleData[2][action] == 1:
                 #    self.numberOfVehiclesLoaded[action] -= 1
-                 #   reward += 2
+                #   reward += 2
 
-
-                if self.vehicle_Data[4][action] == -1: #infinite vehicles on car park
+                if self.vehicle_Data[4][action] == -1:  # infinite vehicles on car park
                     self.number_of_vehicles_loaded[action] += 1
                     reward += self.reward_system[0]
                 elif self.number_of_vehicles_loaded[action] < self.vehicle_Data[4][action]:
@@ -410,20 +432,33 @@ class RoRoDeck(gym.Env):
                 if self.vehicle_Data[2][action] == 1:
                     reward += 0.5
 
-                # if self.mandatoryCargo[action] > 0:
-                #   self.mandatoryCargo[action]-=1
-                #  reward+=2
-
-
                 self.loaded_Vehicles[self.current_Lane][self.vehicle_Counter[self.current_Lane]] = action
-                self.vehicle_Counter[self.current_Lane]+= 1
+                self.vehicle_Counter[self.current_Lane] += 1
 
-
+                same_group_factor = 0
+                if self.inital_end_of_lanes[self.current_Lane] == self.end_of_lanes[self.current_Lane] or \
+                        self.grid_destination.T[self.current_Lane][slot - 1] == self.vehicle_Data[0][action] or \
+                        self.grid_destination.T[self.current_Lane][slot -1 ] == -2:
+                    same_group_factor += 1
 
                 for i in range(self.vehicle_Data[3][action]):
                     self.grid.T[self.current_Lane][slot + i] = self.sequence_no
                     self.grid_destination.T[self.current_Lane][slot + i] = self.vehicle_Data[1][action]
                     self.grid_vehicle_type.T[self.current_Lane][slot + i] = self.vehicle_Data[0][action]
+
+                    #TODO EXPERIMENTING WITH SAME GROUP FACTOR
+                    if self.current_Lane == 0 or \
+                            self.grid_destination.T[self.current_Lane - 1][slot + i] == self.vehicle_Data[0][action] or \
+                            self.grid_destination.T[self.current_Lane - 1][slot + i] == -2:
+                        same_group_factor += 1. / self.vehicle_Data[3][action]*2
+
+                    if self.current_Lane == self.lanes - 1 or \
+                            self.grid_destination.T[self.current_Lane + 1][slot + i] == self.vehicle_Data[0][action] or \
+                            self.grid_destination.T[self.current_Lane + 1][slot + i] == -2:
+                        same_group_factor += 1. / self.vehicle_Data[3][action]*2
+
+
+                reward += same_group_factor*0.01
 
                 if self.vehicle_Data[1][action] < self.lowest_destination[self.current_Lane]:
                     self.lowest_destination[self.current_Lane] = self.vehicle_Data[1][action]
@@ -438,18 +473,18 @@ class RoRoDeck(gym.Env):
             self.possible_actions = self.possible_actions_of_state()
             self.current_state = self._get_current_state()
             if self._is_terminal_state():
-                #Space Utilisation
-                #reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
+                # Space Utilisation
+                # reward += self.rewardSystem[2] * np.sum(-self.endOfLanes + np.ones(self.lanes) * self.rows)
                 freeSpaces = np.sum(-self.end_of_lanes + np.ones(self.lanes) * self.rows)
                 reward += self.reward_system[2] * freeSpaces
-                #Mandatory Vehicles Loaded?
-                #TODO seperate method for this
-                #mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
+                # Mandatory Vehicles Loaded?
+                # TODO seperate method for this
+                # mandatoryVehiclesLeft2Load = self.vehicleData[4][self.mandatoryCargoMask]\
                 #                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
                 mandatoryVehiclesLeft2Load = np.sum(self.vehicle_Data[4][self.mandatory_cargo_mask] \
                                                     - self.number_of_vehicles_loaded[self.mandatory_cargo_mask])
 
-                #reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
+                # reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
                 reward += mandatoryVehiclesLeft2Load * self.reward_system[3]
             return self._get_current_state(), reward, self._is_terminal_state(), None
 
@@ -548,6 +583,12 @@ class RoRoDeck(gym.Env):
             stowagePlan.write('\n\n')
         # Close the file
         stowagePlan.close()
+
+        #Write Loading Sequence
+        loading_seq = open(path + "_LoadingSequence.txt", 'w')
+        loading_seq.write(self.loading_sequence)
+        loading_seq.close()
+
 
 
     def getStowagePlan(self):

@@ -208,6 +208,8 @@ def test_possible_actions():
 
     assert len(env.possible_actions) == len(env.vehicle_Data.T) - 1
 
+def test_Reefer_Postions():
+    pass
 
 def test_end_of_lane_Method():
     pass

@@ -22,3 +22,12 @@ def test_Inversionnumber():
 
         assert estimated_invNo == true_invNo
         assert degreeOfSort <=1 and degreeOfSort >= 0
+
+def test_rewardShaping():
+    pass
+
+def test_loggingUnit():
+    pass
+
+def test_rewardSystem():
+    pass

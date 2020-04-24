@@ -100,3 +100,10 @@ def test_dqnAgent():
 
     assert np.shape(np.nonzero(agent.memory.reward_memory))[1]==147 #TODO was 59 before remving possible action filtre
     assert np.shape(np.nonzero(agent.memory.terminal_memory))[1]==2
+
+def test_load_save():
+    pass
+
+def test_Superclass():
+    pass
+

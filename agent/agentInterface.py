@@ -1,5 +1,5 @@
 from env.roroDeck import *
-
+import pickle
 
 class Agent:
     """
@@ -15,8 +15,23 @@ class Agent:
         self.env = None
         self.strategies = ["Epsilon-greedy"]
 
-    def save(self, path):
-        raise NotImplementedError
+    def save_model(self, path, type='pickle'):
+        try:
+            if type == 'pickle':
+                #info ="_SARSA"+"_L"+str(self.env.lanes)+"_R"+str(self.env.rows)+"_Rf"+\
+                #      str(int(1 in self.env.vehicle_Data[5]))+"_A"+str(len(self.env.vehicle_Data[0]))
+                pickle.dump(self.q_table, open(path+'.p', "wb"))
+
+            else:
+                with open(path+'.csv', 'w') as f:
+                    for key in self.q_table.keys():
+                        f.write("%s,%s\n" % (key,  self.q_table[key]))
+        except:
+            if type=='pickle':
+                logging.getLogger("log1").error("Could not save pickle file to+ " + path)
+            else:
+                logging.getLogger("log1").error("Could not save csv file to+ " + path)
+
 
     def load(self,path_to_file):
         raise NotImplementedError

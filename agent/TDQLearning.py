@@ -180,24 +180,20 @@ class TDQLearning(Agent):
             logging.getLogger("log1").error("Could not load pickle file")
 
     def save_model(self,path,type='pickle'):
-        self.q_table["ModelParam"] = ["Algorithm: TD-Q-Learing",("GAMMA",self.GAMMA),("ALPHA",self.ALPHA),
-                                      ("Episodes",self.numGames),
-                                      ("Env Lanes:",self.env.lanes),("Env Lanes:",self.env.rows),
-                                      ("Vehicle Data:",self.env.vehicle_Data)]
+        self.q_table["ModelParam"] = {"Algorithm": "Time Difference Q-Learning",
+                                      "GAMMA": self.GAMMA,
+                                      "ALPHA": self.ALPHA,
+                                      "Episodes": self.numGames,
+                                      "EnvLanes:": self.env.lanes,
+                                      "EnvRows": self.env.rows,
+                                      "VehicleData": self.env.vehicle_Data}
+        info = "_TDQ" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
+               str(int(1 in self.env.vehicle_Data[5])) + "_A" + str(len(self.env.vehicle_Data[0]))
+
         #path = path + '_qTablePickled.p'
-        print(path)
-        try:
-            if type == 'pickle':
-                pickle.dump(self.q_table, open(path+'_qTablePickledTDQ.p', "wb"))
-            else:
-                with open(path+'_qTableTDQ.csv', 'w') as f:
-                    for key in self.q_table.keys():
-                        f.write("%s,%s\n" % (key,  self.q_table[key]))
-        except:
-            if type=='pickle':
-                logging.getLogger("log1").error("Could not save pickle file to+ " + path)
-            else:
-                logging.getLogger("log1").error("Could not save csv file to+ " + path)
+
+        super().save_model(path+info)
+
 
     def execute(self, humanInteraction = False):
         self.observation = self.env.reset()

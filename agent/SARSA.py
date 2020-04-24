@@ -177,23 +177,22 @@ class SARSA(Agent):
         except:
             logging.getLogger("log1").error("Could not load pickle file")
 
+
+    #TODO work with super method
     def save_model(self,path,type='pickle'):
-        self.q_table["ModelParam"] = ("Algorithm: SARSA",("GAMMA",self.GAMMA),("ALPHA",self.ALPHA),
-                                      ("Episodes",self.numGames),
-                                      ("Env Lanes:",self.env.lanes),("Env Lanes:",self.env.rows),
-                                      ("Vehicle Data:",self.env.vehicle_Data))
-        try:
-            if type == 'pickle':
-                pickle.dump(self.q_table, open(path+'_qTablePickledSARSA.p', "wb"))
-            else:
-                with open(path+'_qTableSARSA.csv', 'w') as f:
-                    for key in self.q_table.keys():
-                        f.write("%s,%s\n" % (key,  self.q_table[key]))
-        except:
-            if type=='pickle':
-                logging.getLogger("log1").error("Could not save pickle file to+ " + path)
-            else:
-                logging.getLogger("log1").error("Could not save csv file to+ " + path)
+        self.q_table["ModelParam"] = {"Algorithm":"SARSA",
+                                      "GAMMA":self.GAMMA,
+                                      "ALPHA":self.ALPHA,
+                                      "Episodes":self.numGames,
+                                      "EnvLanes:":self.env.lanes,
+                                      "EnvRows":self.env.rows,
+                                      "VehicleData":self.env.vehicle_Data}
+        info = "_SARSA" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
+               str(int(1 in self.env.vehicle_Data[5])) + "_A" + str(len(self.env.vehicle_Data[0]))
+
+        super().save_model(path+info)
+
+
 
 
         #self.env.render()

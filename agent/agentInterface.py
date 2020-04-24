@@ -59,3 +59,10 @@ class Agent:
     def choose_action(self,possible_actions):
         raise NotImplementedError
 
+    def maxAction(self, state):
+        possibleActions = self.action_ix[self.env.possible_actions]
+        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
+
+        return possibleActions[positionsOfBestPossibleAction]
+
+

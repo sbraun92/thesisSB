@@ -12,7 +12,7 @@ from agent.agentInterface import Agent
 
 
 class TDQLearning(Agent):
-    def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
+    def __init__(self, env=None, path=None,  numGames=20000, orig= True, GAMMA = 0.999):
         np.random.seed(0)
         #help only for timing
         self.orig = orig
@@ -70,7 +70,7 @@ class TDQLearning(Agent):
             while not self.done:
                 # Show for visualisation the last training epoch
                 self.rand = np.random.random()
-                self.action = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if self.rand < (1 - self.EPS) \
+                self.action = self.maxAction(self.observation) if self.rand < (1 - self.EPS) \
                     else self.env.action_space_sample()
 
                 #TODO delete
@@ -95,7 +95,7 @@ class TDQLearning(Agent):
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possible_actions)
+                    self.action_ = self.maxAction(self.observation_)
 
                     self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
                                 self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
@@ -153,7 +153,7 @@ class TDQLearning(Agent):
             avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
             std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
             if i % 500 == 0 and i > 0:
-                print('episode ', i, 'score %.2f' % self.epReward, 'avg. score %.2f' % avg_reward, 'std of score %.2f' % std_reward)
+                print('episode ', i, 'score %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward, '\tstd of score %.2f' % std_reward)
 
             #if i%500 == 0:
             #    print(len(self.q_table.keys()))
@@ -162,35 +162,39 @@ class TDQLearning(Agent):
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
     # TODO cleanup
-    def maxAction(self, Q, state, actions):
+    def maxAction(self, state):
         #print(self.env.possibleActions)
         possibleActions = self.action_ix[self.env.possible_actions]
         #print(possibleActions)
         #print(Q[state.tobytes()])
-        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possible_actions])
+        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
         #print(positionsOfBestPossibleAction)
         return possibleActions[positionsOfBestPossibleAction]
 
 
     #TODO try feather
-    def load(self,path):
+    def load_model(self,path):
         try:
             self.q_table = pickle.load(open(path+'_qTablePickled.p', "rb"))
         except:
             logging.getLogger("log1").error("Could not load pickle file")
 
     def save_model(self,path,type='pickle'):
+        self.q_table["ModelParam"] = ["Algorithm: TD-Q-Learing",("GAMMA",self.GAMMA),("ALPHA",self.ALPHA),
+                                      ("Episodes",self.numGames),
+                                      ("Env Lanes:",self.env.lanes),("Env Lanes:",self.env.rows),
+                                      ("Vehicle Data:",self.env.vehicle_Data)]
         #path = path + '_qTablePickled.p'
         print(path)
         try:
-            if type == pickle:
-                pickle.dump(self.q_table, open(path+'_qTablePickled.p', "wb"))
+            if type == 'pickle':
+                pickle.dump(self.q_table, open(path+'_qTablePickledTDQ.p', "wb"))
             else:
-                with open(path+'_qTable.csv', 'w') as f:
+                with open(path+'_qTableTDQ.csv', 'w') as f:
                     for key in self.q_table.keys():
                         f.write("%s,%s\n" % (key,  self.q_table[key]))
         except:
-            if type==pickle:
+            if type=='pickle':
                 logging.getLogger("log1").error("Could not save pickle file to+ " + path)
             else:
                 logging.getLogger("log1").error("Could not save csv file to+ " + path)

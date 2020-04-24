@@ -12,7 +12,7 @@ from agent.agentInterface import Agent
 np.random.seed(0)
 
 class SARSA(Agent):
-    def __init__(self, env, path,  numGames=20000, orig= True, GAMMA = 0.999):
+    def __init__(self, env=None, path=None,  numGames=20000, orig= True, GAMMA = 0.999):
         #help only for timing
         self.orig = orig
         logging.info("Initialise SARSA Agent")
@@ -30,7 +30,7 @@ class SARSA(Agent):
         self.MAX_IT = 400
         self.actionSpace_length = len(self.env.actionSpace)
         self.action_ix = np.arange(self.actionSpace_length)
-
+        self.epReward = 0
     #TODO Output QTable
     #TODO Load QTable
 
@@ -69,7 +69,7 @@ class SARSA(Agent):
             self.observation = self.env.reset()
             self.steps = 0
             self.rand = np.random.random()
-            current_action = self.maxAction(self.q_table, self.observation, self.env.possible_actions) if self.rand < (
+            current_action = self.maxAction(self.observation) if self.rand < (
                         1 - self.EPS) \
                 else self.env.action_space_sample()
             while not self.done:
@@ -95,7 +95,7 @@ class SARSA(Agent):
 
                 # SARSA with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.q_table, self.observation_, self.env.possible_actions) if np.random.random() < (1 - self.EPS) \
+                    self.action_ = self.maxAction(self.observation_) if np.random.random() < (1 - self.EPS) \
                                     else self.env.action_space_sample()
 
                     self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (
@@ -116,7 +116,7 @@ class SARSA(Agent):
                 self.observation = self.observation_
 
                 if i == self.numGames - 1 and self.done:
-                    self.env.render()
+                    #self.env.render()
                     logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was "+str(self.epReward))
                     print("The Terminal reward was "+ str(self.reward))
@@ -155,7 +155,7 @@ class SARSA(Agent):
             avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
             std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
             if i % 500 == 0 and i > 0:
-                print('episode ', i, 'score %.2f' % self.epReward, 'avg. score %.2f' % avg_reward,
+                print('episode ', i, '\tscore %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward,
                       'std of score %.2f' % std_reward)
 
         logging.getLogger('log1').info("End training process")
@@ -163,44 +163,37 @@ class SARSA(Agent):
 
 
     #TODO cleanup
-    def maxAction(self, Q, state, actions):
+    def maxAction(self, state):
         possibleActions = self.action_ix[self.env.possible_actions]
-        positionsOfBestPossibleAction = np.argmax(Q[state.tobytes()][self.env.possible_actions])
+        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
 
         return possibleActions[positionsOfBestPossibleAction]
 
 
     #TODO try feather
-    def load(self,path):
+    def load_model(self,path):
         try:
             self.q_table = pickle.load(open(path, "rb"))
         except:
             logging.getLogger("log1").error("Could not load pickle file")
 
-    def save(self,path,type='pickle'):
-        #path = path + '_qTablePickled.p'
-        print(path)
+    def save_model(self,path,type='pickle'):
+        self.q_table["ModelParam"] = ("Algorithm: SARSA",("GAMMA",self.GAMMA),("ALPHA",self.ALPHA),
+                                      ("Episodes",self.numGames),
+                                      ("Env Lanes:",self.env.lanes),("Env Lanes:",self.env.rows),
+                                      ("Vehicle Data:",self.env.vehicle_Data))
         try:
-            if type == pickle:
-                pickle.dump(self.q_table, open(path+'_qTablePickled.p', "wb"))
+            if type == 'pickle':
+                pickle.dump(self.q_table, open(path+'_qTablePickledSARSA.p', "wb"))
             else:
-                with open(path+'_qTable.csv', 'w') as f:
+                with open(path+'_qTableSARSA.csv', 'w') as f:
                     for key in self.q_table.keys():
                         f.write("%s,%s\n" % (key,  self.q_table[key]))
         except:
-            if type==pickle:
+            if type=='pickle':
                 logging.getLogger("log1").error("Could not save pickle file to+ " + path)
             else:
                 logging.getLogger("log1").error("Could not save csv file to+ " + path)
 
-    def execute(self, humanInteraction = False):
-        self.observation = self.env.reset()
-        self.done = False
 
-        while not self.done:
-            self.action = self.maxAction(self.q_table, self.observation, self.env.possible_actions)
-            self.observation, self.reward, self.done, self.info = self.env.step(self.action)
-            self.epReward += self.reward
-
-
-        self.env.render()
+        #self.env.render()

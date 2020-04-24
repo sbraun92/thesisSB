@@ -67,11 +67,11 @@ def test_max_action_method():
     agent.q_table[state.tobytes()][2] = 1
     agent.q_table[state.tobytes()][3] = 2
 
-    assert agent.maxAction(agent.q_table,state,None) == 3
+    assert agent.maxAction(state) == 3
 
     env.possible_actions = np.array([0, 1, 2])
 
-    assert agent.maxAction(agent.q_table, state, None) == 2
+    assert agent.maxAction(state) == 2
 
 #Test for DQN
 def test_dqnAgent():

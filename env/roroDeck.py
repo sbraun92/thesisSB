@@ -139,6 +139,7 @@ class RoRoDeck(gym.Env):
         self.grid_reefer.T[0][4:(self.rows)] = 1
         self.actionSpace = self.vehicle_Data[0]
         self.end_of_lanes = self._get_end_of_lane(self.grid)
+        self.inital_end_of_lanes = self.end_of_lanes.copy()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_Data[0]), dtype=np.int16)
         self.capacity = self._get_free_capacity(self.grid)
         self.current_Lane = self._get_minimal_lanes()[0]

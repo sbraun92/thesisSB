@@ -198,18 +198,29 @@ def test_possible_actions():
     env = RoRoDeck(True)
     env.vehicle_Data[5][4]=0 #disable reefer for test
     env.reset()
-    number_vehicle = env.vehicle_Data[4][0]
+    number_of_vehicle = env.vehicle_Data[4][0]
 
     assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
 
-    for i in range(number_vehicle):
+    for i in range(number_of_vehicle):
         assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
         env.step(0)
 
     assert len(env.possible_actions) == len(env.vehicle_Data.T) - 1
 
 def test_Reefer_Postions():
-    pass
+    env = RoRoDeck(True)
+    env.vehicle_Data[5][4] = 1  # enable reefer for test
+    env.reset()
+
+    env.current_Lane = 0
+    assert env.grid_reefer.T[env.current_Lane][-1]==1
+    assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
+
+    env.current_Lane = 4
+    assert env.grid_reefer.T[env.current_Lane][-1]==0
+    assert len(env.vehicle_Data.T) == len(env.possible_actions) == 4
+    assert 4 not in env.possible_actions
 
 def test_end_of_lane_Method():
     pass

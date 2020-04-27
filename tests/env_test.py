@@ -225,7 +225,7 @@ def test_Reefer_Postions():
 def test_end_of_lane_Method():
     env = RoRoDeck(True)
     env.reset()
-    end_of_lanes = env.end_of_lanes
+    end_of_lanes = env.end_of_lanes.copy()
     assert np.all(end_of_lanes == env.inital_end_of_lanes)
 
     current_lane = env.current_Lane

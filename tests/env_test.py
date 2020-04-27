@@ -240,7 +240,11 @@ def test_shifts_caused():
     pass
 
 def test_findCurrentLane():
-    pass
+    env = RoRoDeck(lanes=8,rows=12)
+    env.reset()
+    assert env.current_Lane == 4
+    env.step(env.actionSpaceSample())
+    assert env.current_Lane == 5
 
 def test_switch_current_lane():
     pass

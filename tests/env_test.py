@@ -223,7 +223,18 @@ def test_Reefer_Postions():
     assert 4 not in env.get_possible_actions_of_state()
 
 def test_end_of_lane_Method():
-    pass
+    env = RoRoDeck(True)
+    env.reset()
+    end_of_lanes = env.end_of_lanes
+    assert np.all(end_of_lanes == env.inital_end_of_lanes)
+
+    current_lane = env.current_Lane
+    length = env.vehicle_Data[3][env.possible_actions[0]]
+
+    env.step(env.possible_actions[0])
+
+    assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane]+length
+
 
 def test_shifts_caused():
     pass

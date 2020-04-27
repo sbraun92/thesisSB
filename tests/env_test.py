@@ -215,12 +215,12 @@ def test_Reefer_Postions():
 
     env.current_Lane = 0
     assert env.grid_reefer.T[env.current_Lane][-1]==1
-    assert len(env.vehicle_Data.T) == len(env.possible_actions) == 5
+    assert len(env.vehicle_Data.T) == len(env.get_possible_actions_of_state()) == 5
 
     env.current_Lane = 4
     assert env.grid_reefer.T[env.current_Lane][-1]==0
-    assert len(env.possible_actions) == 4
-    assert 4 not in env.possible_actions
+    assert len(env.get_possible_actions_of_state()) == 4
+    assert 4 not in env.get_possible_actions_of_state()
 
 def test_end_of_lane_Method():
     pass

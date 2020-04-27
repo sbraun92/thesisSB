@@ -69,12 +69,12 @@ class RoRoDeck(gym.Env):
         else:
             self.reward_system = reward_system
         logging.getLogger('log1').info('Initilise Reward System with parameters: \n' +
-                                       'Time step reward: ' + str(self.reward_system[0]) + "\n" +
-                                       'Reward for caused shift: ' + str(self.reward_system[1]) + "\n" +
-                                       '@Terminal - reward for Space Utilisation: ' + str(
+                                       '\t\t\t\tTime step reward: ' + str(self.reward_system[0]) + "\n" +
+                                       '\t\t\t\tReward for caused shift: ' + str(self.reward_system[1]) + "\n" +
+                                       '\t\t\t\t@Terminal - reward for Space Utilisation: ' + str(
             self.reward_system[2]) + "\n" +
-                                       '@Terminal - reward for mandatory cargo not loaded: '
-                                       + str(self.reward_system[3]) + "\n" + "done...")
+                                       '\t\t\t\t@Terminal - reward for mandatory cargo not loaded: '
+                                       + str(self.reward_system[3]))
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         self.vehicle_Data = np.array([[0, 1, 2, 3, 4],  # vehicle id
@@ -92,7 +92,8 @@ class RoRoDeck(gym.Env):
                                            + ", is mandatory: " + str(bool(self.vehicle_Data[2][vehicleId]))
                                            + ", Length: " + str(self.vehicle_Data[3][vehicleId])
                                            + ", Number on yard: " + str(
-                self.vehicle_Data[4][vehicleId] if self.vehicle_Data[4][vehicleId] != -1 else "inf"))
+                self.vehicle_Data[4][vehicleId] if self.vehicle_Data[4][vehicleId] != -1 else "inf")
+                                           + ", is Reefer "+str(bool(self.vehicle_Data[5][vehicleId])))
 
         self.mandatory_cargo_mask = self.vehicle_Data[2] == 1
         # Todo dele np.min(self.vehleData
@@ -110,13 +111,15 @@ class RoRoDeck(gym.Env):
 
         # Test without switching
         self.actionSpace = self.vehicle_Data[0]
-        self.possible_actions = self.possible_actions_of_state()
+        self.possible_actions = self.get_possible_actions_of_state()
         self.TerminalStateCounter = 0
         self.lowest_destination = np.ones(self.lanes) * 8  # TODO
         # self.maximal_shifts = np.sum(self.vehicle_Data[1][np.where(self.vehicle_Data[1]>1)])
         # print(self.maximal_shifts)
         # State representation Frontier, BackLook,mandatory cargo, CurrentLane
         self.current_state = self._get_current_state()
+        logging.getLogger('log1').info("Environment initialised...")
+        #TODO print input data in method
 
     def reset(self):
         """
@@ -144,7 +147,7 @@ class RoRoDeck(gym.Env):
         self.capacity = self._get_free_capacity(self.grid)
         self.current_Lane = self._get_minimal_lanes()[0]
         self.frontier = self._get_frontier()
-        self.possible_actions = self.possible_actions_of_state()
+        self.possible_actions = self.get_possible_actions_of_state()
         self.TerminalStateCounter = 0
         self.shift_helper = self.end_of_lanes.copy()
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
@@ -300,27 +303,18 @@ class RoRoDeck(gym.Env):
             if self.number_of_vehicles_loaded[action] < self.vehicle_Data[4][action] or \
                     self.vehicle_Data[4][action] == -1:  # enough or infinite Vehicles in parking lot
                 if self.vehicle_Data[5][action] == 1:  # check reefer position
-                    # TODO check reefer position
-                    # print(self.current_Lane)
-                    # print(loading_position)
-                    # print(self.grid_reefer)
-                    # print(self.grid_reefer.T[self.current_Lane])
                     designated_loading_area = self.grid_reefer.T[self.current_Lane][
                                               loading_position:(loading_position + length_of_vehicle)]
-                    # print(np.all(designated_loading_area==1))
                     return np.all(designated_loading_area == 1)
                 else:
                     return True
-            # elif self.number_of_vehicles_loaded[action]< self.vehicle_Data[4][action]: #enough vehicles in parking lot
-            #    print("AAAAAAAAAAA")
-            #    return True
             else:
                 return False
         else:
             return False
 
     # return an array such as [0,2] - possible lengths ordered
-    def possible_actions_of_state(self):
+    def get_possible_actions_of_state(self):
         possible_actions = []
         for action in self.vehicle_Data[0]:
             if self._is_action_legal(action):
@@ -471,7 +465,7 @@ class RoRoDeck(gym.Env):
                 # if we put a car we reset the TerminalStateCounter
                 self.TerminalStateCounter = 0
 
-            self.possible_actions = self.possible_actions_of_state()
+            self.possible_actions = self.get_possible_actions_of_state()
             self.current_state = self._get_current_state()
             if self._is_terminal_state():
                 # Space Utilisation

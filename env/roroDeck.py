@@ -63,9 +63,9 @@ class RoRoDeck(gym.Env):
 
         if reward_system == None:
             self.reward_system = np.array([0.2,  # simple Loading
-                                           -8,  # caused shifts
+                                           -12,  # caused shifts was -8
                                            -2,  # terminal: Space left unsed
-                                           -40])  # terminal: mand. cargo not loaded
+                                           -50])  # terminal: mand. cargo not loaded   \was 40
         else:
             self.reward_system = reward_system
         logging.getLogger('log1').info('Initilise Reward System with parameters: \n' +
@@ -354,7 +354,7 @@ class RoRoDeck(gym.Env):
             if len(self.possible_actions) != 0:
                 possible_actions_one_hot[self.possible_actions] = 1
 
-            return np.hstack((self.frontier, self.end_of_lanes, self.lowest_destination,
+            return np.hstack((self.end_of_lanes, self.lowest_destination,
                               self.number_of_vehicles_loaded[self.mandatory_cargo_mask], possible_actions_one_hot,
                               self.current_Lane))
             # return np.hstack((self.grid_vehicle_type.flatten(), self.lowest_destination,
@@ -390,7 +390,7 @@ class RoRoDeck(gym.Env):
         # self.maxSteps += 0.1
         if not self._is_action_legal(action):
             # print("Action was not Legal. There is an error in the legal action machine")
-            return self._get_current_state(), -50, self._is_terminal_state(), None
+            return self.current_state, -50, self._is_terminal_state(), None
         else:
 
             reward = 0  # self.calculateReward()
@@ -430,11 +430,13 @@ class RoRoDeck(gym.Env):
                 self.loaded_Vehicles[self.current_Lane][self.vehicle_Counter[self.current_Lane]] = action
                 self.vehicle_Counter[self.current_Lane] += 1
 
-                same_group_factor = 0
-                if self.inital_end_of_lanes[self.current_Lane] == self.end_of_lanes[self.current_Lane] or \
-                        self.grid_destination.T[self.current_Lane][slot - 1] == self.vehicle_Data[0][action] or \
-                        self.grid_destination.T[self.current_Lane][slot -1 ] == -2:
-                    same_group_factor += 1
+
+                #TODO same_groupfactor muss berechnet werden bevor endof lanes geupdated wird
+                #same_group_factor = 0
+                #if self.inital_end_of_lanes[self.current_Lane] == self.end_of_lanes[self.current_Lane] or \
+                #        self.grid_destination.T[self.current_Lane][slot - 1] == self.vehicle_Data[0][action] or \
+                #        self.grid_destination.T[self.current_Lane][slot -1 ] == -2:
+                #    same_group_factor += 1
 
                 for i in range(self.vehicle_Data[3][action]):
                     self.grid.T[self.current_Lane][slot + i] = self.sequence_no
@@ -442,18 +444,18 @@ class RoRoDeck(gym.Env):
                     self.grid_vehicle_type.T[self.current_Lane][slot + i] = self.vehicle_Data[0][action]
 
                     #TODO EXPERIMENTING WITH SAME GROUP FACTOR
-                    if self.current_Lane == 0 or \
-                            self.grid_destination.T[self.current_Lane - 1][slot + i] == self.vehicle_Data[0][action] or \
-                            self.grid_destination.T[self.current_Lane - 1][slot + i] == -2:
-                        same_group_factor += 1. / self.vehicle_Data[3][action]*2
+                #    if self.current_Lane == 0 or \
+                #            self.grid_destination.T[self.current_Lane - 1][slot + i] == self.vehicle_Data[0][action] or \
+                #            self.grid_destination.T[self.current_Lane - 1][slot + i] == -2:
+                #        same_group_factor += 1. / self.vehicle_Data[3][action]*2
 
-                    if self.current_Lane == self.lanes - 1 or \
-                            self.grid_destination.T[self.current_Lane + 1][slot + i] == self.vehicle_Data[0][action] or \
-                            self.grid_destination.T[self.current_Lane + 1][slot + i] == -2:
-                        same_group_factor += 1. / self.vehicle_Data[3][action]*2
+                #    if self.current_Lane == self.lanes - 1 or \
+                #            self.grid_destination.T[self.current_Lane + 1][slot + i] == self.vehicle_Data[0][action] or \
+                #            self.grid_destination.T[self.current_Lane + 1][slot + i] == -2:
+                #        same_group_factor += 1. / self.vehicle_Data[3][action]*2
 
 
-                reward += same_group_factor*0.01
+                #reward += same_group_factor*0.005
 
                 if self.vehicle_Data[1][action] < self.lowest_destination[self.current_Lane]:
                     self.lowest_destination[self.current_Lane] = self.vehicle_Data[1][action]
@@ -481,7 +483,10 @@ class RoRoDeck(gym.Env):
 
                 # reward += np.sum(mandatoryVehiclesLeft2Load) * self.rewardSystem[3]
                 reward += mandatoryVehiclesLeft2Load * self.reward_system[3]
-            return self._get_current_state(), reward, self._is_terminal_state(), None
+
+                return self.current_state, reward, True, None
+            else:
+                return self.current_state, reward, False, None
 
     def action_space_sample(self):
         """
@@ -547,9 +552,9 @@ class RoRoDeck(gym.Env):
         stowagePlan.write('-------Vehicle Type-------------------------------------------------------------------- \n')
         for row in self.grid_vehicle_type:
             for col in row:
-                if col == -1:
+                if col == -2:
                     stowagePlan.write('X \t')
-                elif col == 0:
+                elif col == -1:
                     stowagePlan.write('- \t')
                 else:
                     stowagePlan.write(str(int(col)) + ' \t')

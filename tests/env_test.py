@@ -297,10 +297,10 @@ def test_get_Current_State():
     env = RoRoDeck(False)
 
     state = env.current_state
-    assert np.shape(state) == (26,) #was 83 TODO
+    assert np.shape(state) == (25,) #was 83 TODO
     env.reset()
     state = env.current_state
-    assert np.shape(state) == (26,)
+    assert np.shape(state) == (25,)
 
     env.step(env.actionSpaceSample())
     assert not np.all(state == env.current_state)

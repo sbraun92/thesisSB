@@ -15,7 +15,9 @@ class ReplayBuffer(object):
     def __init__(self,max_size, input_shape, n_actions, discrete=False):
         np.random.seed(0)
 
-        logging.getLogger('log1').info("Init Replay Buffer: Max. Size: " + str(max_size)+ " Input Shape: "+str(input_shape) + " Number of actions: "+ str(n_actions)+"Discrete Action Space: "+str(discrete))
+        logging.getLogger('log1').info("Init Replay Buffer: Max. Size: " + str(max_size)+ " Input Shape: "
+                                       + str(input_shape) + " Number of actions: "
+                                       + str(n_actions)+"Discrete Action Space: "+str(discrete))
 
         self.mem_size = max_size
         self.mem_cntr = 0
@@ -36,6 +38,9 @@ class ReplayBuffer(object):
 
     def store_transition(self, state, action, reward, state_, done, possible_Actions_state, possible_Actions_new_state):
         index = self.mem_cntr % self.mem_size
+        if self.mem_cntr > 0 and index == 0:
+            logging.getLogger('log1').info("Memory of size %d full - start overwriting old experiences", self.mem_size)
+
         self.state_memory[index] = state
         self.new_state_memory[index] = state_
         self.reward_memory[index] = reward
@@ -72,8 +77,8 @@ class ReplayBuffer(object):
 
         return states, actions, rewards, states_, terminal, possible_actions_state, possible_actions_new_state
 
-def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
-    logging.getLogger('log1').info("Build a NN:  Input Shape: " + str(input_dims) + " Output Shape: " + str(n_actions) + "Layer: 3 Optimiser: Adam")
+def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims, regularisation = 0.002):
+    logging.getLogger('log1').info("Build a NN:  Input Shape: " + str(input_dims) + " Output Shape: " + str(n_actions) + " Layer: 3 -> Optimiser: Adam")
     logging.getLogger('log1').info("1. Layer No Neurons:"+ str(fcl_dims))
     logging.getLogger('log1').info("1. Layer Activation: Relu")
 
@@ -81,18 +86,25 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
     logging.getLogger('log1').info("2. Layer Activation: Relu")
 
     logging.getLogger('log1').info("3. Layer No Neurons:" + str(fcl_dims))
-    logging.getLogger('log1').info("1. Layer Activation: Relu")
+    logging.getLogger('log1').info("3. Layer Activation: Relu")
+
+    logging.getLogger('log1').info("4. Layer No Neurons:" + str(fcl_dims))
+    logging.getLogger('log1').info("4. Layer Activation: Relu")
 
     logging.getLogger('log1').info("Loss function: Mean Square Error")
 
 
     model = Sequential([Dense(fcl_dims, input_shape=(input_dims, )),
                         Activation('relu'),
-                        Dense(fc2_dims, activity_regularizer=l2(0.002)),
+                        Dense(fc2_dims, activity_regularizer=l2(regularisation)),
                         Activation('relu'),
-                        Dense(fcl_dims,activity_regularizer= l2(0.002)),
+                        Dense(fcl_dims, activity_regularizer=l2(regularisation)),
                         Activation('relu'),
-                        Dense(n_actions,activity_regularizer= l1(0.002))])
+                        Dense(fc2_dims,activity_regularizer= l2(regularisation)),
+                        Activation('relu'),
+                        Dense(fcl_dims, activity_regularizer=l2(regularisation)),
+                        Activation('relu'),
+                        Dense(n_actions,activity_regularizer= l1(regularisation))])
 
     logging.getLogger('log1').info("Compile NN")
     model.compile(optimizer=Adam(lr=lr), loss='mse')
@@ -101,7 +113,7 @@ def build_dqn(lr,n_actions, input_dims, fcl_dims, fc2_dims):
 
 
 class DQNAgent(object):
-    def __init__(self,alpha, gamma, n_actions, epsilon, batch_size, input_dims,epsilon_dec=0.996, epsilon_end=0.01, mem_size=1000_000, fname='dqn_model.h5.22032020'):
+    def __init__(self,alpha, gamma, n_actions, epsilon, batch_size, input_dims,epsilon_dec=0.996, epsilon_end=0.01, mem_size=1000_000, fname='20200427stochasticdqn_model.h5'):
         np.random.seed(0)
         tf.random.set_seed(0)
 
@@ -121,13 +133,13 @@ class DQNAgent(object):
         self.memory = ReplayBuffer(mem_size,input_dims,n_actions,discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 550,400)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 450,350)
 
 
 
         #Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 550,400)
+        self.q_target_model = build_dqn(alpha, n_actions, input_dims, 450,350)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
@@ -139,26 +151,28 @@ class DQNAgent(object):
     def remember(self,state, action, reward, new_state, done,possible_Actions_state,possible_Actions_new_state):
         self.memory.store_transition(state,action,reward,new_state,done,possible_Actions_state,possible_Actions_new_state)
 
-    def choose_action(self,state,possibleactions):
+    def choose_action(self,state,possibleactions=None):
         state = state[np.newaxis, :]
         rand = np.random.random()
         if rand < self.epsilon:
-            action = np.random.choice(self.action_space)
-            #action = np.random.choice(possibleactions)
-            #action = actionSample
+            if possibleactions is None:
+                action = np.random.choice(self.action_space)
+            else:
+                action = np.random.choice(possibleactions)
         else:
             actions = self.q_eval.predict(state)
-            #action_space_red = np.array(self.action_space.copy())[possibleactions]
-            #action_qVal_red = actions[0][possibleactions]
-            #action = action_space_red[np.argmax(action_qVal_red)]
-            action = np.argmax(actions)
+            if possibleactions is None:
+                action = np.argmax(actions)
+            else:
+                action_qVal_red = actions[0][possibleactions]
+                action = possibleactions[np.argmax(action_qVal_red)]
         return action
 
     def learn(self):
         if self.memory.mem_cntr <= self.batch_size:
             return
 
-        logging.getLogger('log1').info("Learning Step - sample from replay buffer")
+        #logging.getLogger('log1').info("Learning Step - sample from replay buffer")
 
         state, action, reward, new_state, done, possible_actions_state, possible_actions_new_state = \
                                         self.memory.sample_buffer(self.batch_size)
@@ -173,7 +187,7 @@ class DQNAgent(object):
         if (new_state.ndim == 1):
             new_state = np.array([new_state])
 
-        q_eval = self.q_eval.predict(state)
+        q = self.q_eval.predict(state)
         q_next = self.q_eval.predict(new_state)
 
 
@@ -196,14 +210,13 @@ class DQNAgent(object):
 
 
         #print(q_target[batch_index,action_indices])
-        try:
-            q_target[batch_index,action_indices] = reward + \
+
+        q_target[batch_index,action_indices] = reward + \
                 self.gamma*np.max(q_next, axis=1)*(1-done)
 
 
-            _ = self.q_eval.fit(state, q_target, verbose=0)
-        except:
-            print("BUUUH")
+        _ = self.q_eval.fit(state, q_target, verbose=0)
+
 
         #self.q_eval.train_on_batch(state, q_target)
 
@@ -212,7 +225,7 @@ class DQNAgent(object):
         if self.target_update_counter > self.UPDATE_TARGET:
             self.q_target_model.set_weights(self.q_eval.get_weights())
             self.target_update_counter = 0
-            logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
+            #logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
 
         self.target_update_counter += 1
 
@@ -221,5 +234,25 @@ class DQNAgent(object):
         self.q_eval.save(path+self.model_file)
 
     def load_model(self,path):
-        self.q_eval = load_model(path+self.model_file)
+        self.q_eval = load_model(path)
+
+    def execute(self, env):
+        #if env != None:
+        #    self.env = env
+        #observation = self.env.reset()
+        done = False
+        state = env.current_state
+        done = False
+        while not done:
+            pos_action = np.argmax(self.q_eval.predict(state[np.newaxis, :])[0][env.possible_actions])
+            action = env.possible_actions[pos_action]
+            state, reward, done, info = env.step(action)
+
+
+    def maxAction(self, state, possible_actions):
+        #prediction = self.q_eval.predict(state[np.newaxis, :])
+        pos_action = np.argmax(self.q_eval.predict(state[np.newaxis, :])[0][possible_actions])
+        action = possible_actions[pos_action]
+
+        return action
 

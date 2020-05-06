@@ -99,9 +99,11 @@ class StowagePlan(object):
         self.deck_layout = evaluation[4]
 
     def __str__(self):
-        return "Mandatory Cargo Loaded: {self.mandatoryCargoLoaded}\n \
-        Number of Shifts: {self.shifts}\n \
-        Space Utilisation: {self.spaceUtilisation}"
+        info = "Mandatory Cargo Loaded: {}\n" \
+               "Number of Shifts: {}\n" \
+               "Space Utilisation: {}".format(self.mandatory_cargo_loaded, self.shifts, self.space_utilisation)
+
+        return info
 
     # Comparision of two StowagePlan Evaluations
 
@@ -150,7 +152,7 @@ class StowagePlan(object):
             return False
 
     def _are_plans_comparable(self, other):
-        if np.array_equal(self.vehicle_data, other.vehicle_data) and \
+        if np.array_equal(self.vehicle_data, other.vehicle_data) and\
                 np.array_equal(self.deck_layout, other.deck_layout):
             return True
         else:

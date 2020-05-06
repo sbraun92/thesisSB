@@ -87,7 +87,7 @@ def test_time():
         observation_, reward, done, info = env3.step(action)
 
 
-    env3.render()
+    #env3.render()
 
     evaluator3 = Evaluator(env3.vehicle_data, env3.grid)
     evaluation3 = evaluator3.evaluate(env3.getStowagePlan())

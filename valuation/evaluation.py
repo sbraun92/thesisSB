@@ -1,5 +1,7 @@
 import numpy as np
+# TODO Delete File
 
+'''
 class StowagePlan(object):
     def __init__(self, evaluation=None):
         self.shifts = evaluation[0]
@@ -68,3 +70,4 @@ class StowagePlan(object):
     def __hash__(self):
         return hash((self.spaceUtilisation,self.mandatoryCargoLoaded,self.shifts,
                      str(self.vehicleData),str(self.deckLayout)))
+'''

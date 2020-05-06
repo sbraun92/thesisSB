@@ -13,7 +13,7 @@ def test_OpenAiCompliance():
     env = gym.make('RORODeck-v0')
     # check_env(env)
     env.reset()
-    env.step(env.actionSpaceSample())
+    env.step(env.action_space_sample())
 
 
 def test_RORODeck():

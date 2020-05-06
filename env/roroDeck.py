@@ -512,9 +512,9 @@ class RoRoDeck(gym.Env):
         """
         destination = self.vehicle_data[1][action]
 
-        noVehDest1 = len(np.argwhere(self.grid_destination.T[self.current_Lane] == 1))
+        no_veh_dest1 = len(np.argwhere(self.grid_destination.T[self.current_Lane] == 1))
 
-        if destination == 2 and noVehDest1 != 0:
+        if destination == 2 and no_veh_dest1 != 0:
             return 1
         else:
             return 0
@@ -591,4 +591,4 @@ class RoRoDeck(gym.Env):
             loading_seq.write(self.loading_sequence)
 
     def getStowagePlan(self):
-        return (self.grid, self.loaded_Vehicles)
+        return self.grid, self.loaded_Vehicles

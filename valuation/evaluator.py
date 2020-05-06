@@ -1,92 +1,161 @@
 import numpy as np
-from valuation.evaluation import StowagePlan
+# from valuation.evaluation import StowagePlan
 
 
 class Evaluator(object):
-    def __init__(self, vehicleData, deckLayout, weights = None):
-        self.stowagePlan = None
+    def __init__(self, vehicle_data, deck_layout, weights=None):
+        self.stowage_plan = None
         # 1. Number of shifts
         # 2. mandatory Cargo loaded [%]
         # 3. Space utilisation [%]
-        self.evaluationCriteria = np.zeros(3)
+        self.evaluation_criteria = np.zeros(3)
 
-        self.vehicleData = vehicleData
+        self.vehicle_data = vehicle_data
 
-        self.mandatoryVeh = vehicleData[2]==1
+        self.mandatory_vehicle = vehicle_data[2] == 1
 
-        self.numberOfVehicle = np.zeros(len(vehicleData.T))
+        self.number_of_vehicles = np.zeros(len(vehicle_data.T))
 
         # A Layout of deck (empty or loaded)
-        self.deckLayout = deckLayout
+        self.deck_layout = deck_layout
 
-
-        if weights == None:
+        # TODO check comparison with None ==
+        if weights is None:
             self.weights = np.ones(3)
         else:
             self.weights = weights
 
-    def evaluate(self,stowagePlan):
-        if not self.isStowagePlanCompatible(stowagePlan):
+    def evaluate(self, stowage_plan):
+        if not self.is_stowage_plan_compatible(stowage_plan):
             assert False
 
-        self.stowagePlan = stowagePlan
+        self.stowage_plan = stowage_plan
 
-        shifts = self.calculateNumberOfShifts()
+        shifts = self.calculate_number_of_shifts()
 
-        spaceUtilisation = self.calculateSpaceUtilisations()
+        space_utilisation = self.calculate_space_utilisation()
 
-        mandatoryCargoLoaded = self.calculateMandatoryCargoLoaded()
+        mandatory_cargo_loaded = self.calculate_mandatory_cargo_loaded()
 
+        return StowagePlan((shifts, space_utilisation, mandatory_cargo_loaded, self.vehicle_data, self.deck_layout))
 
-        return StowagePlan((shifts, spaceUtilisation, mandatoryCargoLoaded, self.vehicleData, self.deckLayout))
+    def calculate_number_of_shifts(self):
+        total_shifts = np.zeros(len(self.stowage_plan[1]))
+        destinations = np.unique(self.vehicle_data[1].copy())
 
-
-    def calculateNumberOfShifts(self):
-        totalShifts = np.zeros(len(self.stowagePlan[1]))
-        destinations = np.unique(self.vehicleData[1].copy())
-
-        #Loop over all lanes
-        for lane_ix,lane in enumerate(self.stowagePlan[1]):
-            badQueue = False
-            for ix,vehicle in enumerate(lane):
-                if lane[ix+1] == -1: # reached end of queue
+        # Loop over all lanes
+        for lane_ix, lane in enumerate(self.stowage_plan[1]):
+            bad_queue = False
+            for ix, vehicle in enumerate(lane):
+                if lane[ix + 1] == -1:  # reached end of queue
                     break
 
-                destination_first = self.vehicleData[1][vehicle]
-                destination_second = self.vehicleData[1][lane[ix+1]]
+                destination_first = self.vehicle_data[1][vehicle]
+                destination_second = self.vehicle_data[1][lane[ix + 1]]
 
                 if destination_first == destination_second:
-                    if destination_first != destinations[0] and badQueue:
-                        totalShifts[lane_ix]+=1
+                    if destination_first != destinations[0] and bad_queue:
+                        total_shifts[lane_ix] += 1
 
                 if destination_first < destination_second:
-                    totalShifts[lane_ix]+=1
-                    badQueue = True
+                    total_shifts[lane_ix] += 1
+                    bad_queue = True
 
-                if destination_first > destination_second and badQueue:
-                    badQueue = False
+                if destination_first > destination_second and bad_queue:
+                    bad_queue = False
 
-        return np.sum(totalShifts)
+        return np.sum(total_shifts)
 
-    def calculateMandatoryCargoLoaded(self):
-        for i in range(len(self.numberOfVehicle)):
-            self.numberOfVehicle[i] = len(np.where(self.stowagePlan[1].flatten()==i)[0])
+    def calculate_mandatory_cargo_loaded(self):
+        for i in range(len(self.number_of_vehicles)):
+            self.number_of_vehicles[i] = len(np.where(self.stowage_plan[1].flatten() == i)[0])
 
-        loadedMandatoryVeh = np.sum(self.numberOfVehicle[self.mandatoryVeh])
-        allMandatoryVeh = np.sum(self.vehicleData[4][self.mandatoryVeh])
+        loaded_mandatory_veh = np.sum(self.number_of_vehicles[self.mandatory_vehicle])
+        all_mandatory_vehicle = np.sum(self.vehicle_data[4][self.mandatory_vehicle])
 
-        return float(loadedMandatoryVeh/allMandatoryVeh)
+        return float(loaded_mandatory_veh / all_mandatory_vehicle)
 
-    def calculateSpaceUtilisations(self):
-        grid = self.stowagePlan[0]  #loading sequence
+    def calculate_space_utilisation(self):
+        grid = self.stowage_plan[0]  # loading sequence
         grid = grid.flatten()
-        capacity = len(grid)- len(grid[grid==-1])
-        freeSpace = len(grid[grid==0])
+        capacity = len(grid) - len(grid[grid == -1])
+        free_space = len(grid[grid == 0])
 
-        return 1.-(freeSpace/capacity)
+        return 1. - (free_space / capacity)
 
-    def isStowagePlanCompatible(self, stowagePlan):
-        if len(stowagePlan[0]) == len(self.deckLayout) and len(stowagePlan[0].T) == len(self.deckLayout.T):
+    def is_stowage_plan_compatible(self, stowage_plan):
+        if len(stowage_plan[0]) == len(self.deck_layout) and len(stowage_plan[0].T) == len(self.deck_layout.T):
             return True
         else:
             return False
+
+
+class StowagePlan(object):
+    def __init__(self, evaluation=None):
+        self.shifts = evaluation[0]
+        self.space_utilisation = evaluation[1]
+        self.mandatory_cargo_loaded = evaluation[2]
+        self.vehicle_data = evaluation[3]
+        self.deck_layout = evaluation[4]
+
+    def __str__(self):
+        return "Mandatory Cargo Loaded: {self.mandatoryCargoLoaded}\n \
+        Number of Shifts: {self.shifts}\n \
+        Space Utilisation: {self.spaceUtilisation}"
+
+    # Comparision of two StowagePlan Evaluations
+
+    # Compare two Evaluations:
+    #   1. Evaluation with more mandatory Cargo Loaded is always better
+    #   2. if Evaluation equal in 1. than is the Stowage Plan with less shifts better
+    #   3. if 1. and 2. equal than the Stowage Plan with a higher SpaceUtilisation is better
+
+    def __eq__(self, other):
+        if self._are_plans_comparable(other):
+            if self.shifts == other.shifts \
+                    and self.space_utilisation == other.space_utilisation \
+                    and self.mandatory_cargo_loaded == other.mandatory_cargo_loaded:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def __gt__(self, other):
+        if self._are_plans_comparable(other):
+            if self.mandatory_cargo_loaded > other.mandatory_cargo_loaded:
+                return True
+            elif self.mandatory_cargo_loaded < other.mandatory_cargo_loaded:
+                return False
+            else:
+                if self.shifts < other.shifts:
+                    return True
+                elif self.shifts > other.shifts:
+                    return False
+                else:
+                    if self.space_utilisation > other.space_utilisation:
+                        return True
+                    else:
+                        return False
+        else:
+            return False
+
+    def __ge__(self, other):
+        if self._are_plans_comparable(other):
+            if self.__eq__(other) or self.__gt__(other):
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def _are_plans_comparable(self, other):
+        if np.array_equal(self.vehicle_data, other.vehicle_data) and \
+                np.array_equal(self.deck_layout, other.deck_layout):
+            return True
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((self.space_utilisation, self.mandatory_cargo_loaded, self.shifts,
+                     str(self.vehicle_data), str(self.deck_layout)))

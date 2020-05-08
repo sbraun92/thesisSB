@@ -41,6 +41,10 @@ class TDQLearning(Agent):
 
     def train(self):
         logging.getLogger('log1').info("prepare training...")
+
+        start = time.time()
+
+
         initState = self.env.reset()
 
         # for ix, i in enumerate(env.actionSpace.keys()):
@@ -72,7 +76,7 @@ class TDQLearning(Agent):
                 self.rand = np.random.random()
                 self.action = self.maxAction(self.observation) if self.rand < (1 - self.EPS) \
                     else self.env.action_space_sample()
-
+                #self.env.render()
                 #TODO delete
                 #if i == self.numGames - 1:
                 #    print("----")
@@ -159,17 +163,18 @@ class TDQLearning(Agent):
             #    print(len(self.q_table.keys()))
 
         logging.getLogger('log1').info("End training process")
+        self.training_time = time.time()-start
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
     # TODO cleanup
-    def maxAction(self, state):
-        #print(self.env.possibleActions)
-        possibleActions = self.action_ix[self.env.possible_actions]
+    #def maxAction(self, state):
+    #    #print(self.env.possibleActions)
+    #    possibleActions = self.action_ix[self.env.possible_actions]
         #print(possibleActions)
         #print(Q[state.tobytes()])
-        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
+    #    positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
         #print(positionsOfBestPossibleAction)
-        return possibleActions[positionsOfBestPossibleAction]
+    #    return possibleActions[positionsOfBestPossibleAction]
 
 
     #TODO try feather
@@ -186,9 +191,10 @@ class TDQLearning(Agent):
                                       "Episodes": self.numGames,
                                       "EnvLanes:": self.env.lanes,
                                       "EnvRows": self.env.rows,
-                                      "VehicleData": self.env.vehicle_Data}
+                                      "VehicleData": self.env.vehicle_data,
+                                      "TrainingTime":self.training_time}
         info = "_TDQ" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
-               str(int(1 in self.env.vehicle_Data[5])) + "_A" + str(len(self.env.vehicle_Data[0]))
+               str(int(1 in self.env.vehicle_data[5])) + "_A" + str(len(self.env.vehicle_data[0]))
 
         #path = path + '_qTablePickled.p'
 

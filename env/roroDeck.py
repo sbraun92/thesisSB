@@ -36,7 +36,7 @@ class RoRoDeck(gym.Env):
             vehicle_data: Input data of vehicles (which vehicles have to be loaded and what are their features)
             reward_system: weights to calculate reward of an action
         """
-        logging.getLogger('log1').info('Initilise RORO-Deck enviroment: Lanes : {lanes} Rows: {rows}')
+        logging.getLogger('log1').info('Initialise RORO-Deck environment: \tLanes: {}\tRows: {}'.format(lanes,rows))
 
         # just to compare runtime
         # TODO delete helper from
@@ -47,7 +47,7 @@ class RoRoDeck(gym.Env):
 
         self.help = help
 
-        self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {lanes} Rows: {rows})\n\n"
+        self.loading_sequence = None
 
         self.lanes = lanes
         self.rows = rows
@@ -105,20 +105,20 @@ class RoRoDeck(gym.Env):
         self.current_state = self._get_current_state()
 
         logging.getLogger('log1').info('Initilise Reward System with parameters: \n' +
-                                       '\t\t\t\t Time step reward: {}\n'.format(self.reward_system[0]) +
-                                       '\t\t\t\t Reward for caused shift: {} \n'.format(self.reward_system[1]) +
-                                       '\t\t\t\t @Terminal - reward for Space Utilisation: {} \n'
+                                       '\t\t\t\t Time step reward: \t\t\t\t\t {}\n'.format(self.reward_system[0]) +
+                                       '\t\t\t\t Reward for caused shift:\t\t\t\t{}\n'.format(self.reward_system[1]) +
+                                       '\t\t\t\t @Terminal - reward for Space Utilisation: \t\t{}\n'
                                        .format(self.reward_system[2]) +
-                                       '\t\t\t\t @Terminal - reward for mandatory cargo not loaded: {}'
+                                       '\t\t\t\t @Terminal - reward for mandatory cargo not loaded:\t{}'
                                        .format(self.reward_system[3]))
         for vehicle_id in self.vehicle_data[0]:
-            logging.getLogger('log1').info('Vehicle id {}'.format(vehicle_id)
-                                           + " Destination: {}".format(self.vehicle_data[1][vehicle_id])
-                                           + ", is mandatory: {}".format(bool(self.vehicle_data[2][vehicle_id]))
-                                           + ", Length: {}".format(self.vehicle_data[3][vehicle_id])
-                                           + ", Number on yard: " + str(
+            logging.getLogger('log1').info('Vehicle id {}\t'.format(vehicle_id)
+                                           + "Destination: {}\t".format(self.vehicle_data[1][vehicle_id])
+                                           + "Mandatory?: {}\t".format(bool(self.vehicle_data[2][vehicle_id]))
+                                           + "Length: {}\t".format(self.vehicle_data[3][vehicle_id])
+                                           + "Number on yard: " + str(
                 self.vehicle_data[4][vehicle_id] if self.vehicle_data[4][vehicle_id] != -1 else "inf")
-                                           + ", is Reefer {}".format(bool(self.vehicle_data[5][vehicle_id])))
+                                           + "\tReefer?: {}\t".format(bool(self.vehicle_data[5][vehicle_id])))
 
         logging.getLogger('log1').info("Environment initialised...")
         # TODO print input data in method
@@ -133,9 +133,8 @@ class RoRoDeck(gym.Env):
         Raises:
             KeyError: Raises an exception.
         """
-        logging.getLogger('log1').info('Reset Environment')
-        self.loading_sequence = "Loading Sequence of RORO-Deck (l: " + str(self.lanes) + " r: " + str(
-            self.rows) + ")\n\n"
+        #logging.getLogger('log1').info('Reset Environment')
+        self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes,self.rows)
 
         self.sequence_no = 1
         self.grid = self._create_grid()
@@ -182,7 +181,7 @@ class RoRoDeck(gym.Env):
                     print(str(int(col)), end='\t')
             print('\n')
 
-        print('-----------VehicleType----------------------------------------------------------------')
+        print('-----------VehicleType---------------------------------------------------------------------')
         for row in self.grid_vehicle_type:
             # Loading Sequence
             for col in row:
@@ -194,7 +193,7 @@ class RoRoDeck(gym.Env):
                     print(str(int(col)), end='\t')
             print('\n')
 
-        print('-------Destination--------------------------------------------------------------------')
+        print('-----------Destination---------------------------------------------------------------------')
         for row in self.grid_destination:
             for col in row:
                 if col == -1:
@@ -409,9 +408,8 @@ class RoRoDeck(gym.Env):
                         action = np.random.choice(self.possible_actions)
 
                 slot = self.end_of_lanes[self.current_Lane]
-                self.loading_sequence += "{self.sequence_no}. Load Vehicle Type \t {action} \
-                                         \t in Lane: \t {self.current_Lane} \
-                                         \t Row: \t {slot} \n"
+                self.loading_sequence += "{}. Load Vehicle Type \t {} \t in Lane: \t {} \t Row: \t {} \n"\
+                                         .format(self.sequence_no, action, self.current_Lane, slot)
 
                 self.end_of_lanes[self.current_Lane] += self.vehicle_data[3][action]
 
@@ -547,6 +545,7 @@ class RoRoDeck(gym.Env):
     #        newCargo = np.array([typeNo, destination, mandatory, length, number])
     #        self.vehicle_data = np.vstack((self.vehicle_data.T, newCargo)).T
 
+    #TODO Code duplication from render -> new Method to_string_representation
     def saveStowagePlan(self, path):
         with open(path + "_StowagePlan.txt", 'w') as stowagePlan:
             # stowagePlan = open(path + "_StowagePlan.txt", 'w')

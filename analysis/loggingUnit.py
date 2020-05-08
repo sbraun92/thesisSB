@@ -12,14 +12,15 @@ class LoggingBase(object):
         os.makedirs(self.module_path, exist_ok=True)
         self.module_path += time
 
-        logging.basicConfig(filename=self.module_path + '_log.log', level=logging.INFO)
+        logging.basicConfig(filename=self.module_path + '_log.log', level=logging.INFO,format="%(asctime)s - %(levelname)s - %(message)s")
         handler = logging.StreamHandler()
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-        handler.setFormatter(formatter)
 
         self.logger1 = logging.getLogger('log1')
+
+
         self.logger1.addHandler(logging.FileHandler(self.module_path + '_debugger.log'))
 
         logging.getLogger('log1').info("Initialise Logger to %s", self.module_path)

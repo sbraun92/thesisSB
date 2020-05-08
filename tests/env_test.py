@@ -1,9 +1,7 @@
 from env.roroDeck import RoRoDeck
-import numpy as np
 import pytest
 import numpy as np
 import gym
-import env
 
 # from stable_baselines.common.env_checker import check_env
 np.random.seed(0)
@@ -11,7 +9,6 @@ np.random.seed(0)
 
 def test_OpenAiCompliance():
     env = gym.make('RORODeck-v0')
-    # check_env(env)
     env.reset()
     env.step(env.action_space_sample())
 
@@ -28,7 +25,7 @@ def test_RORODeck():
         assert i <= 100
 
 
-def test_envParam():
+def test_env_parameter():
     env = RoRoDeck(False)
     env.reset()
 
@@ -42,7 +39,7 @@ def test_envParam():
     print(env.end_of_lanes)
 
     assert env.vehicle_data.shape[0] == 6
-    assert env.current_Lane >= 0 and env.current_Lane <= env.lanes
+    assert 0 <= env.current_Lane <= env.lanes
     assert env.grid.shape == (env.rows, env.lanes)
     assert env.sequence_no >= 0 and type(env.sequence_no) == type(0)
     assert len(env.reward_system) == 4
@@ -52,23 +49,23 @@ def test_envParam():
 # After the reset all variables should have the same value as after __init__
 def test_resetMethod():
     env = RoRoDeck(False)
-    vehicleData = env.vehicle_data.copy()
-    endOFLanes = env.end_of_lanes.copy()
+    vehicle_data = env.vehicle_data.copy()
+    end_of_lanes = env.end_of_lanes.copy()
     grid = env.grid.copy()
-    gridDestination = env.grid_destination.copy()
-    gridVehicleType = env.grid_vehicle_type.copy()
+    grid_destination = env.grid_destination.copy()
+    grid_vehicle_type = env.grid_vehicle_type.copy()
     # TODO add a expanded grid for vehicle Type
     capacity = env.capacity.copy()
-    vehicleCounter = env.vehicle_Counter.copy()
-    mandatoryCargoMask = env.mandatory_cargo_mask.copy()
-    loadedVehicles = env.loaded_Vehicles.copy()
-    rewardSystem = env.reward_system.copy()
+    vehicle_counter = env.vehicle_Counter.copy()
+    mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
+    loaded_vehicles = env.loaded_Vehicles.copy()
+    reward_system = env.reward_system.copy()
     frontier = env.frontier.copy()
     sequence_no = env.sequence_no
-    currentLane = env.current_Lane.copy()
-    actionSpace = env.action_space.copy()
-    possibleActions = env.possible_actions.copy()
-    numberOfVehiclesLoaded = env.number_of_vehicles_loaded.copy()
+    current_lane = env.current_Lane.copy()
+    action_space = env.action_space.copy()
+    possible_actions = env.possible_actions.copy()
+    number_of_vehicles_loaded = env.number_of_vehicles_loaded.copy()
 
     env.reset()
     env.step(env.action_space_sample())
@@ -92,73 +89,70 @@ def test_resetMethod():
     _possibleActions = env.possible_actions
     _numberOfVehiclesLoaded = env.number_of_vehicles_loaded
 
-    assert (_vehicleData == vehicleData).all()
-    assert (_endOFLanes == endOFLanes).all()
+    assert (_vehicleData == vehicle_data).all()
+    assert (_endOFLanes == end_of_lanes).all()
     assert (_grid == grid).all()
-    assert (_gridDestination == gridDestination).all()
-    assert (_gridVehicleType == gridVehicleType).all()
+    assert (_gridDestination == grid_destination).all()
+    assert (_gridVehicleType == grid_vehicle_type).all()
     assert (_capacity == capacity).all()
-    assert (_vehicleCounter == vehicleCounter).all()
-    assert (_mandatoryCargoMask == mandatoryCargoMask).all()
-    assert (_loadedVehicles == loadedVehicles).all()
-    assert (_rewardSystem == rewardSystem).all()
+    assert (_vehicleCounter == vehicle_counter).all()
+    assert (_mandatoryCargoMask == mandatory_cargo_mask).all()
+    assert (_loadedVehicles == loaded_vehicles).all()
+    assert (_rewardSystem == reward_system).all()
     assert (_frontier == frontier).all()
     assert _sequence_no == sequence_no
-    assert (_currentLane == currentLane).all()
-    assert (_actionSpace == actionSpace).all()
-    assert (_possibleActions == possibleActions).all()
-    assert (_numberOfVehiclesLoaded == numberOfVehiclesLoaded).all()
+    assert (_currentLane == current_lane).all()
+    assert (_actionSpace == action_space).all()
+    assert (_possibleActions == possible_actions).all()
+    assert (_numberOfVehiclesLoaded == number_of_vehicles_loaded).all()
 
 
 def test_stepMethod():
     env = RoRoDeck(False)
     env.reset()
 
-    vehicleData = env.vehicle_data.copy()
-    endOFLanes = env.end_of_lanes.copy()
+    vehicle_data = env.vehicle_data.copy()
+    end_of_lanes = env.end_of_lanes.copy()
     grid = env.grid.copy()
-    gridDestination = env.grid_destination.copy()
-    gridVehicleType = env.grid_vehicle_type.copy()
+    grid_destination = env.grid_destination.copy()
+    grid_vehicle_type = env.grid_vehicle_type.copy()
     # TODO add a expanded grid for vehicle Type
     capacity = env.capacity.copy()
-    vehicleCounter = env.vehicle_Counter.copy()
-    mandatoryCargoMask = env.mandatory_cargo_mask.copy()
-    loadedVehicles = env.loaded_Vehicles.copy()
-    rewardSystem = env.reward_system.copy()
+    vehicle_counter = env.vehicle_Counter.copy()
+    mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
+    loaded_vehicles = env.loaded_Vehicles.copy()
+    reward_system = env.reward_system.copy()
     frontier = env.frontier.copy()
     sequence_no = env.sequence_no
-    currentLane = env.current_Lane.copy()
-    actionSpace = env.action_space.copy()
-    possibleActions = env.possible_actions.copy()
-    numberOfVehiclesLoaded = env.number_of_vehicles_loaded.copy()
+    current_lane = env.current_Lane.copy()
+    action_space = env.action_space.copy()
+    possible_actions = env.possible_actions.copy()
+    number_of_vehicles_loaded = env.number_of_vehicles_loaded.copy()
 
     np.random.seed(0)
 
-    action = actionSpace[mandatoryCargoMask][0]
-    if action not in possibleActions:
+    action = action_space[mandatory_cargo_mask][0]
+    if action not in possible_actions:
         action = env.action_space_sample()
 
     env.step(action)
 
-    destination = vehicleData[1][action]
-    mandatory = vehicleData[2][action]
-    length = vehicleData[3][action]
+    destination = vehicle_data[1][action]
+    mandatory = vehicle_data[2][action]
+    length = vehicle_data[3][action]
 
     for i in range(length):
-        grid.T[currentLane][endOFLanes[currentLane] + i] = sequence_no
-        gridDestination.T[currentLane][endOFLanes[currentLane] + i] = destination
+        grid.T[current_lane][end_of_lanes[current_lane] + i] = sequence_no
+        grid_destination.T[current_lane][end_of_lanes[current_lane] + i] = destination
 
-    loadedVehicles[currentLane][vehicleCounter[currentLane]] = action
-
-    print(env.grid)
-    print(grid)
+    loaded_vehicles[current_lane][vehicle_counter[current_lane]] = action
 
     assert (env.grid == grid).all()
-    assert (env.grid_destination == gridDestination).all()
-    assert env.end_of_lanes[currentLane] == endOFLanes[currentLane] + length
+    assert (env.grid_destination == grid_destination).all()
+    assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane] + length
     assert env.sequence_no == sequence_no + 1
-    assert (env.loaded_Vehicles == loadedVehicles).all()
-    assert (env.vehicle_Counter[currentLane] == vehicleCounter[currentLane] + 1)
+    assert (env.loaded_Vehicles == loaded_vehicles).all()
+    assert (env.vehicle_Counter[current_lane] == vehicle_counter[current_lane] + 1)
 
     # TODO teste weiter ab
 
@@ -178,8 +172,8 @@ def test_stepMethod():
     _possibleActions = env.possible_actions
     _numberOfVehiclesLoaded = env.number_of_vehicles_loaded
 
-    assert (_vehicleData == vehicleData).all()
-    assert (_rewardSystem == rewardSystem).all()
+    assert (_vehicleData == vehicle_data).all()
+    assert (_rewardSystem == reward_system).all()
 
     # TODO weitere TEst
     # teste reefer position
@@ -231,7 +225,7 @@ def test_end_of_lane_Method():
 
     assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane] + length
 
-
+#TODO
 def test_shifts_caused():
     pass
 
@@ -243,7 +237,7 @@ def test_findCurrentLane():
     env.step(env.action_space_sample())
     assert env.current_Lane == 4
 
-
+#TODO delete
 def test_switch_current_lane():
     pass
 
@@ -276,7 +270,7 @@ def test_is_terminal_state():
     assert env._is_terminal_state() == True
 
 
-def test_get_Current_State():
+def test_get_current_state():
     env = RoRoDeck(True)
 
     state = env.current_state

@@ -29,7 +29,7 @@ class TDQLearning(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        self.actionSpace_length = len(self.env.actionSpace)
+        self.actionSpace_length = len(self.env.action_space)
         self.action_ix = np.arange(self.actionSpace_length)
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)

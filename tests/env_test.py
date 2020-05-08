@@ -66,7 +66,7 @@ def test_resetMethod():
     frontier = env.frontier.copy()
     sequence_no = env.sequence_no
     currentLane = env.current_Lane.copy()
-    actionSpace = env.actionSpace.copy()
+    actionSpace = env.action_space.copy()
     possibleActions = env.possible_actions.copy()
     numberOfVehiclesLoaded = env.number_of_vehicles_loaded.copy()
 
@@ -88,7 +88,7 @@ def test_resetMethod():
     _frontier = env.frontier
     _sequence_no = env.sequence_no
     _currentLane = env.current_Lane
-    _actionSpace = env.actionSpace
+    _actionSpace = env.action_space
     _possibleActions = env.possible_actions
     _numberOfVehiclesLoaded = env.number_of_vehicles_loaded
 
@@ -128,7 +128,7 @@ def test_stepMethod():
     frontier = env.frontier.copy()
     sequence_no = env.sequence_no
     currentLane = env.current_Lane.copy()
-    actionSpace = env.actionSpace.copy()
+    actionSpace = env.action_space.copy()
     possibleActions = env.possible_actions.copy()
     numberOfVehiclesLoaded = env.number_of_vehicles_loaded.copy()
 
@@ -174,7 +174,7 @@ def test_stepMethod():
     _frontier = env.frontier
     _sequence_no = env.sequence_no
     _currentLane = env.current_Lane
-    _actionSpace = env.actionSpace
+    _actionSpace = env.action_space
     _possibleActions = env.possible_actions
     _numberOfVehiclesLoaded = env.number_of_vehicles_loaded
 

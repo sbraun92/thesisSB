@@ -95,7 +95,7 @@ class RoRoDeck(gym.Env):
         # self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
         # Test without switching
-        self.actionSpace = self.vehicle_data[0]
+        self.action_space = self.vehicle_data[0]
         self.possible_actions = self.get_possible_actions_of_state()
         self.TerminalStateCounter = 0
         self.lowest_destination = np.ones(self.lanes) * 8  # TODO
@@ -142,7 +142,7 @@ class RoRoDeck(gym.Env):
         self.grid_vehicle_type = self._create_grid() - 1
         self.grid_reefer = self._create_grid()
         self.grid_reefer.T[0][4:(self.rows)] = 1
-        self.actionSpace = self.vehicle_data[0]
+        self.action_space = self.vehicle_data[0]
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.initial_end_of_lanes = self.end_of_lanes.copy()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int16)
@@ -398,7 +398,7 @@ class RoRoDeck(gym.Env):
             number_of_shifts = self._get_number_of_shifts(action)
             reward += number_of_shifts * self.reward_system[1]  # +self.action2vehicleLength[action]*0.6
             # Remove Switching-Option
-            if self.actionSpace[action] == -1:
+            if self.action_space[action] == -1:
                 self.current_Lane = self._switch_current_lane()
                 # reward = -1
                 # self.TerminalStateCounter += 1

@@ -14,6 +14,7 @@ class Agent:
         self.NUMBER_OF_EPISODES = None
         self.env = None
         self.strategies = ["Epsilon-greedy"]
+        self.training_time = 0
 
     def save_model(self, path, type='pickle'):
         try:
@@ -64,5 +65,15 @@ class Agent:
         positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
 
         return possibleActions[positionsOfBestPossibleAction]
+
+    #TODO unify tabular and NN 
+    def evaluate_state(self,state):
+        if self.q_table is not None:
+            try:
+                return self.q_table[state.tobytes()]
+            except:
+                return np.zeros[self.env.action_space]
+
+
 
 

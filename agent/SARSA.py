@@ -37,6 +37,10 @@ class SARSA(Agent):
 
     def train(self):
         logging.getLogger('log1').info("prepare training...")
+
+        start = time.time()
+
+
         initState = self.env.reset()
 
 
@@ -159,6 +163,7 @@ class SARSA(Agent):
                       'std of score %.2f' % std_reward)
 
         logging.getLogger('log1').info("End training process")
+        self.training_time = time.time()-start
         return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
 
 
@@ -186,13 +191,11 @@ class SARSA(Agent):
                                       "Episodes":self.numGames,
                                       "EnvLanes:":self.env.lanes,
                                       "EnvRows":self.env.rows,
-                                      "VehicleData":self.env.vehicle_Data}
+                                      "VehicleData":self.env.vehicle_data,
+                                      "TrainingTime":self.training_time}
         info = "_SARSA" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
-               str(int(1 in self.env.vehicle_Data[5])) + "_A" + str(len(self.env.vehicle_Data[0]))
+               str(int(1 in self.env.vehicle_data[5])) + "_A" + str(len(self.env.vehicle_data[0]))
 
         super().save_model(path+info)
 
 
-
-
-        #self.env.render()

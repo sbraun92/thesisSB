@@ -84,11 +84,18 @@ class Plotter(object):
         if self.algorithm is not None:
             plt.title(self.algorithm+ ": State Expansion over time")
             fi3.savefig(self.path +"_" + self.algorithm +  '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
-
+        
         else:
             fi3.savefig(self.path + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
             plt.title("State Expansion over time")
         # plt.show()
+        xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
+        ax.set_xticklabels(xlabels)
+
+        ylabels = ['{:,.1f}'.format(y) + 'K' for y in ax.get_yticks() / 1000]
+        ax.set_yticklabels(ylabels)
+
+
         logging.getLogger('log1').info("finished plot")
 
     # Plot smoothed Steps to Exit

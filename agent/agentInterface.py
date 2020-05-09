@@ -16,9 +16,9 @@ class Agent:
         self.strategies = ["Epsilon-greedy"]
         self.training_time = 0
 
-    def save_model(self, path, type='pickle'):
+    def save_model(self, path, output_type='pickle'):
         try:
-            if type == 'pickle':
+            if output_type == 'pickle':
                 #info ="_SARSA"+"_L"+str(self.env.lanes)+"_R"+str(self.env.rows)+"_Rf"+\
                 #      str(int(1 in self.env.vehicle_Data[5]))+"_A"+str(len(self.env.vehicle_Data[0]))
                 pickle.dump(self.q_table, open(path+'.p', "wb"))
@@ -28,7 +28,7 @@ class Agent:
                     for key in self.q_table.keys():
                         f.write("%s,%s\n" % (key,  self.q_table[key]))
         except:
-            if type=='pickle':
+            if output_type== 'pickle':
                 logging.getLogger("log1").error("Could not save pickle file to+ " + path)
             else:
                 logging.getLogger("log1").error("Could not save csv file to+ " + path)
@@ -47,7 +47,7 @@ class Agent:
         #self.epReward = 0
 
         while not self.done:
-            self.action = self.maxAction(current_state)
+            self.action = self.max_action(current_state)
             current_state, self.reward, self.done, self.info = self.env.step(self.action)
             #self.epReward += self.reward
             if current_state.tobytes() not in self.q_table:
@@ -57,22 +57,29 @@ class Agent:
     def train(self):
         raise NotImplementedError
 
-    def choose_action(self,possible_actions):
+    def choose_action(self, possible_actions):
         raise NotImplementedError
 
-    def maxAction(self, state):
-        possibleActions = self.action_ix[self.env.possible_actions]
-        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
+    def max_action(self, state):
+        possible_actions = self.action_ix[self.env.possible_actions]
+        prediction = self.predict(state, possible_actions)
+        positions_of_best_possible_action = np.argmax(prediction)
 
-        return possibleActions[positionsOfBestPossibleAction]
+        return possible_actions[positions_of_best_possible_action]
 
     #TODO unify tabular and NN 
-    def evaluate_state(self,state):
+    def predict(self, state,action=None):
         if self.q_table is not None:
             try:
-                return self.q_table[state.tobytes()]
+                if action is None:
+                    return self.q_table[state.tobytes()]
+                else:
+                    return self.q_table[state.tobytes()][action]
             except:
-                return np.zeros[self.env.action_space]
+                if action is None:
+                    return np.zeros(self.env.action_space)
+                else:
+                    return 0 if isinstance(action,(np.integer,int)) else np.zeros(len(action))
 
 
 

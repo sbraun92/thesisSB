@@ -73,7 +73,7 @@ class SARSA(Agent):
             self.observation = self.env.reset()
             self.steps = 0
             self.rand = np.random.random()
-            current_action = self.maxAction(self.observation) if self.rand < (
+            current_action = self.max_action(self.observation) if self.rand < (
                         1 - self.EPS) \
                 else self.env.action_space_sample()
             while not self.done:
@@ -99,7 +99,7 @@ class SARSA(Agent):
 
                 # SARSA with Epsilon-Greedy
                 if not self.done:
-                    self.action_ = self.maxAction(self.observation_) if np.random.random() < (1 - self.EPS) \
+                    self.action_ = self.max_action(self.observation_) if np.random.random() < (1 - self.EPS) \
                                     else self.env.action_space_sample()
 
                     self.q_table[self.observation.tobytes()][current_action] += self.ALPHA * (
@@ -168,11 +168,11 @@ class SARSA(Agent):
 
 
     #TODO cleanup
-    def maxAction(self, state):
-        possibleActions = self.action_ix[self.env.possible_actions]
-        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
+#    def max_action(self, state):
+#        possibleActions = self.action_ix[self.env.possible_actions]
+#        positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
 
-        return possibleActions[positionsOfBestPossibleAction]
+#        return possibleActions[positionsOfBestPossibleAction]
 
 
     #TODO try feather

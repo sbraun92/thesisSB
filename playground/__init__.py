@@ -1,15 +1,10 @@
 from env.roroDeck import RoRoDeck
-from agent.TDQLearning import TDQLearning
 from agent.SARSA import SARSA
-from viz.Plotter import Plotter
-from valuation.evaluator import Evaluator
+from analysis.Plotter import Plotter
+from valuation.evaluator import *
 from analysis.loggingUnit import LoggingBase
-import os
 from datetime import datetime
-import pandas as pd
 import logging
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 '''
 date = str(datetime.utcnow().date().strftime("%Y%m%d"))
@@ -41,41 +36,62 @@ logger2.addHandler(logging.FileHandler(module_path+'_FinalLoadingSequence.log'))
 loggingBase = LoggingBase()
 module_path = loggingBase.module_path
 
-it = 80000
-logging.getLogger('log1').info("Train for " + str(it) + " iterations.")
+it = 2_000_00
+logging.getLogger('log1').info("Train for {it} iterations.")
 
 smoothing_window = int(it / 100)
 smoothing_window =200
 
 #Test with a bigger configuration
-env = RoRoDeck(True,8,10)
+env = RoRoDeck(True, 10, 14, stochastic=False)
 
 vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
-                        [1, 2, 1, 2,2],  # destination
+                        [1, 2, 1, 2, 2],  # destination
                         [1, 1, 0, 0,1],  # mandatory
                         [2, 3, 2, 3, 5],  # length
                         [7, 7, -1,-1, 2]])  # number of vehicles on yard
                                                       # (-1 denotes there are infinite vehicles of that type)
-#######################################################################
-# TDQ Training
-agent = TDQLearning(env,module_path,it)
+
+
+'''
+# SARSA FUNCTION APPROX
+agent = SARSALinFunApprox(env,module_path,it)
 q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
-agent.save_model(module_path,type='pickle')
+#agent.save_model(module_path,type='pickle')
 evaluator = Evaluator(env.vehicle_Data, env.grid)
+print(env.current_state)
 evaluation = evaluator.evaluate(env.getStowagePlan())
 print(evaluation)
 #Plotting
 plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
 plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+'''
+#######################################################################
+# TDQ Training
+#agent = TDQLearning(env,module_path,it)
+#q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+#agent.save_model(module_path,type='pickle')
+evaluator = Evaluator(env.vehicle_data, env.grid)
+#print(env.current_state)
+#evaluation = evaluator.evaluate(env.getStowagePlan())
+#print(evaluation)
+#Plotting
+#plotter = Plotter(module_path, it, algorithm="Time Difference Q Learning")
+#plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
 ##########################################################################
 # SARSA Training
-#agent = SARSA(env,module_path,it)
-#q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+agent = SARSA(env,module_path,it)
+q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+print(datetime.now())
+agent.save_model(module_path, type='pickle')
+print(datetime.now())
+evaluation = evaluator.evaluate(env.get_stowage_plan())
+print(evaluation)
 #Plotting
-#plotter = Plotter(module_path, it,algorithm="SARSA")
-#plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
+plotter = Plotter(module_path, it,algorithm="SARSA")
+plotter.plot(totalRewards, stateExpantion, stepsToExit, eps_history)
 #########################################################################
-
+#'''
 
 '''
 ds1 = []

@@ -45,7 +45,7 @@ class RoRoDeck(gym.Env):
         # 1-p a random action from the possible actions
         self.stochastic = stochastic
         self.p = 0.95
-
+        #TODO remove help
         self.help = help
 
         self.loading_sequence = None
@@ -56,7 +56,7 @@ class RoRoDeck(gym.Env):
         self.grid = self._create_grid()
         # Reefer TODo
         self.grid_reefer = self._create_grid()
-        self.grid_reefer.T[0][4:(rows)] = 1
+        self.grid_reefer.T[0][4:rows] = 1
         self.grid_destination = self._create_grid()
         self.grid_vehicle_type = self._create_grid() - 1
         self.end_of_lanes = self._get_end_of_lane(self.grid)
@@ -217,10 +217,6 @@ class RoRoDeck(gym.Env):
     def _get_free_capacity(self):
         """
         Return Array of which indicates how much space is free in each lane.
-
-        Parameters
-        ----------
-        grid:   A grid of loading sequence representation
 
         Returns
         -------
@@ -477,35 +473,6 @@ class RoRoDeck(gym.Env):
         else:
             return 0
 
-    # Return a action recommendation for the currentLane
-    # TODO delete
-    def _heuristic(self):
-        points = np.ones(len(self.vehicle_data[0]))
-        # check which action is possible
-
-        for vehicle in self.vehicle_data[0]:
-            # 1. Destination
-            # points[vehicle] +=
-            # 2. Mandatory
-            points[vehicle] += self.vehicle_data[2][vehicle] * self.number_of_vehicles_loaded[vehicle] * 10
-            # 3. Length
-            points[vehicle] += self.vehicle_data[3] * 5
-        pass
-
-    # TODO
-
-    # TODO Test, make sure this is not envoked during simulations
-    #    def add_CargoType(self, destination, mandatory, length, number):
-    #        assert destination == 1 or destination == 2
-    #        assert mandatory == 0 or mandatory == 1
-    #        assert length > 0 and length < len(self.grid[0]) - 4
-    #        assert number == -1 or number > 0
-
-    #        typeNo = self.vehicle_data[0][-1] + 1
-    #        newCargo = np.array([typeNo, destination, mandatory, length, number])
-    #        self.vehicle_data = np.vstack((self.vehicle_data.T, newCargo)).T
-
-    # TODO Code duplication from render -> new Method to_string_representation
     def save_stowage_plan(self, path):
         with open(path + "_StowagePlan.txt", 'w') as stowage_plan:
             stowage_plan.write('Stowage Plan and Loading Sequence \n')
@@ -515,7 +482,7 @@ class RoRoDeck(gym.Env):
         with open(path + "_LoadingSequence.txt", 'w') as loading_seq:
             loading_seq.write(self.loading_sequence)
 
-    def getStowagePlan(self):
+    def get_stowage_plan(self):
         return self.grid, self.loaded_Vehicles
 
     def _get_grid_representations(self):

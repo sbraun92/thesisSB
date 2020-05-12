@@ -62,7 +62,7 @@ if __name__ == '__main__':
     print(datetime.now())
     agent.save_model(module_path, type='pickle')
     print(datetime.now())
-    evaluation = evaluator.evaluate(env.getStowagePlan())
+    evaluation = evaluator.evaluate(env.get_stowage_plan())
     print(evaluation)
     #Plotting
     plotter = Plotter(module_path, it, algorithm="SARSA")

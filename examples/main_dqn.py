@@ -75,10 +75,10 @@ if __name__ == '__main__':
         state, reward, done, info = env.step(action)
         best_score += reward
     env.render()
-    env.saveStowagePlan(module_path)
+    env.save_stowage_plan(module_path)
     agent.save_model(module_path)
     evaluator = Evaluator(env.vehicle_data, env.grid)
-    evaluation = evaluator.evaluate(env.getStowagePlan())
+    evaluation = evaluator.evaluate(env.get_stowage_plan())
 
     print(evaluation)
 

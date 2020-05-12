@@ -35,10 +35,10 @@ while (not done):
 #Test if the mandatory Cargo Loaded is reasonable
 def test_Evaluator_MadatoryCargoLoaded():
     evaluator1 = Evaluator(env1.vehicle_data, env1.grid)
-    mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.getStowagePlan()).mandatory_cargo_loaded
+    mandatoryCargoLoaded_env1 = evaluator1.evaluate(env1.get_stowage_plan()).mandatory_cargo_loaded
 
     evaluator2 = Evaluator(env2.vehicle_data, env2.grid)
-    mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.getStowagePlan()).mandatory_cargo_loaded
+    mandatoryCargoLoaded_env2 = evaluator2.evaluate(env2.get_stowage_plan()).mandatory_cargo_loaded
 
     assert mandatoryCargoLoaded_env1 <= 1
     assert mandatoryCargoLoaded_env1 >= 0
@@ -50,10 +50,10 @@ def test_Evaluator_MadatoryCargoLoaded():
 #Test if the space utilisation of stowage plans is reasonable
 def test_Evaluator_SpaceUtilisation():
     evaluator1 = Evaluator(env1.vehicle_data, env1.grid)
-    spaceUtilisation_env1 = evaluator1.evaluate(env1.getStowagePlan()).space_utilisation
+    spaceUtilisation_env1 = evaluator1.evaluate(env1.get_stowage_plan()).space_utilisation
 
     evaluator2 = Evaluator(env2.vehicle_data, env2.grid)
-    spaceUtilisation_env2 = evaluator2.evaluate(env2.getStowagePlan()).space_utilisation
+    spaceUtilisation_env2 = evaluator2.evaluate(env2.get_stowage_plan()).space_utilisation
 
     assert spaceUtilisation_env1 <= 1
     assert spaceUtilisation_env1 >= 0
@@ -65,9 +65,9 @@ def test_Evaluator_SpaceUtilisation():
 #Test if the Evaluator and the agents estimate are consensually
 def test_AgentEvaluatorConsensus():
     evaluator1 = Evaluator(env1.vehicle_data, env1.grid)
-    evaluation1 = evaluator1.evaluate(env1.getStowagePlan())
+    evaluation1 = evaluator1.evaluate(env1.get_stowage_plan())
     evaluator2 = Evaluator(env2.vehicle_data, env2.grid)
-    evaluation2 = evaluator2.evaluate(env2.getStowagePlan())
+    evaluation2 = evaluator2.evaluate(env2.get_stowage_plan())
 
     if evaluation1 >= evaluation2:
         assert totalrewards_env1 >= totalrewards_env2
@@ -90,6 +90,6 @@ def test_time():
     #env3.render()
 
     evaluator3 = Evaluator(env3.vehicle_data, env3.grid)
-    evaluation3 = evaluator3.evaluate(env3.getStowagePlan())
+    evaluation3 = evaluator3.evaluate(env3.get_stowage_plan())
 
     print(evaluation3)

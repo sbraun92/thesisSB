@@ -112,7 +112,7 @@ class SARSA(Agent):
                     print("The Terminal reward was "+ str(self.reward))
                     print(self.path)
                     if self.path!=None:
-                        self.env.saveStowagePlan(self.path)
+                        self.env.save_stowage_plan(self.path)
 
 
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option

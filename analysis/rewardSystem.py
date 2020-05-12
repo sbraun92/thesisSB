@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 observation_, reward, done, info = env.step(action)
                 cumReward += reward
 
-            stowagePlan = env.getStowagePlan()
+            stowagePlan = env.get_stowage_plan()
             evaluation = evaluator.evaluate(stowagePlan)
 
 

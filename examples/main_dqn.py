@@ -1,18 +1,19 @@
 from agent.dqn import DQNAgent
 import numpy as np
 from env.roroDeck import RoRoDeck
-from viz.Plotter import Plotter
+from analysis.Plotter import Plotter
 import logging
 from analysis.loggingUnit import LoggingBase
 from valuation.evaluator import Evaluator
 
 if __name__ == '__main__':
     loggingBase = LoggingBase()
-    env = RoRoDeck(False,lanes=12,rows=16)
-    env.vehicle_Data[4][env.mandatory_cargo_mask]+=10
+    env = RoRoDeck(False,lanes=8,rows=12,stochastic=False)
+#    env.vehicle_Data[4][env.mandatory_cargo_mask]+=4
+#    env.vehicle_Data[4][4] = 2 #reefer
     input_dims = np.shape(env.reset())[0]
-    n_games = 7000
-    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0004, input_dims=input_dims, n_actions=4, mem_size=10000000, batch_size=64, epsilon_end=0.005, epsilon_dec= 0.999992)
+    n_games = 15000
+    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=5, mem_size=1000000, batch_size=32, epsilon_end=0.01, epsilon_dec= 0.999992)
 
     #agent.load_model()
 
@@ -27,9 +28,13 @@ if __name__ == '__main__':
         while not done:
             #possible_actions = env.possibleActions
             #if i<n_games*(3./4.):
-            action = agent.choose_action(observation, env.possible_actions) ## add possible actions here
-            #else:
-            #    action = agent.choose_action(observation, env.possible_actions, True) ## add possible actions here
+            if i == 10000:
+                agent.epsilon = 1
+                agent.epsilon_dec = 0.99995
+            if i > 10000:
+                action = agent.choose_action(observation, env.possible_actions) ## add possible actions here
+            else:
+                action = agent.choose_action(observation) ## add possible actions here
 
             state_actions = env.possible_actions
             if action not in state_actions:
@@ -40,8 +45,7 @@ if __name__ == '__main__':
             agent.remember(observation, action, reward, observation_, done, state_actions,new_state_actions)
             observation = observation_
             agent.learn()
-            if bad_moves_counter >  5:
-                #print("aaa")
+            if bad_moves_counter >  6:
                 break
         eps_history.append(agent.epsilon)
         scores.append(score)
@@ -49,7 +53,7 @@ if __name__ == '__main__':
         avg_score = np.mean(scores[max(0,i-100):(i+1)])
 
         #TODO plot to logger
-
+        logging.getLogger('log1').info('episode ', i, 'score %.2f' % score, 'avg. score %.2f' % avg_score)
         if i % 10 == 0 and i > 0:
             print('episode ', i, 'score %.2f' % score, 'avg. score %.2f' % avg_score)
             agent.save_model(loggingBase.module_path)
@@ -73,7 +77,7 @@ if __name__ == '__main__':
     env.render()
     env.saveStowagePlan(module_path)
     agent.save_model(module_path)
-    evaluator = Evaluator(env.vehicle_Data, env.grid)
+    evaluator = Evaluator(env.vehicle_data, env.grid)
     evaluation = evaluator.evaluate(env.getStowagePlan())
 
     print(evaluation)

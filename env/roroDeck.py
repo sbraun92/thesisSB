@@ -37,7 +37,7 @@ class RoRoDeck(gym.Env):
             reward_system:  rewards for given predefined conditions of a state - which will be cumulated
                             at each simulation step
         """
-        logging.getLogger('log1').info('Initialise RORO-Deck environment: \tLanes: {}\tRows: {}'.format(lanes,rows))
+        logging.getLogger('log1').info('Initialise RORO-Deck environment: \tLanes: {}\tRows: {}'.format(lanes, rows))
 
         # just to compare runtime
         # TODO delete helper from
@@ -74,19 +74,20 @@ class RoRoDeck(gym.Env):
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         if vehicle_data is None:
-            self.vehicle_data = np.array([[0, 1, 2, 3, 4],    # vehicle id
-                                          [1, 2, 1, 2, 2],    # destination
-                                          [1, 1, 0, 0, 1],    # mandatory
-                                          [2, 3, 2, 3, 2],    # length
+            self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
+                                          [1, 2, 1, 2, 2],  # destination
+                                          [1, 1, 0, 0, 1],  # mandatory
+                                          [2, 3, 2, 3, 2],  # length
                                           [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
-                                                              # infinite vehicles of that type)
-                                          [0, 0, 0, 0, 1]])   # Reefer
+                                          # infinite vehicles of that type)
+                                          [0, 0, 0, 0, 1]])  # Reefer
 
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
         # Todo dele np.min(self.vehleData
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int16)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
-        self.capacity = self._get_free_capacity(self.grid)
+        self.capacity = self._get_free_capacity()
+        # TODO Delete Frontier as it is redundant information
         self.frontier = self._get_frontier()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int16)
         # for shifts TODO not a good name
@@ -106,7 +107,7 @@ class RoRoDeck(gym.Env):
         # State representation Frontier, BackLook,mandatory cargo, CurrentLane
         self.current_state = self._get_current_state()
 
-        logging.getLogger('log1').info('Initilise Reward System with parameters: \n' +
+        logging.getLogger('log1').info('Initialise Reward System with parameters: \n' +
                                        '\t\t\t\t Time step reward: \t\t\t\t\t {}\n'.format(self.reward_system[0]) +
                                        '\t\t\t\t Reward for caused shift:\t\t\t\t{}\n'.format(self.reward_system[1]) +
                                        '\t\t\t\t @Terminal - reward for Space Utilisation: \t\t{}\n'
@@ -135,8 +136,7 @@ class RoRoDeck(gym.Env):
         Raises:
             KeyError: Raises an exception.
         """
-        #logging.getLogger('log1').info('Reset Environment')
-        self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes,self.rows)
+        self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes, self.rows)
 
         self.sequence_no = 1
         self.grid = self._create_grid()
@@ -148,7 +148,7 @@ class RoRoDeck(gym.Env):
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.initial_end_of_lanes = self.end_of_lanes.copy()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int16)
-        self.capacity = self._get_free_capacity(self.grid)
+        self.capacity = self._get_free_capacity()
         self.current_Lane = self._get_minimal_lanes()[0]
         self.frontier = self._get_frontier()
         self.possible_actions = self.get_possible_actions_of_state()
@@ -164,56 +164,14 @@ class RoRoDeck(gym.Env):
 
         return self.current_state
 
-    def render(self):
+    def render(self, mode='human'):
         """
         Print a representation of an environment (grids of loading sequence, vehicle type and destination)
         Returns
         -------
         None
         """
-        print('-----------Loading Sequence----------------------------------------------------------------')
-        for row in self.grid:
-            # Loading Sequence
-            for col in row:
-                if col == -1:
-                    print('X', end='\t')
-                elif col == 0:
-                    print('-', end='\t')
-                else:
-                    print(str(int(col)), end='\t')
-            print('\n')
-
-        print('-----------VehicleType---------------------------------------------------------------------')
-        for row in self.grid_vehicle_type:
-            # Loading Sequence
-            for col in row:
-                if col == -2:
-                    print('X', end='\t')
-                elif col == -1:
-                    print('-', end='\t')
-                else:
-                    print(str(int(col)), end='\t')
-            print('\n')
-
-        print('-----------Destination---------------------------------------------------------------------')
-        for row in self.grid_destination:
-            for col in row:
-                if col == -1:
-                    print('X', end='\t')
-                elif col == 0:
-                    print('-', end='\t')
-                else:
-                    print(str(int(col)), end='\t')
-            print('\n')
-
-    #    def actionSpaceSample(self):
-    #        """
-    #        Randomly picks a possible action
-    #        Returns
-    #        -------
-    #        an action
-    #        """
-    #        return np.random.choice(self.possible_actions)
+        print(self._get_grid_representations())
 
     def _create_grid(self):
         """
@@ -232,11 +190,11 @@ class RoRoDeck(gym.Env):
             grid[i] += np.hstack([np.zeros(self.lanes - t, dtype=np.int32), -np.ones(t, dtype=np.int32)])
         return grid
 
-    # Return an Array with the Indicies of the last free space
-    # Find indcies of last free slot in lane (if full set -1)
+    # TODO check this method -> does not use "self"
     def _get_end_of_lane(self, grid):
         """
-        Returns the first free row number of each lane
+        Returns the indices of the first free row number of each lane.
+        If a lane is full set it to -1.
 
         Parameters
         ----------
@@ -256,10 +214,10 @@ class RoRoDeck(gym.Env):
                 end_of_lanes[idx] = -1
         return end_of_lanes
 
-    # Return Array of which indicates how much space is free in each lane
-    def _get_free_capacity(self, grid):
+    def _get_free_capacity(self):
         """
-        get free capacity of each lane
+        Return Array of which indicates how much space is free in each lane.
+
         Parameters
         ----------
         grid:   A grid of loading sequence representation
@@ -268,8 +226,8 @@ class RoRoDeck(gym.Env):
         -------
         numpy array (length: lanes)
         """
-        capacity = np.ones(len(grid.T)) * len(grid)
-        capacity -= np.count_nonzero(grid, axis=0)
+        capacity = np.ones(len(self.grid.T)) * len(self.grid)
+        capacity -= np.count_nonzero(self.grid, axis=0)
         return capacity
 
     def _get_frontier(self):
@@ -410,8 +368,8 @@ class RoRoDeck(gym.Env):
                         action = np.random.choice(self.possible_actions)
 
                 slot = self.end_of_lanes[self.current_Lane]
-                self.loading_sequence += "{}. Load Vehicle Type \t {} \t in Lane: \t {} \t Row: \t {} \n"\
-                                         .format(self.sequence_no, action, self.current_Lane, slot)
+                self.loading_sequence += "{}. Load Vehicle Type \t {} \t in Lane: \t {} \t Row: \t {} \n" \
+                    .format(self.sequence_no, action, self.current_Lane, slot)
 
                 self.end_of_lanes[self.current_Lane] += self.vehicle_data[3][action]
 
@@ -479,7 +437,7 @@ class RoRoDeck(gym.Env):
                 # mandatory_vehicles_left_to_load = self.vehicleData[4][self.mandatoryCargoMask]\
                 #                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
                 mandatory_vehicles_left_to_load = np.sum(self.vehicle_data[4][self.mandatory_cargo_mask] \
-                                                    - self.number_of_vehicles_loaded[self.mandatory_cargo_mask])
+                                                         - self.number_of_vehicles_loaded[self.mandatory_cargo_mask])
 
                 # reward += np.sum(mandatory_vehicles_left_to_load) * self.rewardSystem[3]
                 reward += mandatory_vehicles_left_to_load * self.reward_system[3]
@@ -547,45 +505,11 @@ class RoRoDeck(gym.Env):
     #        newCargo = np.array([typeNo, destination, mandatory, length, number])
     #        self.vehicle_data = np.vstack((self.vehicle_data.T, newCargo)).T
 
-    #TODO Code duplication from render -> new Method to_string_representation
-    def saveStowagePlan(self, path):
-        with open(path + "_StowagePlan.txt", 'w') as stowagePlan:
-            # stowagePlan = open(path + "_StowagePlan.txt", 'w')
-            stowagePlan.write('Stowage Plan and Loading Sequence \n')
-            stowagePlan.write(
-                '-------Vehicle Type-------------------------------------------------------------------- \n')
-            for row in self.grid_vehicle_type:
-                for col in row:
-                    if col == -2:
-                        stowagePlan.write('X \t')
-                    elif col == -1:
-                        stowagePlan.write('- \t')
-                    else:
-                        stowagePlan.write(str(int(col)) + ' \t')
-                stowagePlan.write('\n\n')
-            stowagePlan.write(
-                '-----------Loading Sequence---------------------------------------------------------------- \n')
-            for row in self.grid:
-                # Loading Sequence
-                for col in row:
-                    if col == -1:
-                        stowagePlan.write('X \t')
-                    elif col == 0:
-                        stowagePlan.write('- \t')
-                    else:
-                        stowagePlan.write(str(int(col)) + ' \t')
-                stowagePlan.write(' \n\n')
-            stowagePlan.write(
-                '-------Destination-------------------------------------------------------------------- \n')
-            for row in self.grid_destination:
-                for col in row:
-                    if col == -1:
-                        stowagePlan.write('X \t')
-                    elif col == 0:
-                        stowagePlan.write('- \t')
-                    else:
-                        stowagePlan.write(str(int(col)) + ' \t')
-                stowagePlan.write('\n\n')
+    # TODO Code duplication from render -> new Method to_string_representation
+    def save_stowage_plan(self, path):
+        with open(path + "_StowagePlan.txt", 'w') as stowage_plan:
+            stowage_plan.write('Stowage Plan and Loading Sequence \n')
+            stowage_plan.write(self._get_grid_representations())
 
         # Write Loading Sequence
         with open(path + "_LoadingSequence.txt", 'w') as loading_seq:
@@ -593,3 +517,39 @@ class RoRoDeck(gym.Env):
 
     def getStowagePlan(self):
         return self.grid, self.loaded_Vehicles
+
+    def _get_grid_representations(self):
+        representation = '-----------Loading Sequence----------------------------------------------------------------\n'
+        for row in self.grid:
+            for col in row:
+                if col == -1:
+                    representation += 'X\t'
+                elif col == 0:
+                    representation += '-\t'
+                else:
+                    representation += str(int(col)) + '\t'
+            representation += '\n\n'
+
+        representation += '-----------VehicleType--------------------------------------------------------------------\n'
+        for row in self.grid_vehicle_type:
+            for col in row:
+                if col == -2:
+                    representation += 'X\t'
+                elif col == -1:
+                    representation += '-\t'
+                else:
+                    representation += str(int(col)) + '\t'
+            representation += '\n\n'
+
+        representation += '-----------Destination--------------------------------------------------------------------\n'
+        for row in self.grid_destination:
+            for col in row:
+                if col == -1:
+                    representation += 'X\t'
+                elif col == 0:
+                    representation += '-\t'
+                else:
+                    representation += str(int(col)) + '\t'
+            representation += '\n\n'
+
+        return representation

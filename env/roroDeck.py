@@ -8,7 +8,7 @@ np.random.seed(0)
 
 class RoRoDeck(gym.Env):
     """
-    Enviroment-Class of a RORO-Deck
+    Environment-Class of a RORO-Deck
 
     Methods:
         reset()
@@ -18,7 +18,7 @@ class RoRoDeck(gym.Env):
         render()
             Representation of the current state of the RORO-Deck
         actionSpaceSample()
-            returns an random possible action
+            returns a random possible action
         possibleActionsOfState()
             returns all possible actions of the current state
 
@@ -31,10 +31,11 @@ class RoRoDeck(gym.Env):
         Initialise environment
 
         Args:
-            lanes: Number of Lanes on RORO-Deck
-            rows: Number of rows on RORO-Deck
-            vehicle_data: Input data of vehicles (which vehicles have to be loaded and what are their features)
-            reward_system: weights to calculate reward of an action
+            lanes:          Number of Lanes on RORO-Deck
+            rows:           Number of rows on RORO-Deck
+            vehicle_data:   Input data of vehicles (which vehicles have to be loaded and what are their features)
+            reward_system:  rewards for given predefined conditions of a state - which will be cumulated
+                            at each simulation step
         """
         logging.getLogger('log1').info('Initialise RORO-Deck environment: \tLanes: {}\tRows: {}'.format(lanes,rows))
 

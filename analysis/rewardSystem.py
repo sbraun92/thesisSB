@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
         env = RoRoDeck(True)
         env.reward_system = system
-        evaluator = Evaluator(env.vehicle_Data, env.grid)
+        evaluator = Evaluator(env.vehicle_data, env.grid)
 
         unique_CumRrewards = set()
         unique_eval = set()

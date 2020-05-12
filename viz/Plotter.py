@@ -44,6 +44,8 @@ class Plotter(object):
         logging.getLogger('log1').info("prepare reward plot...")
         fig2 = plt.figure(figsize=(5.9, 3.8))
         rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).mean()
+        #rewards_smoothed_high_res = pd.Series(totalRewards).rolling(self.smoothingWindow,
+        #                                                   min_periods=self.smoothingWindow/100).mean()
         rewards_q75 = rewards_smoothed+pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).std()
         rewards_q25 = rewards_smoothed-pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).std()
         rewardsDf = pd.DataFrame(totalRewards)
@@ -51,8 +53,10 @@ class Plotter(object):
 
         #ax = sns.lineplot(data=rewards_smoothed+rewards_std, linewidth=2.5, dashes=False,ax=ax)
 
-        plt.fill_between(rewards_smoothed.index,rewards_smoothed,  rewards_q75, color='gray', alpha=0.2)
-        plt.fill_between(rewards_smoothed.index, rewards_smoothed, rewards_q25, color='gray',alpha=0.2)
+        plt.fill_between(rewards_smoothed.index, rewards_smoothed,  rewards_q75, color='gray', alpha=0.2)
+        plt.fill_between(rewards_smoothed.index, rewards_smoothed, rewards_q25, color='gray', alpha=0.2)
+
+        #plt.fill_between(rewards_smoothed.index, rewards_smoothed, totalRewards, color='gray', alpha=0.2)
 
         #plt.savefig(self.path + '_Rewards.png')
         #plt.show()
@@ -81,6 +85,12 @@ class Plotter(object):
         ax = sns.lineplot(data=pd.Series(stateExpantion), linewidth=2.5, dashes=False, color="black")
         plt.xlabel("Episode")
         plt.ylabel("States Explored")
+        xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
+        ax.set_xticklabels(xlabels)
+
+        ylabels = ['{:,.1f}'.format(y) + 'K' for y in ax.get_yticks() / 1000]
+        ax.set_yticklabels(ylabels)
+
         if self.algorithm is not None:
             plt.title(self.algorithm+ ": State Expansion over time")
             fi3.savefig(self.path +"_" + self.algorithm +  '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
@@ -89,11 +99,7 @@ class Plotter(object):
             fi3.savefig(self.path + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
             plt.title("State Expansion over time")
         # plt.show()
-        xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
-        ax.set_xticklabels(xlabels)
 
-        ylabels = ['{:,.1f}'.format(y) + 'K' for y in ax.get_yticks() / 1000]
-        ax.set_yticklabels(ylabels)
 
 
         logging.getLogger('log1').info("finished plot")

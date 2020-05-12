@@ -43,23 +43,9 @@ class SARSA(Agent):
 
         initState = self.env.reset()
 
-
-        # ix_Actions = np.arange(len(env.actionSpace))
-        # print(env.actionSpace)
-        #self.action_list = []
-
-        # for ix, i in enumerate(env.actionSpace.keys()):
-        #    ix_Actions[i] = ix
-        #   action_list += [i]
-
-        #logging.getLogger('log1').info("initilise Q table")
         self.q_table[initState.tobytes()] = np.zeros(self.actionSpace_length)
 
-
-
-
         logging.getLogger('log1').info("Use param: ALPHA: "+ str(self.ALPHA)+" GAMMA: "+str(self.GAMMA))
-
 
         self.totalRewards = np.zeros(self.numGames)
         self.stateExpantion = np.zeros(self.numGames)
@@ -132,8 +118,10 @@ class SARSA(Agent):
                 #If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
                 if self.steps > self.MAX_IT:
                     break
-
-            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
+            #TODO set to .format and move to Agent Interface
+            logging.getLogger('log1').info('It. {:7d} \t'.format(i)
+                                           + 'EPS: {} \t'.format(round(self.EPS, 4))
+                                           + 'Reward: {}'.format(round(self.epReward, 2)))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
 
 
@@ -142,7 +130,7 @@ class SARSA(Agent):
             if 1. - i / (self.numGames - 100) > 0:
                 self.EPS -= 1. / (self.numGames - 100)
             else:
-                self.EPS = 0
+                self.EPS = 0.001
 
             #if self.EPS > self.EPSmin:
             #    self.EPS *= self.EPSdec

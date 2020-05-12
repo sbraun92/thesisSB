@@ -15,20 +15,12 @@ class LoggingBase(object):
         logging.basicConfig(filename=self.module_path + '_log.log', level=logging.INFO,format="%(asctime)s - %(levelname)s - %(message)s")
         handler = logging.StreamHandler()
         handler.setLevel(logging.INFO)
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        #formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
 
-        self.logger1 = logging.getLogger('log1')
+        #self.logger1 = logging.getLogger('log1')
 
 
-        self.logger1.addHandler(logging.FileHandler(self.module_path + '_debugger.log'))
+        #self.logger1.addHandler(logging.FileHandler(self.module_path + '_debugger.log'))
 
         logging.getLogger('log1').info("Initialise Logger to %s", self.module_path)
-
-        #Output logging activities to Console
-        # logger1.addHandler(handler)
-
-        #self.logger2 = logging.getLogger('log2')
-        #self.logger2.addHandler(logging.FileHandler(self.module_path + '_FinalLoadingSequence.log'))
-        # logging.basicConfig(filename=module_path+'_debugger.log',level=logging.INFO)
-        # log2 = logging.basicConfig(filename=module_path+'_LoadingSequence.log',level=logging.INFO)

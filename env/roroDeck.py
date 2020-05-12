@@ -26,7 +26,7 @@ class RoRoDeck(gym.Env):
 
     """
 
-    def __init__(self, help=False, lanes=8, rows=10, limit_actions=True, reward_system=None, stochastic=False):
+    def __init__(self, help=False, lanes=8, rows=10, vehicle_data=None, reward_system=None, stochastic=False):
         """
         Initialise environment
 
@@ -66,20 +66,21 @@ class RoRoDeck(gym.Env):
         if reward_system is None:
             self.reward_system = np.array([0.2,  # simple Loading
                                            -12,  # caused shifts was -8
-                                           -2,  # terminal: Space left unsed
+                                           -2,  # terminal: Space left unused
                                            -50])  # terminal: mand. cargo not loaded   \was 40
         else:
             self.reward_system = reward_system
         # TODO string formatting
 
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
-        self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
-                                      [1, 2, 1, 2, 2],  # destination
-                                      [1, 1, 0, 0, 1],  # mandatory
-                                      [2, 3, 2, 3, 2],  # length
-                                      [5, 5, -1, -1, 2],
-                                      # number of vehicles on yard (-1 denotes there are infinite vehicles of that type)
-                                      [0, 0, 0, 0, 1]])  # Reefer
+        if vehicle_data is None:
+            self.vehicle_data = np.array([[0, 1, 2, 3, 4],    # vehicle id
+                                          [1, 2, 1, 2, 2],    # destination
+                                          [1, 1, 0, 0, 1],    # mandatory
+                                          [2, 3, 2, 3, 2],    # length
+                                          [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
+                                                              # infinite vehicles of that type)
+                                          [0, 0, 0, 0, 1]])   # Reefer
 
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
         # Todo dele np.min(self.vehleData

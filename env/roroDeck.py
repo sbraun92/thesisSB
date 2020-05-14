@@ -286,7 +286,15 @@ class RoRoDeck(gym.Env):
     def _is_terminal_state(self):
         # Check if the smallest Element still fits after the frontier element and
         # if there are still vehicles in the parking lot to be loaded
+
+        if np.min(self.end_of_lanes) + self.minimal_package > self.rows or np.all((self.vehicle_data[4] - self.number_of_vehicles_loaded) == 0):
+            return True
+        else:
+            return False
+
+        '''
         if self.frontier + self.minimal_package < self.rows and np.size(self.possible_actions) != 0:
+            print(np.size(self.possible_actions) == 0)
             return False
 
         if (self._is_vessel_full() or np.all((self.vehicle_data[4] - self.number_of_vehicles_loaded) == 0)) or \
@@ -300,6 +308,7 @@ class RoRoDeck(gym.Env):
         #    return True
         # else:
         #    return False
+        '''
 
     def _get_current_state(self):
         if self.help:

@@ -53,6 +53,7 @@ class SARSA(Agent):
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
         for i in range(self.number_of_episodes):
+            observation = self.env.reset()
             done = False
             epReward = 0
             steps = 0
@@ -95,7 +96,7 @@ class SARSA(Agent):
                 observation = observation_
 
                 if i == self.number_of_episodes - 1 and done:
-                    logging.getLogger('log1').info(self.env.render())
+                    logging.getLogger('log1').info(self.env._get_grid_representations())
                     print("The reward of the last training episode was " + str(epReward))
                     print("The Terminal reward was " + str(reward))
                     print(self.path)
@@ -103,8 +104,8 @@ class SARSA(Agent):
                         self.env.save_stowage_plan(self.path)
 
                 # If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
-                if steps > self.MAX_IT:
-                    break
+                #if steps > self.MAX_IT:
+                #    break
             # TODO set to .format and move to Agent Interface
             logging.getLogger('log1').info('It. {:7d} \t'.format(i)
                                            + 'EPS: {} \t'.format(round(self.EPS, 4))
@@ -126,10 +127,11 @@ class SARSA(Agent):
             self.totalRewards[i] = epReward
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = steps
-            avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
-            # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+
             if i % 500 == 0 and i > 0:
-                print('episode ', i, '\tscore %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward)
+                avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
+                # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+                print('episode ', i, '\tscore %.2f' % epReward, '\tavg. score %.2f' % avg_reward)
 
         logging.getLogger('log1').info("End training process")
         self.training_time = time.time() - start

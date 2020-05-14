@@ -42,14 +42,9 @@ class TDQLearning(Agent):
 
         start = time.time()
 
-        initState = self.env.reset()
+        observation = self.env.reset()
 
-        # for ix, i in enumerate(env.actionSpace.keys()):
-        #    ix_Actions[i] = ix
-        #   action_list += [i]
-
-        # logging.getLogger('log1').info("initilise Q table")
-        self.q_table[initState.tobytes()] = np.zeros(self.actionSpace_length)
+        self.q_table[observation.tobytes()] = np.zeros(self.actionSpace_length)
 
         logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
@@ -60,15 +55,15 @@ class TDQLearning(Agent):
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
         for i in range(self.number_of_episodes):
-            self.done = False
-            self.epReward = 0
-            self.observation = self.env.reset()
-            self.steps = 0
+            done = False
+            epReward = 0
+            observation = self.env.reset()
+            steps = 0
 
-            while not self.done:
+            while not done:
                 # Show for visualisation the last training epoch
-                self.rand = np.random.random()
-                self.action = self.max_action(self.observation) if self.rand < (1 - self.EPS) \
+
+                action = self.max_action(observation) if np.random.random() < (1 - self.EPS) \
                     else self.env.action_space_sample()
                 # self.env.render()
                 # TODO delete
@@ -77,52 +72,52 @@ class TDQLearning(Agent):
                 #    print(self.q_table[self.observation.tobytes()])
                 #    print(self.action)
 
-                self.observation_, self.reward, self.done, self.info = self.env.step(self.action)
-                self.steps += 1
+                observation_, reward, done, _ = self.env.step(action)
+                steps += 1
 
                 # Log Loading Sequence
                 if i == self.number_of_episodes - 1:
                     logging.getLogger('log2').info(
-                        "Current Lane:" + str(self.observation[-1]) + " Action:" + str(self.action))
+                        "Current Lane:" + str(observation[-1]) + " Action:" + str(action))
 
-                if self.observation_.tobytes() not in self.q_table:
-                    self.q_table[self.observation_.tobytes()] = np.zeros(self.actionSpace_length)
+                if observation_.tobytes() not in self.q_table:
+                    self.q_table[observation_.tobytes()] = np.zeros(self.actionSpace_length)
 
-                self.epReward += self.reward
+                epReward += reward
 
                 # TD-Q-Learning with Epsilon-Greedy
-                if not self.done:
-                    self.action_ = self.max_action(self.observation_)
+                if not done:
+                    action_ = self.max_action(observation_)
 
-                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
-                            self.reward + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
-                            - self.q_table[self.observation.tobytes()][self.action])
+                    self.q_table[observation.tobytes()][action] += self.ALPHA * (
+                            reward + self.GAMMA * self.q_table[observation_.tobytes()][action_]
+                            - self.q_table[observation.tobytes()][action])
 
                 # Value of Terminal State is zero
                 else:
-                    self.q_table[self.observation.tobytes()][self.action] += self.ALPHA * (
-                            self.reward - self.q_table[self.observation.tobytes()][self.action])
+                    self.q_table[observation.tobytes()][action] += self.ALPHA * (
+                            reward - self.q_table[observation.tobytes()][action])
 
                 # if not self.done:
                 #    self.q_table[self.observation.tobytes()][self.action] = self.reward \
                 #                                    + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
 
-                self.observation = self.observation_
+                observation = observation_
 
-                if i == self.number_of_episodes - 1 and self.done == True:
+                if i == self.number_of_episodes - 1 and done:
                     self.env.render()
-                    logging.getLogger('log1').info(self.env.render())
-                    print("The reward of the last training episode was " + str(self.epReward))
-                    print("The Terminal reward was " + str(self.reward))
+                    logging.getLogger('log1').info(self.env._get_grid_representations())
+                    print("The reward of the last training episode was " + str(epReward))
+                    print("The Terminal reward was " + str(reward))
                     print(self.path)
-                    if self.path != None:
+                    if self.path is not None:
                         self.env.save_stowage_plan(self.path)
 
                 # If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
-                if self.steps > self.MAX_IT:
-                    break
+                #if steps > self.MAX_IT:
+                #    break
 
-            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(self.epReward))
+            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(epReward))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
 
             if 1. - i / (self.number_of_episodes - 100) > 0:
@@ -137,15 +132,16 @@ class TDQLearning(Agent):
 
             self.eps_history.append(self.EPS)
 
-            self.totalRewards[i] = self.epReward
+            self.totalRewards[i] = epReward
             self.stateExpantion[i] = len(self.q_table.keys())
-            self.stepsToExit[i] = self.steps
+            self.stepsToExit[i] = steps
 
-            avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
-            std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+
+
             if i % 500 == 0 and i > 0:
-                print('episode ', i, 'score %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward,
-                      '\tstd of score %.2f' % std_reward)
+                avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
+                # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+                print('episode ', i, 'score %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward)
 
             # if i%500 == 0:
             #    print(len(self.q_table.keys()))

@@ -88,7 +88,7 @@ class RoRoDeck(gym.Env):
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int16)
         self.capacity = self._get_free_capacity()
         # TODO Delete Frontier as it is redundant information
-        self.frontier = self._get_frontier()
+        self.frontier = np.max(self.end_of_lanes)
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int16)
         # for shifts TODO not a good name
         self.shift_helper = self.end_of_lanes.copy()
@@ -151,7 +151,7 @@ class RoRoDeck(gym.Env):
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int16)
         self.capacity = self._get_free_capacity()
         self.current_Lane = self._get_minimal_lanes()[0]
-        self.frontier = self._get_frontier()
+        self.frontier = np.max(self.end_of_lanes)
         self.possible_actions = self.get_possible_actions_of_state()
         self.TerminalStateCounter = 0
         self.shift_helper = self.end_of_lanes.copy()
@@ -226,15 +226,6 @@ class RoRoDeck(gym.Env):
         capacity = np.ones(len(self.grid.T)) * len(self.grid)
         capacity -= np.count_nonzero(self.grid, axis=0)
         return capacity
-
-    def _get_frontier(self):
-        """
-        get the highest row number of the end_of_lanes array
-        Returns
-        -------
-
-        """
-        return np.max(self.end_of_lanes)
 
     def _find_current_lane(self):
         return np.argmin(self.end_of_lanes)
@@ -426,7 +417,7 @@ class RoRoDeck(gym.Env):
                     self.lowest_destination[self.current_Lane] = self.vehicle_data[1][action]
 
                 #TODO frontier redundant
-                self.frontier = self._get_frontier()
+                self.frontier = np.max(self.end_of_lanes)
                 self.sequence_no += 1
                 self.current_Lane = self._get_minimal_lanes()[0]  # better name updateCurrentLane
 

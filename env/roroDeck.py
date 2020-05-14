@@ -57,8 +57,8 @@ class RoRoDeck(gym.Env):
         # Reefer TODo
         self.grid_reefer = self._create_grid()
         self.grid_reefer.T[0][4:rows] = 1
-        self.grid_destination = self._create_grid()
-        self.grid_vehicle_type = self._create_grid() - 1
+        self.grid_destination = self.grid.copy()
+        self.grid_vehicle_type = self.grid.copy() - 1
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.initial_end_of_lanes = self.end_of_lanes.copy()
         self.current_Lane = self._get_minimal_lanes()[0]
@@ -138,11 +138,12 @@ class RoRoDeck(gym.Env):
         """
         self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes, self.rows)
 
+
         self.sequence_no = 1
         self.grid = self._create_grid()
-        self.grid_destination = self._create_grid()
-        self.grid_vehicle_type = self._create_grid() - 1
-        self.grid_reefer = self._create_grid()
+        self.grid_destination = self.grid.copy()
+        self.grid_vehicle_type = self.grid.copy() - 1
+        self.grid_reefer = self.grid.copy()
         self.grid_reefer.T[0][4:(self.rows)] = 1
         self.action_space = self.vehicle_data[0]
         self.end_of_lanes = self._get_end_of_lane(self.grid)
@@ -380,6 +381,7 @@ class RoRoDeck(gym.Env):
                     self.number_of_vehicles_loaded[action] += 1
                     reward += self.reward_system[0]
 
+                #mandatory cargo
                 if self.vehicle_data[2][action] == 1:
                     reward += 0.5
 
@@ -414,6 +416,7 @@ class RoRoDeck(gym.Env):
                 if self.vehicle_data[1][action] < self.lowest_destination[self.current_Lane]:
                     self.lowest_destination[self.current_Lane] = self.vehicle_data[1][action]
 
+                #TODO frontier redundant
                 self.frontier = self._get_frontier()
                 self.sequence_no += 1
                 self.current_Lane = self._get_minimal_lanes()[0]  # better name updateCurrentLane

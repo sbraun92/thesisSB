@@ -6,21 +6,21 @@ from analysis.loggingUnit import LoggingBase
 from datetime import datetime
 import logging
 import numpy as np
-
+import pickle
 if __name__ == '__main__':
 
     #Register Outputpath and Logger
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
 
-    it = 2_000
+    it = 1_000_000
     logging.getLogger('log1').info("Train for {it} iterations.")
 
     smoothing_window = int(it / 100)
     smoothing_window =200
 
     #Test with a bigger configuration
-    env = RoRoDeck(True, 10, 14, stochastic=False)
+    env = RoRoDeck(True, 8, 12, stochastic=False)
 
     vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
                             [1, 2, 1, 2, 2],  # destination
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     #######################################################################
     # TDQ Training
     #agent = TDQLearning(env,module_path,it)
-    #q_table, totalRewards, stateExpantion, stepsToExit, eps_history = agent.train()
+    #q_table, totalRewards, stepsToExit, eps_history, stateExpantion = agent.train()
     #agent.save_model(module_path,type='pickle')
     evaluator = Evaluator(env.vehicle_data, env.grid)
     #print(env.current_state)
@@ -58,8 +58,14 @@ if __name__ == '__main__':
     ##########################################################################
     # SARSA Training
     agent = SARSA(env, module_path, it)
-    q_table, total_rewards, state_expansion, steps_to_exit, eps_history = agent.train()
+    q_table, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     print(datetime.now())
+
+    pickle.dump(total_rewards, open(module_path + '_rewards.p', "wb"))
+    pickle.dump(steps_to_exit, open(module_path + '_steps_to_exit.p', "wb"))
+    pickle.dump(eps_history, open(module_path + '_eps_history.p', "wb"))
+
+
     agent.save_model(module_path, type='pickle')
     print(datetime.now())
     evaluation = evaluator.evaluate(env.get_stowage_plan())

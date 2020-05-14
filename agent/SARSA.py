@@ -13,16 +13,15 @@ np.random.seed(0)
 
 
 class SARSA(Agent):
-    def __init__(self, env=None, path=None, numGames=20000, orig=True, GAMMA=0.999):
+    def __init__(self, env=None, path=None, number_of_episodes=20000, orig=True, GAMMA=0.999):
         # help only for timing
         self.orig = orig
         logging.info("Initialise SARSA Agent")
-        self.numGames = numGames
+        self.number_of_episodes = number_of_episodes
         self.q_table = {}
         self.EPSdec = 0.999995
         self.EPSmin = 0.001
         self.GAMMA = GAMMA
-        # self.env = env
         self.path = path
         self.env = env
         self.eps_history = []
@@ -47,13 +46,13 @@ class SARSA(Agent):
 
         logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
-        self.totalRewards = np.zeros(self.numGames)
-        self.stateExpantion = np.zeros(self.numGames)
-        self.stepsToExit = np.zeros(self.numGames)
+        self.totalRewards = np.zeros(self.number_of_episodes)
+        self.stateExpantion = np.zeros(self.number_of_episodes)
+        self.stepsToExit = np.zeros(self.number_of_episodes)
 
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
-        for i in range(self.numGames):
+        for i in range(self.number_of_episodes):
             done = False
             epReward = 0
             steps = 0
@@ -68,7 +67,7 @@ class SARSA(Agent):
                 steps += 1
 
                 # Log Loading Sequence
-                if i == self.numGames - 1:
+                if i == self.number_of_episodes - 1:
                     logging.getLogger('log2').info(
                         "Current Lane:" + str(observation[-1]) + " Action:" + str(current_action))
 
@@ -95,7 +94,7 @@ class SARSA(Agent):
 
                 observation = observation_
 
-                if i == self.numGames - 1 and done:
+                if i == self.number_of_episodes - 1 and done:
                     logging.getLogger('log1').info(self.env.render())
                     print("The reward of the last training episode was " + str(epReward))
                     print("The Terminal reward was " + str(reward))
@@ -112,8 +111,8 @@ class SARSA(Agent):
                                            + 'Reward: {}'.format(round(self.epReward, 2)))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
 
-            if 1. - i / (self.numGames - 100) > 0:
-                self.EPS -= 1. / (self.numGames - 100)
+            if 1. - i / (self.number_of_episodes - 100) > 0:
+                self.EPS -= 1. / (self.number_of_episodes - 100)
             else:
                 self.EPS = 0.001
 
@@ -128,13 +127,13 @@ class SARSA(Agent):
             self.stateExpantion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = steps
             avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
-            #std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
+            # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
             if i % 500 == 0 and i > 0:
                 print('episode ', i, '\tscore %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward)
 
         logging.getLogger('log1').info("End training process")
         self.training_time = time.time() - start
-        return self.q_table, self.totalRewards, self.stateExpantion, self.stepsToExit, np.array(self.eps_history)
+        return self.q_table, self.totalRewards, self.stepsToExit, np.array(self.eps_history), self.stateExpantion
 
     # TODO cleanup
     #    def max_action(self, state):
@@ -155,7 +154,7 @@ class SARSA(Agent):
         self.q_table["ModelParam"] = {"Algorithm": "SARSA",
                                       "GAMMA": self.GAMMA,
                                       "ALPHA": self.ALPHA,
-                                      "Episodes": self.numGames,
+                                      "Episodes": self.number_of_episodes,
                                       "EnvLanes:": self.env.lanes,
                                       "EnvRows": self.env.rows,
                                       "VehicleData": self.env.vehicle_data,

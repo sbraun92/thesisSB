@@ -11,7 +11,7 @@ class Agent:
         DQN     -   implementation of the Deep Q Learning (with Experience Replay and fixed target network)
     """
     def __init__(self):
-        self.NUMBER_OF_EPISODES = None
+        self.number_of_episodes = None
         self.env = None
         self.strategies = ["Epsilon-greedy"]
         self.training_time = 0
@@ -68,7 +68,7 @@ class Agent:
         return possible_actions[positions_of_best_possible_action]
 
     #TODO unify tabular and NN 
-    def predict(self, state,action=None):
+    def predict(self, state, action=None):
         if self.q_table is not None:
             try:
                 if action is None:

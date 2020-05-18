@@ -64,7 +64,7 @@ class RoRoDeck(gym.Env):
         self.current_Lane = self._get_minimal_lanes()[0]
 
         if reward_system is None:
-            self.reward_system = np.array([2, -6, -2, -50.0])
+            self.reward_system = np.array([2, -8, -2, -50.0])
                                             #[0.2,  # mandatory cargo per step
                                            #-12,  # caused shifts per step was -8
                                            #-2,  # terminal: Space left unused
@@ -306,8 +306,8 @@ class RoRoDeck(gym.Env):
         '''
 
     def _get_current_state(self):
-        #if self.help:
-        if False:
+        if self.help:
+        #if False:
             return np.hstack((self.frontier, self.end_of_lanes,
                               self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane)).astype(
                 np.int16)
@@ -356,7 +356,6 @@ class RoRoDeck(gym.Env):
             # print("Action was not Legal. There is an error in the legal action machine")
             return self.current_state, -50, self._is_terminal_state(), None
         else:
-
             reward = 0.0001  # self.calculateReward()
             number_of_shifts = self._get_number_of_shifts(action)
             reward += number_of_shifts* self.reward_system[1]  # +self.action2vehicleLength[action]*0.6

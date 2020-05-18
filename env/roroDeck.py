@@ -45,7 +45,7 @@ class RoRoDeck(gym.Env):
         # 1-p a random action from the possible actions
         self.stochastic = stochastic
         self.p = 0.95
-        #TODO remove help
+        # TODO remove help
         self.help = help
 
         self.loading_sequence = None
@@ -64,10 +64,11 @@ class RoRoDeck(gym.Env):
         self.current_Lane = self._get_minimal_lanes()[0]
 
         if reward_system is None:
-            self.reward_system = np.array([0.2,  # simple Loading
-                                           -12,  # caused shifts was -8
-                                           -2,  # terminal: Space left unused
-                                           -50])  # terminal: mand. cargo not loaded   \was 40
+            self.reward_system = np.array([2, -6, -2, -50.0])
+                                            #[0.2,  # mandatory cargo per step
+                                           #-12,  # caused shifts per step was -8
+                                           #-2,  # terminal: Space left unused
+                                           #-50])  # terminal: mand. cargo not loaded   \was 40
         else:
             self.reward_system = reward_system
         # TODO string formatting
@@ -94,6 +95,8 @@ class RoRoDeck(gym.Env):
         self.shift_helper = self.end_of_lanes.copy()
         self.minimal_package = np.min(self.vehicle_data[3])
         self.maximal_package = np.max(self.vehicle_data[3])
+        self.maximal_shifts = self._maximal_number_of_shifts()
+
         # mandatory cargo, must be loaded
         # self.mandatoryCargo = self.vehicleData[4][self.vehicleData[2] == 1]
 
@@ -138,7 +141,6 @@ class RoRoDeck(gym.Env):
         """
         self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes, self.rows)
 
-
         self.sequence_no = 1
         self.grid = self._create_grid()
         self.grid_destination = self.grid.copy()
@@ -162,6 +164,7 @@ class RoRoDeck(gym.Env):
         self.current_state = self._get_current_state()
         self.minimal_package = np.min(self.vehicle_data[3])
         self.maximal_package = np.max(self.vehicle_data[3])
+        self.maximal_shifts = self._maximal_number_of_shifts()
 
         return self.current_state
 
@@ -276,9 +279,10 @@ class RoRoDeck(gym.Env):
 
     def _is_terminal_state(self):
         # Check if the smallest Element still fits after the frontier element and
-        # if there are still vehicles in the parking lot to be loaded
+        # if there are still vehicles in the parking lot to be loaded TODO docstring
 
-        if np.min(self.end_of_lanes) + self.minimal_package > self.rows or np.all((self.vehicle_data[4] - self.number_of_vehicles_loaded) == 0):
+        if np.min(self.end_of_lanes) + self.minimal_package > self.rows \
+                or np.all((self.vehicle_data[4] - self.number_of_vehicles_loaded) == 0):
             return True
         else:
             return False
@@ -302,10 +306,11 @@ class RoRoDeck(gym.Env):
         '''
 
     def _get_current_state(self):
-        if self.help:
+        #if self.help:
+        if False:
             return np.hstack((self.frontier, self.end_of_lanes,
                               self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane)).astype(
-                np.int32)
+                np.int16)
         else:
             # if np.max(self.end_of_lanes)>(0.2*self.rows):
             possible_actions_one_hot = np.zeros(len(self.vehicle_data[0]))
@@ -314,7 +319,8 @@ class RoRoDeck(gym.Env):
 
             return np.hstack((self.end_of_lanes, self.lowest_destination,
                               self.number_of_vehicles_loaded[self.mandatory_cargo_mask], possible_actions_one_hot,
-                              self.current_Lane))
+                              self.current_Lane)).astype(
+                np.int16)
             # return np.hstack((self.grid_vehicle_type.flatten(), self.lowest_destination,
             #                 self.number_of_vehicles_loaded[self.mandatory_cargo_mask], self.current_Lane))
             # else:
@@ -351,9 +357,9 @@ class RoRoDeck(gym.Env):
             return self.current_state, -50, self._is_terminal_state(), None
         else:
 
-            reward = 0  # self.calculateReward()
+            reward = 0.0001  # self.calculateReward()
             number_of_shifts = self._get_number_of_shifts(action)
-            reward += number_of_shifts * self.reward_system[1]  # +self.action2vehicleLength[action]*0.6
+            reward += number_of_shifts* self.reward_system[1]  # +self.action2vehicleLength[action]*0.6
             # Remove Switching-Option
             if self.action_space[action] == -1:
                 self.current_Lane = self._switch_current_lane()
@@ -376,14 +382,14 @@ class RoRoDeck(gym.Env):
 
                 if self.vehicle_data[4][action] == -1:  # infinite vehicles on car park
                     self.number_of_vehicles_loaded[action] += 1
-                    reward += self.reward_system[0]
+                    #reward += self.reward_system[0]
                 elif self.number_of_vehicles_loaded[action] < self.vehicle_data[4][action]:
                     self.number_of_vehicles_loaded[action] += 1
-                    reward += self.reward_system[0]
+                    #reward += self.reward_system[0]
 
-                #mandatory cargo
+                # mandatory cargo
                 if self.vehicle_data[2][action] == 1:
-                    reward += 0.5
+                    reward += self.reward_system[0] #0.5
 
                 self.loaded_Vehicles[self.current_Lane][self.vehicle_Counter[self.current_Lane]] = action
                 self.vehicle_Counter[self.current_Lane] += 1
@@ -416,7 +422,7 @@ class RoRoDeck(gym.Env):
                 if self.vehicle_data[1][action] < self.lowest_destination[self.current_Lane]:
                     self.lowest_destination[self.current_Lane] = self.vehicle_data[1][action]
 
-                #TODO frontier redundant
+                # TODO frontier redundant
                 self.frontier = np.max(self.end_of_lanes)
                 self.sequence_no += 1
                 self.current_Lane = self._get_minimal_lanes()[0]  # better name updateCurrentLane
@@ -523,3 +529,7 @@ class RoRoDeck(gym.Env):
             representation += '\n\n'
 
         return representation
+
+    def _maximal_number_of_shifts(self):
+        possible_shifts = np.array((self.capacity - np.ones(self.lanes) * self.minimal_package) / self.minimal_package, dtype=np.int16)
+        return np.sum(possible_shifts)

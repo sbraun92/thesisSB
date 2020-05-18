@@ -5,4 +5,5 @@ seaborn
 sympy
 tensorflow
 keras
+keras-rectified-adam
 gym

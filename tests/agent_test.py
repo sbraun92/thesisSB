@@ -15,7 +15,7 @@ def test_TDQagent():
     agent = TDQLearning(env,None)
 
     assert len(agent.q_table.keys()) == 0
-    agent.numGames=1
+    agent.number_of_episodes = 1
     agent.train()
 
     assert len(agent.q_table.keys()) == 48
@@ -40,6 +40,7 @@ def test_max_action_method():
 
     assert agent.max_action(agent.q_table, state, None) == 2
 #Test for SARSA
+
 def test_SARSAagent():
     env = RoRoDeck(False)
     env.rows = 12
@@ -48,7 +49,7 @@ def test_SARSAagent():
     agent = SARSA(env, None)
 
     assert len(agent.q_table.keys()) == 0
-    agent.numGames = 1
+    agent.number_of_episodes = 1
     agent.train()
 
     assert len(agent.q_table.keys()) == 50

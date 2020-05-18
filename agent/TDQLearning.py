@@ -21,15 +21,15 @@ class TDQLearning(Agent):
         self.EPSdec = 0.9999
         self.EPSmin = 0.001
         self.GAMMA = GAMMA
-        # self.env = env
+        self.env = env
         self.path = path
         self.env = env
-        self.eps_history = []
+
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        self.actionSpace_length = len(self.env.action_space)
-        self.action_ix = np.arange(self.actionSpace_length)
+        self.action_space_length = len(self.env.action_space)
+        self.action_ix = np.arange(self.action_space_length)
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
         # self.action_list = []
@@ -44,19 +44,20 @@ class TDQLearning(Agent):
 
         observation = self.env.reset()
 
-        self.q_table[observation.tobytes()] = np.zeros(self.actionSpace_length)
+        self.q_table[observation.tobytes()] = np.zeros(self.action_space_length)
 
         logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
-        self.totalRewards = np.zeros(self.number_of_episodes)
-        self.stateExpantion = np.zeros(self.number_of_episodes)
-        self.stepsToExit = np.zeros(self.number_of_episodes)
+        total_rewards = np.zeros(self.number_of_episodes)
+        state_expantion = np.zeros(self.number_of_episodes)
+        stepsToExit = np.zeros(self.number_of_episodes)
+        eps_history = []
 
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
         for i in range(self.number_of_episodes):
             done = False
-            epReward = 0
+            ep_reward = 0
             observation = self.env.reset()
             steps = 0
 
@@ -81,9 +82,9 @@ class TDQLearning(Agent):
                         "Current Lane:" + str(observation[-1]) + " Action:" + str(action))
 
                 if observation_.tobytes() not in self.q_table:
-                    self.q_table[observation_.tobytes()] = np.zeros(self.actionSpace_length)
+                    self.q_table[observation_.tobytes()] = np.zeros(self.action_space_length)
 
-                epReward += reward
+                ep_reward += reward
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not done:
@@ -107,7 +108,7 @@ class TDQLearning(Agent):
                 if i == self.number_of_episodes - 1 and done:
                     self.env.render()
                     logging.getLogger('log1').info(self.env._get_grid_representations())
-                    print("The reward of the last training episode was " + str(epReward))
+                    print("The reward of the last training episode was " + str(ep_reward))
                     print("The Terminal reward was " + str(reward))
                     print(self.path)
                     if self.path is not None:
@@ -117,7 +118,7 @@ class TDQLearning(Agent):
                 #if steps > self.MAX_IT:
                 #    break
 
-            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(epReward))
+            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(ep_reward))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
 
             if 1. - i / (self.number_of_episodes - 100) > 0:
@@ -130,25 +131,25 @@ class TDQLearning(Agent):
             # else:
             #    self.EPS = self.EPSmin
 
-            self.eps_history.append(self.EPS)
+            eps_history.append(self.EPS)
 
-            self.totalRewards[i] = epReward
-            self.stateExpantion[i] = len(self.q_table.keys())
-            self.stepsToExit[i] = steps
+            total_rewards[i] = ep_reward
+            state_expantion[i] = len(self.q_table.keys())
+            stepsToExit[i] = steps
 
 
 
             if i % 500 == 0 and i > 0:
-                avg_reward = np.mean(self.totalRewards[max(0, i - 100):(i + 1)])
+                avg_reward = np.mean(total_rewards[max(0, i - 500):(i + 1)])
                 # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
-                print('episode ', i, 'score %.2f' % self.epReward, '\tavg. score %.2f' % avg_reward)
+                print('episode ', i, 'score %.2f' % ep_reward, '\tavg. score %.2f' % avg_reward)
 
             # if i%500 == 0:
             #    print(len(self.q_table.keys()))
 
         logging.getLogger('log1').info("End training process")
         self.training_time = time.time() - start
-        return self.q_table, self.totalRewards, self.stepsToExit, np.array(self.eps_history), self.stateExpantion
+        return self.q_table, total_rewards, stepsToExit, np.array(eps_history), state_expantion
 
     # TODO cleanup
     # def maxAction(self, state):
@@ -167,7 +168,7 @@ class TDQLearning(Agent):
         except:
             logging.getLogger("log1").error("Could not load pickle file")
 
-    def save_model(self, path, type='pickle'):
+    def save_model(self, path, file_type='pickle'):
         self.q_table["ModelParam"] = {"Algorithm": "Time Difference Q-Learning",
                                       "GAMMA": self.GAMMA,
                                       "ALPHA": self.ALPHA,
@@ -183,13 +184,16 @@ class TDQLearning(Agent):
 
         super().save_model(path + info)
 
-    def execute(self, humanInteraction=False):
-        self.observation = self.env.reset()
-        self.done = False
+#TODO delete
+'''
+    def execute(self, human_interaction=False):
+        observation = self.env.reset()
+        done = False
 
         while not self.done:
-            self.action = self.max_action(self.q_table, self.observation, self.env.possible_actions)
-            self.observation, self.reward, self.done, self.info = self.env.step(self.action)
-            self.epReward += self.reward
+            action = self.max_action(self.q_table, observation, self.env.possible_actions)
+            observation, reward, done, _ = self.env.step(self.action)
+            self.epReward += reward
 
         self.env.render()
+'''

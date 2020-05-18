@@ -13,7 +13,7 @@ if __name__ == '__main__':
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
 
-    it = 1_000_000
+    it = 8_000_0
     logging.getLogger('log1').info("Train for {it} iterations.")
 
     smoothing_window = int(it / 100)
@@ -65,15 +65,21 @@ if __name__ == '__main__':
     pickle.dump(steps_to_exit, open(module_path + '_steps_to_exit.p', "wb"))
     pickle.dump(eps_history, open(module_path + '_eps_history.p', "wb"))
 
-
-    agent.save_model(module_path, type='pickle')
+    agent.save_model(module_path, file_format='pickle')
     print(datetime.now())
     evaluation = evaluator.evaluate(env.get_stowage_plan())
     print(evaluation)
+    env.render()
     #Plotting
     plotter = Plotter(module_path, it, algorithm="SARSA")
     plotter.plot(total_rewards, state_expansion, steps_to_exit, eps_history)
     #########################################################################
+    agent = DQN()
+    _ = agent.train()
+
+
+
+
     #'''
 
     '''

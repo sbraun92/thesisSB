@@ -28,8 +28,8 @@ class SARSA(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        self.actionSpace_length = len(self.env.action_space)
-        self.action_ix = np.arange(self.actionSpace_length)
+        self.action_space_length = len(self.env.action_space)
+        self.action_ix = np.arange(self.action_space_length)
         self.epReward = 0
 
     # TODO Output QTable
@@ -42,7 +42,7 @@ class SARSA(Agent):
 
         observation = self.env.reset()
 
-        self.q_table[observation.tobytes()] = np.zeros(self.actionSpace_length)
+        self.q_table[observation.tobytes()] = np.zeros(self.action_space_length)
 
         logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
@@ -73,7 +73,7 @@ class SARSA(Agent):
                         "Current Lane:" + str(observation[-1]) + " Action:" + str(current_action))
 
                 if observation_.tobytes() not in self.q_table:
-                    self.q_table[observation_.tobytes()] = np.zeros(self.actionSpace_length)
+                    self.q_table[observation_.tobytes()] = np.zeros(self.action_space_length)
 
                 epReward += reward
 
@@ -133,8 +133,9 @@ class SARSA(Agent):
                 # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
                 print('episode ', i, '\tscore %.2f' % epReward, '\tavg. score %.2f' % avg_reward)
 
-        logging.getLogger('log1').info("End training process")
         self.training_time = time.time() - start
+        logging.getLogger('log1').info("End training process after %d sec".format(self.training_time))
+
         return self.q_table, self.totalRewards, self.stepsToExit, np.array(self.eps_history), self.stateExpantion
 
     # TODO cleanup
@@ -152,7 +153,7 @@ class SARSA(Agent):
             logging.getLogger("log1").error("Could not load pickle file")
 
     # TODO work with super method
-    def save_model(self, path, type='pickle'):
+    def save_model(self, path, file_format='pickle'):
         self.q_table["ModelParam"] = {"Algorithm": "SARSA",
                                       "GAMMA": self.GAMMA,
                                       "ALPHA": self.ALPHA,

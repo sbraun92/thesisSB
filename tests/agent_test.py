@@ -79,7 +79,7 @@ def test_dqnAgent():
     env = RoRoDeck(True, lanes=8, rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 2
-    agent = DQNAgent(gamma=0.999, epsilon=1.0, alpha=0.0005, input_dims=input_dims, n_actions=5, mem_size=10000000,
+    agent = DQNAgent(env=env,module_path=None,gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
                      batch_size=64, epsilon_end=0.01, epsilon_dec=0.99999)
 
     for i in range(n_games):
@@ -99,7 +99,7 @@ def test_dqnAgent():
 
 
 
-    assert np.shape(np.nonzero(agent.memory.reward_memory))[1]==59 #TODO was 59 before remving possible action filtre
+    assert np.shape(np.nonzero(agent.memory.reward_memory))[1]==58 #TODO was 59 before remving possible action filtre
     assert np.shape(np.nonzero(agent.memory.terminal_memory))[1]==2
 
 def test_load_save():

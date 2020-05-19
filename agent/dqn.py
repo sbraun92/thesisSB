@@ -66,11 +66,11 @@ class DQNAgent(Agent):
         self.memory = ExperienceReplay(mem_size, self.input_dims, self.number_of_actions, discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = self.build_ANN(alpha, self.number_of_actions, self.input_dims, 450, 450)
+        self.q_eval = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= [450,450,450,450])
 
         # Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = self.build_ANN(alpha, self.number_of_actions, self.input_dims, 450, 450)
+        self.q_target_model = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= [450,450,450,450])
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
@@ -82,25 +82,29 @@ class DQNAgent(Agent):
         #Plots
         self.steps_to_exit = np.zeros(self.number_of_episodes)
 
-    def build_ANN(self, lr, n_actions, input_dims, layer1_dimension, layer_dimension, regularisation=0.001):
-        model = Sequential([Dense(layer1_dimension, input_shape=(input_dims,)),
-                            Activation('relu'),
-                            Dense(layer_dimension, activity_regularizer=l2(regularisation)),
-                            Activation('relu'),
-                            Dense(layer1_dimension, activity_regularizer=l2(regularisation)),
-                            Activation('relu'),
-                            Dense(layer_dimension, activity_regularizer=l2(regularisation)),
-                            Activation('relu'),
-                            Dense(n_actions, activity_regularizer=l1(regularisation))])
+    def build_ANN(self, lr, output_dimension, input_dimsion, layers= [450,450,450,450], activation='relu', regularisation=0.001):
+        #model = Sequential([Dense(layers[0], input_shape=(input_dimsion,)),
+        #                    Activation(activation),
+         #                   Dense(layers[1], activity_regularizer=l2(regularisation)),
+          #                  Activation(activation),
+           #                 Dense(layers[2], activity_regularizer=l2(regularisation)),
+            #                Activation(activation),
+             #               Dense(layers[3], activity_regularizer=l2(regularisation)),
+              #              Activation(activation),
+               #             Dense(output_dimension, activity_regularizer=l1(regularisation))])
 
-        #model = Sequential([Dense(layers[0], input_shape=(input_dims,)),
-        #                    Activation('relu'))
+        model = Sequential([Dense(layers[0], input_shape=(input_dimsion,)),
+                            Activation('relu')])
+        for layer in layers[1:]:
+            model.add(Sequential([Dense(layer, activity_regularizer=l2(regularisation)), Activation(activation)]))
+        model.add(Sequential([Dense(output_dimension, activity_regularizer=l1(regularisation))]))
 
-        logging.getLogger('log1').info("Compile NN")
+
+        logging.getLogger(__name__).info("Compile NN")
         model.compile(optimizer=Adam(lr=lr), loss='mse')
         # model.compile(RAdam(), loss='mse')
-        model.summary(print_fn=logging.getLogger('log1').info)
-        logging.getLogger('log1').info("Finish build NN")
+        model.summary(print_fn=logging.getLogger(__name__).info)
+        logging.getLogger(__name__).info("Finish build NN")
         return model
 
     def train(self):
@@ -350,11 +354,11 @@ if __name__ == '__main__':
     #    env.vehicle_Data[4][env.mandatory_cargo_mask]+=4
     #    env.vehicle_Data[4][4] = 2 #reefer
 
-    number_of_episodes = 30#12500
+    number_of_episodes = 12000
 
     agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0, alpha=0.0005,
                      mem_size=1000_000,
-                     batch_size=32, epsilon_end=0.01, epsilon_dec=0.999992)
+                     batch_size=32, epsilon_end=0.01, epsilon_dec=0.9999925, layers=[550,450,450,550])
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     plotter = Plotter(module_path, number_of_episodes)

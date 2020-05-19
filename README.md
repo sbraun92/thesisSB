@@ -11,14 +11,15 @@ Fakultät VII
 Straße des 17. Juni 135
 10623 Berlin
 
-# Source code repository of the Master thesis by Söhnke Braun
-This repository contains the source code of the master thesis of Söhnke Braun.
+## Source code repository
+This repository contains the source code of the master thesis by Söhnke Braun.
+
 Detailed citations and references to the work of others may be found in the biblography of the corresponding thesis.
 
-# Abstract
+## Abstract
 TODO
 
-# How to use
+## How to use
 1. Install the latest anaconda distribution for python 3.7.0 from https://www.anaconda.com/distribution/ 
 
 2. Clone or copy the repository to your machine

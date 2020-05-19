@@ -79,3 +79,7 @@ class Agent:
                     return np.zeros(self.env.action_space)
                 else:
                     return 0 if isinstance(action, (np.integer, int)) else np.zeros(len(action))
+
+    #TODO
+    def get_action(self, state, epsilon = None):
+        pass

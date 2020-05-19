@@ -1,5 +1,6 @@
 from env.roroDeck import RoRoDeck
 from agent.SARSA import SARSA
+from agent.dqn import DQNAgent
 from analysis.Plotter import Plotter
 from valuation.evaluator import *
 from analysis.loggingUnit import LoggingBase
@@ -7,16 +8,19 @@ from datetime import datetime
 import logging
 import numpy as np
 import pickle
+import tensorflow as tf
+
+
 if __name__ == '__main__':
 
     #Register Outputpath and Logger
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
 
-    it = 8_000_0
+    number_of_episodes = 12_000
     logging.getLogger('log1').info("Train for {it} iterations.")
 
-    smoothing_window = int(it / 100)
+    smoothing_window = int(number_of_episodes / 100)
     smoothing_window =200
 
     #Test with a bigger configuration
@@ -28,7 +32,8 @@ if __name__ == '__main__':
                             [2, 3, 2, 3, 5],  # length
                             [7, 7, -1,-1, 2]])  # number of vehicles on yard
                                                           # (-1 denotes there are infinite vehicles of that type)
-
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
     '''
     # SARSA FUNCTION APPROX
@@ -45,8 +50,8 @@ if __name__ == '__main__':
     '''
     #######################################################################
     # TDQ Training
-    #agent = TDQLearning(env,module_path,it)
-    #q_table, totalRewards, stepsToExit, eps_history, stateExpantion = agent.train()
+    #agent = TDQLearning(env,module_path,number_of_episodes)
+    #model, totalRewards, stepsToExit, eps_history, stateExpantion = agent.train()
     #agent.save_model(module_path,type='pickle')
     evaluator = Evaluator(env.vehicle_data, env.grid)
     #print(env.current_state)
@@ -57,25 +62,29 @@ if __name__ == '__main__':
     #plotter.plot(totalRewards, stateExpantion, stepsToExit,eps_history)
     ##########################################################################
     # SARSA Training
-    agent = SARSA(env, module_path, it)
-    q_table, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
+    #agent = SARSA(env, module_path, number_of_episodes)
+    env = RoRoDeck(False, 12, 14, stochastic=False)
+    agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0, alpha=0.0005,
+                     mem_size=500_000,
+                     batch_size=32, epsilon_end=0.01, epsilon_dec=0.9999925, layers=[550,450,450,550])
+    model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     print(datetime.now())
 
     pickle.dump(total_rewards, open(module_path + '_rewards.p', "wb"))
-    pickle.dump(steps_to_exit, open(module_path + '_steps_to_exit.p', "wb"))
+    #pickle.dump(steps_to_exit, open(module_path + '_steps_to_exit.p', "wb"))
     pickle.dump(eps_history, open(module_path + '_eps_history.p', "wb"))
 
-    agent.save_model(module_path, file_format='pickle')
+    agent.save_model(module_path)
     print(datetime.now())
     evaluation = evaluator.evaluate(env.get_stowage_plan())
     print(evaluation)
     env.render()
     #Plotting
-    plotter = Plotter(module_path, it, algorithm="SARSA")
+    plotter = Plotter(module_path, number_of_episodes, algorithm="DQN")
     plotter.plot(total_rewards, state_expansion, steps_to_exit, eps_history)
     #########################################################################
-    agent = DQN()
-    _ = agent.train()
+    #agent = DQN()
+    #_ = agent.train()
 
 
 

@@ -21,7 +21,7 @@ class Plotter(object):
         self.stepPlot = stepPlot
         self.epsHistory = epsHistory
         self.it = it
-        self.smoothingWindow = int(it/100)
+        self.smoothingWindow = max(int(it/100),1)
         #self.smoothingWindow = 200
         #if self.smoothingWindow == 0:
         #    self.smoothingWindow = 1
@@ -31,16 +31,28 @@ class Plotter(object):
 
 
     def plot(self, rewards, states, steps, eps_history):
-        if self.rewardPlot == True:
-            self.plotRewardPlot(rewards)
+        if self.rewardPlot is True:
+            try:
+                self.plotRewardPlot(rewards)
+            except:
+                logging.getLogger(__name__).warning('Could not plot Reward development')
         if self.stateExpPlot is True:
-            self.plotStateExp(states)
+            try:
+                self.plotStateExp(states)
+            except:
+                logging.getLogger(__name__).warning('Could not plot state expansion')
         if self.stepPlot is True:
-            self.plotStepPlot(steps)
+            try:
+                self.plotStepPlot(steps)
+            except:
+                logging.getLogger(__name__).warning('Could not plot "steps to exit"')
         if self.epsHistory is True:
-            self.plotEPSHistory(eps_history)
+            try:
+                self.plotEPSHistory(eps_history)
+            except:
+                logging.getLogger(__name__).warning('Could not plot Epsilon-history')
 
-    def plotRewardPlot(self,totalRewards):
+    def plotRewardPlot(self, totalRewards):
         logging.getLogger('log1').info("prepare reward plot...")
         fig2 = plt.figure(figsize=(5.9, 3.8))
         rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).mean()

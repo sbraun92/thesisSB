@@ -16,97 +16,16 @@ import logging
 from analysis.loggingUnit import LoggingBase
 from valuation.evaluator import Evaluator
 import time
-
-
-# Replay Buffer
-class ReplayBuffer(object):
-    def __init__(self, max_size, input_shape, n_actions, discrete=False):
-        np.random.seed(0)
-
-        logging.getLogger('log1').info("Init Replay Buffer: Max. Size: " + str(max_size) + " Input Shape: "
-                                       + str(input_shape) + " Number of actions: "
-                                       + str(n_actions) + "Discrete Action Space: " + str(discrete))
-
-        self.mem_size = max_size
-        self.mem_cntr = 0
-        self.discrete = discrete
-        self.state_memory = np.zeros((self.mem_size, input_shape))
-        self.new_state_memory = np.zeros((self.mem_size, input_shape))
-        dtype = np.int8 if self.discrete else np.float32
-        self.action_memory = np.zeros((self.mem_size, n_actions), dtype=dtype)
-        self.reward_memory = np.zeros((self.mem_size))
-        self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
-
-        # TODO added this to eliminate illigal actions
-        self.possibleActions_state = np.zeros((self.mem_size, n_actions), dtype='bool')
-        self.possibleActions_new_state = np.zeros((self.mem_size, n_actions), dtype='bool')
-
-    def store_transition(self, state, action, reward, state_, done, possible_Actions_state, possible_Actions_new_state):
-        index = self.mem_cntr % self.mem_size
-        if self.mem_cntr > 0 and index == 0:
-            logging.getLogger('log1').info("Memory of size %d full - start overwriting old experiences", self.mem_size)
-
-        self.state_memory[index] = state
-        self.new_state_memory[index] = state_
-        self.reward_memory[index] = reward
-        self.terminal_memory[index] = done
-
-        # TODO possible actions -> delete discrete than??
-
-        if self.discrete:
-            actions = np.zeros(self.action_memory[1].size)
-            actions[action] = 1.0
-            self.action_memory[index] = actions
-
-            # ToDO added this to avoid estimating  illgeal actions
-            self.possibleActions_state[index][possible_Actions_state] = True
-            if not done:
-                self.possibleActions_new_state[index][possible_Actions_new_state] = True
-        else:
-            self.action_memory[index] = action
-        self.mem_cntr += 1
-
-    def sample_buffer(self, batch_size):
-        max_mem = min(self.mem_cntr, self.mem_size)
-        batch = np.random.choice(max_mem, batch_size)
-
-        states = self.state_memory[batch]
-        states_ = self.new_state_memory[batch]
-        rewards = self.reward_memory[batch]
-        actions = self.action_memory[batch]
-        terminal = self.terminal_memory[batch]
-
-        possible_actions_state = self.possibleActions_state[batch]
-        possible_actions_new_state = self.possibleActions_new_state[batch]
-
-        return states, actions, rewards, states_, terminal, possible_actions_state, possible_actions_new_state
-
-
-def build_dqn(lr, n_actions, input_dims, layer1_dimension, layer_dimension, regularisation=0.001):
-    model = Sequential([Dense(layer1_dimension, input_shape=(input_dims,)),
-                        Activation('relu'),
-                        Dense(layer_dimension, activity_regularizer=l2(regularisation)),
-                        Activation('relu'),
-                        Dense(layer1_dimension, activity_regularizer=l2(regularisation)),
-                        Activation('relu'),
-                        Dense(layer_dimension, activity_regularizer=l2(regularisation)),
-                        Activation('relu'),
-                        Dense(n_actions, activity_regularizer=l1(regularisation))])
-
-    logging.getLogger('log1').info("Compile NN")
-    model.compile(optimizer=Adam(lr=lr), loss='mse')
-    # model.compile(RAdam(), loss='mse')
-    model.summary(print_fn=logging.getLogger('log1').info)
-    logging.getLogger('log1').info("Finish build NN")
-    return model
-
-
 from agent.agentInterface import Agent
+
+
+
+
 
 
 class DQNAgent(Agent):
     def __init__(self, env, alpha, gamma, module_path, epsilon=1, batch_size=32, number_of_episodes=12000, epsilon_dec=0.996,
-                 epsilon_end=0.01, mem_size=1000_000, model_name='20200427stochasticdqn_model.h5'):
+                 epsilon_end=0.01, mem_size=1000_000, layers=[450,450,450], activation= 'relu', regularisation=0.001, optimiser='Adam',model_name='20200427stochasticdqn_model.h5'):
 
         if model_name is not None:
             self.model_name = model_name
@@ -140,15 +59,18 @@ class DQNAgent(Agent):
         self.epsilon_min = epsilon_end
         self.batch_size = batch_size
 
+        self.layers = layers
+        self.activation = activation
+        self.regularisation = regularisation
 
-        self.memory = ReplayBuffer(mem_size, self.input_dims, self.number_of_actions, discrete=True)
+        self.memory = ExperienceReplay(mem_size, self.input_dims, self.number_of_actions, discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = build_dqn(alpha, self.number_of_actions, self.input_dims, 450, 450)
+        self.q_eval = self.build_ANN(alpha, self.number_of_actions, self.input_dims, 450, 450)
 
         # Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = build_dqn(alpha, self.number_of_actions, self.input_dims, 450, 450)
+        self.q_target_model = self.build_ANN(alpha, self.number_of_actions, self.input_dims, 450, 450)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
@@ -160,14 +82,32 @@ class DQNAgent(Agent):
         #Plots
         self.steps_to_exit = np.zeros(self.number_of_episodes)
 
+    def build_ANN(self, lr, n_actions, input_dims, layer1_dimension, layer_dimension, regularisation=0.001):
+        model = Sequential([Dense(layer1_dimension, input_shape=(input_dims,)),
+                            Activation('relu'),
+                            Dense(layer_dimension, activity_regularizer=l2(regularisation)),
+                            Activation('relu'),
+                            Dense(layer1_dimension, activity_regularizer=l2(regularisation)),
+                            Activation('relu'),
+                            Dense(layer_dimension, activity_regularizer=l2(regularisation)),
+                            Activation('relu'),
+                            Dense(n_actions, activity_regularizer=l1(regularisation))])
 
+        #model = Sequential([Dense(layers[0], input_shape=(input_dims,)),
+        #                    Activation('relu'))
+
+        logging.getLogger('log1').info("Compile NN")
+        model.compile(optimizer=Adam(lr=lr), loss='mse')
+        # model.compile(RAdam(), loss='mse')
+        model.summary(print_fn=logging.getLogger('log1').info)
+        logging.getLogger('log1').info("Finish build NN")
+        return model
 
     def train(self):
         total_rewards = []
         eps_history = []
         start = time.time()
         self.steps_to_exit = np.zeros(self.number_of_episodes)
-
 
         for i in range(self.number_of_episodes):
             bad_moves_counter = 0
@@ -178,7 +118,7 @@ class DQNAgent(Agent):
             while not done:
                 steps += 1
                 # possible_actions = env.possibleActions
-                # if i<n_games*(3./4.):
+                # if i<n_games*(3./4.): #TODO
                 if i == 10000:
                     self.epsilon = 1
                     self.epsilon_dec = 0.99995
@@ -256,13 +196,13 @@ class DQNAgent(Agent):
         return action
 
     def learn(self):
-        if self.memory.mem_cntr <= self.batch_size:
+        if self.memory.memory_size <= self.batch_size:
             return
 
         # logging.getLogger('log1').info("Learning Step - sample from replay buffer")
 
         state, action, reward, new_state, done, possible_actions_state, possible_actions_new_state = \
-            self.memory.sample_buffer(self.batch_size)
+            self.memory.sample(self.batch_size)
 
         action_values = np.array(self.action_space, dtype=np.int8)
         action_indices = np.dot(action, action_values)
@@ -327,7 +267,8 @@ class DQNAgent(Agent):
             action = env.possible_actions[pos_action]
             state, reward, done, info = env.step(action)
 
-    def maxAction(self, state, possible_actions):
+    #Overwritten max_action
+    def max_action(self, state, possible_actions):
         # prediction = self.q_eval.predict(state[np.newaxis, :])
         pos_action = np.argmax(self.q_eval.predict(state[np.newaxis, :])[0][possible_actions])
         action = possible_actions[pos_action]
@@ -335,16 +276,83 @@ class DQNAgent(Agent):
         return action
 
 
+# Replay Buffer
+class ExperienceReplay(object):
+    def __init__(self, max_size, input_shape, n_actions, discrete=False):
+        np.random.seed(0)
+
+        logging.getLogger('log1').info("Init Replay Buffer: Max. Size: " + str(max_size) + " Input Shape: "
+                                       + str(input_shape) + " Number of actions: "
+                                       + str(n_actions) + "Discrete Action Space: " + str(discrete))
+
+        self.memory_size = max_size
+        self.memory_counter = 0
+        self.discrete = discrete
+        self.state_memory = np.zeros((self.memory_size, input_shape))
+        self.new_state_memory = np.zeros((self.memory_size, input_shape))
+        dtype = np.int8 if self.discrete else np.float32
+        self.action_memory = np.zeros((self.memory_size, n_actions), dtype=dtype)
+        self.reward_memory = np.zeros(self.memory_size)
+        self.terminal_memory = np.zeros(self.memory_size, dtype=np.float32)
+
+        # TODO added this to eliminate illigal actions
+        self.possibleActions_state = np.zeros((self.memory_size, n_actions), dtype='bool')
+        self.possibleActions_new_state = np.zeros((self.memory_size, n_actions), dtype='bool')
+
+    def store_transition(self, state, action, reward, state_, done, possible_Actions_state, possible_Actions_new_state):
+        index = self.memory_counter % self.memory_size
+        if self.memory_size > 0 and index == 0:
+            logging.getLogger('log1').info("Memory of size %d full - start overwriting old experiences", self.memory_size)
+
+        self.state_memory[index] = state
+        self.new_state_memory[index] = state_
+        self.reward_memory[index] = reward
+        self.terminal_memory[index] = done
+
+        # TODO possible actions -> delete discrete than??
+
+        if self.discrete:
+            actions = np.zeros(self.action_memory[1].size)
+            actions[action] = 1.0
+            self.action_memory[index] = actions
+
+            # ToDO added this to avoid estimating  illgeal actions
+            self.possibleActions_state[index][possible_Actions_state] = True
+            if not done:
+                self.possibleActions_new_state[index][possible_Actions_new_state] = True
+        else:
+            self.action_memory[index] = action
+        self.memory_counter += 1
+
+    def sample(self, batch_size):
+        max_memory = min(self.memory_size, self.memory_counter)
+        batch = np.random.choice(max_memory, batch_size)
+
+        states = self.state_memory[batch]
+        states_ = self.new_state_memory[batch]
+        rewards = self.reward_memory[batch]
+        actions = self.action_memory[batch]
+        terminal = self.terminal_memory[batch]
+
+        possible_actions_state = self.possibleActions_state[batch]
+        possible_actions_new_state = self.possibleActions_new_state[batch]
+
+        return states, actions, rewards, states_, terminal, possible_actions_state, possible_actions_new_state
+
+
 if __name__ == '__main__':
+    np.random.seed(0)
+    tf.random.set_seed(0)
+
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
     env = RoRoDeck(False, lanes=10, rows=12, stochastic=False)
     #    env.vehicle_Data[4][env.mandatory_cargo_mask]+=4
     #    env.vehicle_Data[4][4] = 2 #reefer
 
-    number_of_episodes = 60
+    number_of_episodes = 30#12500
 
-    agent = DQNAgent(env=env, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0, alpha=0.0005,
+    agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0, alpha=0.0005,
                      mem_size=1000_000,
                      batch_size=32, epsilon_end=0.01, epsilon_dec=0.999992)
 
@@ -352,3 +360,4 @@ if __name__ == '__main__':
     plotter = Plotter(module_path, number_of_episodes)
     plotter.plotRewardPlot(total_rewards)
     plotter.plotEPSHistory(np.array(eps_history))
+

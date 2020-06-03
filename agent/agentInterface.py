@@ -18,6 +18,8 @@ class Agent:
         self.strategies = ["Epsilon-greedy"]
         self.training_time = 0
         self.action_space_length = None
+        self.MAX_REWARD = 24
+        self.BENCHMARK_REWARD = 14
 
     def save_model(self, path, output_type='pickle'):
         try:
@@ -36,7 +38,7 @@ class Agent:
             else:
                 logging.getLogger("log1").error("Could not save csv file to+ " + path)
 
-    def load(self, path_to_file):
+    def load_model(self, path_to_file):
         raise NotImplementedError
 
     def execute(self, env=None):
@@ -58,9 +60,9 @@ class Agent:
 
     def choose_action(self, possible_actions):
         raise NotImplementedError
-
-    def max_action(self, state):
-        possible_actions = self.action_ix[self.env.possible_actions]
+#TODO check this
+    def max_action(self, state, possible_actions):
+        possible_actions = self.action_ix[possible_actions]
         prediction = self.predict(state, possible_actions)
         positions_of_best_possible_action = np.argmax(prediction)
 

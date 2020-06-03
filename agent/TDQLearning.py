@@ -88,7 +88,7 @@ class TDQLearning(Agent):
 
                 # TD-Q-Learning with Epsilon-Greedy
                 if not done:
-                    action_ = self.max_action(observation_)
+                    action_ = self.max_action(observation_,self.env.possible_actions)
 
                     self.q_table[observation.tobytes()][action] += self.ALPHA * (
                             reward + self.GAMMA * self.q_table[observation_.tobytes()][action_]

@@ -68,19 +68,19 @@ def test_max_action_method():
     agent.q_table[state.tobytes()][2] = 1
     agent.q_table[state.tobytes()][3] = 2
 
-    assert agent.max_action(state) == 3
+    assert agent.max_action(state, env.possible_actions) == 3
 
     env.possible_actions = np.array([0, 1, 2])
 
-    assert agent.max_action(state) == 2
+    assert agent.max_action(state, env.possible_actions) == 2
 
 #Test for DQN
 def test_dqnAgent():
     env = RoRoDeck(True, lanes=8, rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 2
-    agent = DQNAgent(env=env,module_path=None,gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
-                     batch_size=64, epsilon_end=0.01, epsilon_dec=0.99999)
+    agent = DQNAgent(env=env, module_path=None, gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
+                     batch_size=64, epsilon_min=0.01, epsilon_dec=0.99999)
 
     for i in range(n_games):
         done = False

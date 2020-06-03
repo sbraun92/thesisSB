@@ -24,8 +24,9 @@ from agent.agentInterface import Agent
 
 
 class DQNAgent(Agent):
-    def __init__(self, env, alpha, gamma, module_path, epsilon=1, batch_size=32, number_of_episodes=12000, epsilon_dec=0.996,
-                 epsilon_end=0.01, mem_size=1000_000, layers=[450,450,450], activation= 'relu', regularisation=0.001, optimiser='Adam',model_name='20200427stochasticdqn_model.h5'):
+    def __init__(self, env, module_path, alpha=0.0005, gamma=0.999, epsilon=1, batch_size=32, number_of_episodes=12000, epsilon_dec=0.996,
+                 epsilon_min=0.02, mem_size=1_000_000, layers=[450, 450, 450], activation='relu',
+                 regularisation=0.001, optimiser='Adam', model_name='20200427stochasticdqn_model.h5', pretraining_duration=10_000):
 
         if model_name is not None:
             self.model_name = model_name
@@ -45,6 +46,8 @@ class DQNAgent(Agent):
         self.number_of_actions = len(self.env.vehicle_data[0])
         self.input_dims = np.shape(env.reset())[0]
 
+
+
         # TODO schöner
         logging.getLogger('log1').info("Init DQN-Agent: ALPHA: {}".format(alpha)
                                        + " GAMMA: {}".format(gamma)
@@ -53,36 +56,40 @@ class DQNAgent(Agent):
                                        + " Epsilon Decrement: {}".format(epsilon_dec)
                                        + " Batch Size: {}".format(batch_size))
         self.action_space = [i for i in range(self.number_of_actions)]
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.epsilon_dec = epsilon_dec
-        self.epsilon_min = epsilon_end
+        self.GAMMA = gamma
+        self.EPSILON = epsilon
+        self.EPSILON_DEC = epsilon_dec
+        self.EPSILON_MIN = epsilon_min
         self.batch_size = batch_size
-
-        self.layers = layers
-        self.activation = activation
-        self.regularisation = regularisation
+        #This ensures that no pretraining is conducted
+        if pretraining_duration is None:
+            self.PRETRAINING_DURATION = number_of_episodes + 1
+        else:
+            self.PRETRAINING_DURATION = pretraining_duration
+        self.LAYERS = layers
+        self.ACTIVATION = activation
+        self.REGULARISATION = regularisation
 
         self.memory = ExperienceReplay(mem_size, self.input_dims, self.number_of_actions, discrete=True)
 
         logging.getLogger('log1').info("Start building Q Evaluation NN")
-        self.q_eval = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= [450,450,450,450])
+        self.q_eval = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= self.LAYERS)
 
         # Add target network for stability and update it delayed to q_eval
         logging.getLogger('log1').info("Start building Q Target NN")
-        self.q_target_model = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= [450,450,450,450])
+        self.q_target_model = self.build_ANN(alpha, self.number_of_actions, self.input_dims, layers= self.LAYERS)
         logging.getLogger('log1').info("Copy weights of Evaluation NN to Target Network")
         self.q_target_model.set_weights(self.q_eval.get_weights())
 
         self.target_update_counter = 0
 
-        self.UPDATE_TARGET = 20
-
+        self.UPDATE_TARGET = 20 #TODO try with 100
+        logging.getLogger('log1').info("Update the target network every {} learning steps".format(self.UPDATE_TARGET))
 
         #Plots
         self.steps_to_exit = np.zeros(self.number_of_episodes)
 
-    def build_ANN(self, lr, output_dimension, input_dimsion, layers= [450,450,450,450], activation='relu', regularisation=0.001):
+    def build_ANN(self, lr, output_dimension, input_dimension, layers= [450, 450, 450, 450], activation='relu', regularisation=0.001):
         #model = Sequential([Dense(layers[0], input_shape=(input_dimsion,)),
         #                    Activation(activation),
          #                   Dense(layers[1], activity_regularizer=l2(regularisation)),
@@ -93,7 +100,7 @@ class DQNAgent(Agent):
               #              Activation(activation),
                #             Dense(output_dimension, activity_regularizer=l1(regularisation))])
 
-        model = Sequential([Dense(layers[0], input_shape=(input_dimsion,)),
+        model = Sequential([Dense(layers[0], input_shape=(input_dimension,)),
                             Activation('relu')])
         for layer in layers[1:]:
             model.add(Sequential([Dense(layer, activity_regularizer=l2(regularisation)), Activation(activation)]))
@@ -123,10 +130,10 @@ class DQNAgent(Agent):
                 steps += 1
                 # possible_actions = env.possibleActions
                 # if i<n_games*(3./4.): #TODO
-                if i == 10000:
-                    self.epsilon = 1
-                    self.epsilon_dec = 0.99995
-                if i > 10000:
+                if i == self.PRETRAINING_DURATION:
+                    self.EPSILON = 1
+                    self.EPSILON_DEC = 0.99995
+                if i > self.PRETRAINING_DURATION:
                     action = self.choose_action(observation, self.env.possible_actions)  ## add possible actions here
                 else:
                     action = self.choose_action(observation)  ## add possible actions here
@@ -143,7 +150,7 @@ class DQNAgent(Agent):
                 if bad_moves_counter > 6:
                     break
 
-            eps_history.append(self.epsilon)
+            eps_history.append(self.EPSILON)
             total_rewards.append(episode_reward)
             self.steps_to_exit[i] = steps
             avg_reward = np.mean(total_rewards[max(0, i - 100):(i + 1)])
@@ -156,7 +163,15 @@ class DQNAgent(Agent):
                 print('episode ', i, 'score %.2f' % episode_reward, 'avg. score %.2f' % avg_reward)
                 self.save_model(self.module_path)
 
-        if i == self.number_of_episodes - 1 and done:
+            converged = True if np.mean(total_rewards[max(0, i - 200):(i + 1)]) > 15 else False #TODO erbe init von general Agent class
+            if converged:
+                break
+
+        if i == self.number_of_episodes - 1 or converged:
+            if converged:
+                logging.getLogger('log1').info("ANN has converged...")
+
+
             logging.getLogger('log1').info(self.env._get_grid_representations())
             print("The reward of the last training episode was " + str(episode_reward))
             print("The Terminal reward was " + str(reward))
@@ -167,17 +182,18 @@ class DQNAgent(Agent):
 
             _ = self.env.reset()
             self.execute(self.env)
-            env.render()
-            env.save_stowage_plan(self.module_path)
+            self.env.render()
+            self.env.save_stowage_plan(self.module_path)
             self.save_model(self.module_path)
-            evaluator = Evaluator(env.vehicle_data, env.grid)
-            evaluation = evaluator.evaluate(env.get_stowage_plan())
+            evaluator = Evaluator(self.env.vehicle_data, self.env.grid)
+            evaluation = evaluator.evaluate(self.env.get_stowage_plan())
 
             print(evaluation)
 
             logging.getLogger('log1').info("\nEnd training process after %d sec".format(self.training_time))
         return self.q_eval, total_rewards, self.steps_to_exit, eps_history, None
 
+    #TODO lösche diese Methode
     def remember(self, state, action, reward, new_state, done, possible_Actions_state, possible_Actions_new_state):
         self.memory.store_transition(state, action, reward, new_state, done, possible_Actions_state,
                                      possible_Actions_new_state)
@@ -185,7 +201,7 @@ class DQNAgent(Agent):
     def choose_action(self, state, possibleactions=None):
         state = state[np.newaxis, :]
         rand = np.random.random()
-        if rand < self.epsilon:
+        if rand < self.EPSILON:
             if possibleactions is None:
                 action = np.random.choice(self.action_space)
             else:
@@ -211,9 +227,9 @@ class DQNAgent(Agent):
         action_values = np.array(self.action_space, dtype=np.int8)
         action_indices = np.dot(action, action_values)
 
-        if (state.ndim == 1):
+        if state.ndim == 1:
             state = np.array([state])
-        if (new_state.ndim == 1):
+        if new_state.ndim == 1:
             new_state = np.array([new_state])
 
         q = self.q_eval.predict(state)
@@ -223,6 +239,7 @@ class DQNAgent(Agent):
         # q_target = q_eval[:]
 
         q_target = self.q_target_model.predict(state)
+        #q_target = self.q_target_model.predict(new_state)
 
         # q_target[possible_actions_state] = 0.
         # q_next[possible_actions_new_state] = -5.
@@ -234,15 +251,21 @@ class DQNAgent(Agent):
         batch_index = np.arange(self.batch_size, dtype=np.int32)
 
         # print(q_target[batch_index,action_indices])
-
+        #DQN
         q_target[batch_index, action_indices] = reward + \
-                                                self.gamma * np.max(q_next, axis=1) * (1 - done)
+                                               self.GAMMA * np.max(q_next, axis=1) * (1 - done)
+
+        # Double DQN  //TODO
+        #q_target[batch_index, action_indices] = reward + \
+        #                                        self.GAMMA * np.max(q_next, axis=1) * (1 - done)
+
+
 
         _ = self.q_eval.fit(state, q_target, verbose=0)
 
         # self.q_eval.train_on_batch(state, q_target)
 
-        self.epsilon = self.epsilon * self.epsilon_dec if self.epsilon > self.epsilon_min else self.epsilon_min
+        self.EPSILON = self.EPSILON * self.EPSILON_DEC if self.EPSILON > self.EPSILON_MIN else self.EPSILON_MIN
 
         if self.target_update_counter > self.UPDATE_TARGET:
             self.q_target_model.set_weights(self.q_eval.get_weights())
@@ -279,6 +302,10 @@ class DQNAgent(Agent):
 
         return action
 
+    def predict(self, state, action):
+
+        source = self.q_eval.predict(state[np.newaxis, :])
+        return source[0][action]
 
 # Replay Buffer
 class ExperienceReplay(object):
@@ -358,7 +385,7 @@ if __name__ == '__main__':
 
     agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0, alpha=0.0005,
                      mem_size=1000_000,
-                     batch_size=32, epsilon_end=0.01, epsilon_dec=0.9999925, layers=[550,450,450,550])
+                     batch_size=32, epsilon_min=0.01, epsilon_dec=0.9999925, layers=[550, 450, 450, 550])
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     plotter = Plotter(module_path, number_of_episodes)

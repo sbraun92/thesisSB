@@ -14,14 +14,17 @@ plt.tight_layout()
 
 
 class Plotter(object):
-    def __init__(self, path, it, rewardPlot = True, stateExpPlot = True, stepPlot=True, epsHistory=True, algorithm=None):
+    def __init__(self, path, it, rewardPlot = True, stateExpPlot = True, stepPlot=True, epsHistory=True, algorithm=None, smoothing_window = None):
         logging.getLogger('log1').info("Initialise Plotting Unit")
         self.rewardPlot = rewardPlot
         self.stateExpPlot = stateExpPlot
         self.stepPlot = stepPlot
         self.epsHistory = epsHistory
         self.it = it
-        self.smoothingWindow = max(int(it/100),1)
+        if smoothing_window is None:
+            self.smoothing_window = max(int(it / 100), 1)
+        else:
+            self.smoothing_window = smoothing_window
         #self.smoothingWindow = 200
         #if self.smoothingWindow == 0:
         #    self.smoothingWindow = 1
@@ -55,11 +58,11 @@ class Plotter(object):
     def plotRewardPlot(self, totalRewards):
         logging.getLogger('log1').info("prepare reward plot...")
         fig2 = plt.figure(figsize=(5.9, 3.8))
-        rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).mean()
+        rewards_smoothed = pd.Series(totalRewards).rolling(self.smoothing_window, min_periods=self.smoothing_window).mean()
         #rewards_smoothed_high_res = pd.Series(totalRewards).rolling(self.smoothingWindow,
         #                                                   min_periods=self.smoothingWindow/100).mean()
-        rewards_q75 = rewards_smoothed+pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).std()
-        rewards_q25 = rewards_smoothed-pd.Series(totalRewards).rolling(self.smoothingWindow, min_periods=self.smoothingWindow).std()
+        rewards_q75 = rewards_smoothed+pd.Series(totalRewards).rolling(self.smoothing_window, min_periods=self.smoothing_window).std()
+        rewards_q25 = rewards_smoothed-pd.Series(totalRewards).rolling(self.smoothing_window, min_periods=self.smoothing_window).std()
         rewardsDf = pd.DataFrame(totalRewards)
         ax = sns.lineplot(data=rewards_smoothed, linewidth=2, dashes=False)
 
@@ -75,8 +78,8 @@ class Plotter(object):
         #plt.plot(rewards_smoothed)
         plt.xlabel("Episode")
         plt.ylabel("episode reward")
-        ax.legend(["episode reward (smoothed over window size {})".format(self.smoothingWindow),
-                   "standard deviation of last {} episodes".format(self.smoothingWindow)],
+        ax.legend(["episode reward (smoothed over window size {})".format(self.smoothing_window),
+                   "standard deviation of last {} episodes".format(self.smoothing_window)],
                   loc='lower right')
 
         xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
@@ -119,17 +122,17 @@ class Plotter(object):
     # Plot smoothed Steps to Exit
     def plotStepPlot(self,stepsToExit):
         logging.getLogger('log1').info("prepare step to finish plot...")
-        steps_smoothed = pd.Series(stepsToExit).rolling(int(self.smoothingWindow / 2+1),
-                                                        min_periods=int(self.smoothingWindow / 2+1)).mean()
+        steps_smoothed = pd.Series(stepsToExit).rolling(int(self.smoothing_window / 2 + 1),
+                                                        min_periods=int(self.smoothing_window / 2 + 1)).mean()
         fi4 = plt.figure(figsize=(5.9, 3.5))
         ax = sns.lineplot(data=steps_smoothed, linewidth=2.5, dashes=False, color="green")
         plt.xlabel("Episode")
         plt.ylabel("Steps to Finish (Smoothed)")
         if self.algorithm is not None:
-            plt.title(self.algorithm+ ": Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
+            plt.title(self.algorithm + ": Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothing_window / 2)))
             fi4.savefig(self.path +"_"+ self.algorithm+'_StepsToFinish.pdf', dpi=600, bbox_inches="tight")
         else:
-            plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothingWindow / 2)))
+            plt.title("Steps to Finish over Time (Smoothed over window size {})".format(int(self.smoothing_window / 2)))
             fi4.savefig(self.path + '_StepsToFinish.pdf',dpi=600, bbox_inches = "tight")
         logging.getLogger('log1').info("finished plot")
 

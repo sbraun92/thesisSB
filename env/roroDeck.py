@@ -64,7 +64,7 @@ class RoRoDeck(gym.Env):
         self.current_Lane = self._get_minimal_lanes()[0]
 
         if reward_system is None:
-            self.reward_system = np.array([2, -8, -2, -50.0])
+            self.reward_system = np.array([2, -12, -1, -50])
                                             #[0.2,  # mandatory cargo per step
                                            #-12,  # caused shifts per step was -8
                                            #-2,  # terminal: Space left unused
@@ -72,7 +72,6 @@ class RoRoDeck(gym.Env):
         else:
             self.reward_system = reward_system
         # TODO string formatting
-
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         if vehicle_data is None:
             self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
@@ -104,7 +103,7 @@ class RoRoDeck(gym.Env):
         self.action_space = self.vehicle_data[0]
         self.possible_actions = self.get_possible_actions_of_state()
         self.TerminalStateCounter = 0
-        self.lowest_destination = np.ones(self.lanes) * 8  # TODO
+        self.lowest_destination = np.ones(self.lanes) * 2  # TODO
         # self.maximal_shifts = np.sum(self.vehicle_Data[1][np.where(self.vehicle_Data[1]>1)])
         # print(self.maximal_shifts)
         # State representation Frontier, BackLook,mandatory cargo, CurrentLane

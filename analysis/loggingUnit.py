@@ -10,7 +10,9 @@ class LoggingBase(object):
 
         self.module_path = str(os.path.dirname(os.path.realpath(__file__))) + '\\out\\' + date + '\\' +time +'\\'
         os.makedirs(self.module_path, exist_ok=True)
+
         self.module_path += time
+
 
         logging.basicConfig(filename=self.module_path + '_log.log', level=logging.INFO,format="%(asctime)s - %(levelname)s - %(message)s")
         handler = logging.StreamHandler()

@@ -2,6 +2,7 @@ import pandas as pd
 import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt
 import logging
+import os
 
 sns.set(style="whitegrid")
 #sns.set(font_scale=1, rc={'text.usetex' : True})
@@ -29,7 +30,8 @@ class Plotter(object):
         #if self.smoothingWindow == 0:
         #    self.smoothingWindow = 1
         logging.getLogger('log1').info("Setting path for plots to:"+ path)
-        self.path = path
+        self.path = path + '_Plots\\'
+        os.makedirs(self.path, exist_ok=True)
         self.algorithm = algorithm
 
 

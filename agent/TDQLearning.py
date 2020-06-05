@@ -30,6 +30,11 @@ class TDQLearning(Agent):
         self.MAX_IT = 400
         self.action_space_length = len(self.env.action_space)
         self.action_ix = np.arange(self.action_space_length)
+        self.total_rewards = np.zeros(self.number_of_episodes)
+        self.state_expantion = np.zeros(self.number_of_episodes)
+        self.stepsToExit = np.zeros(self.number_of_episodes)
+        self.eps_history = []
+
         # ix_Actions = np.arange(len(env.actionSpace))
         # print(env.actionSpace)
         # self.action_list = []
@@ -48,10 +53,7 @@ class TDQLearning(Agent):
 
         logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
-        total_rewards = np.zeros(self.number_of_episodes)
-        state_expantion = np.zeros(self.number_of_episodes)
-        stepsToExit = np.zeros(self.number_of_episodes)
-        eps_history = []
+
 
         print("Start Training Process")
         logging.getLogger('log1').info("Start training process")
@@ -64,7 +66,7 @@ class TDQLearning(Agent):
             while not done:
                 # Show for visualisation the last training epoch
 
-                action = self.max_action(observation) if np.random.random() < (1 - self.EPS) \
+                action = self.max_action(observation, self.env.possible_actions) if np.random.random() < (1 - self.EPS) \
                     else self.env.action_space_sample()
                 # self.env.render()
                 # TODO delete
@@ -110,7 +112,7 @@ class TDQLearning(Agent):
                     logging.getLogger('log1').info(self.env._get_grid_representations())
                     print("The reward of the last training episode was " + str(ep_reward))
                     print("The Terminal reward was " + str(reward))
-                    print(self.path)
+                    print('Save output to: \n'+self.path+'\n')
                     if self.path is not None:
                         self.env.save_stowage_plan(self.path)
 
@@ -131,16 +133,16 @@ class TDQLearning(Agent):
             # else:
             #    self.EPS = self.EPSmin
 
-            eps_history.append(self.EPS)
+            self.eps_history.append(self.EPS)
 
-            total_rewards[i] = ep_reward
-            state_expantion[i] = len(self.q_table.keys())
-            stepsToExit[i] = steps
+            self.total_rewards[i] = ep_reward
+            self.state_expantion[i] = len(self.q_table.keys())
+            self.stepsToExit[i] = steps
 
 
 
             if i % 500 == 0 and i > 0:
-                avg_reward = np.mean(total_rewards[max(0, i - 500):(i + 1)])
+                avg_reward = np.mean(self.total_rewards[max(0, i - 500):(i + 1)])
                 # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
                 print('episode ', i, 'score %.2f' % ep_reward, '\tavg. score %.2f' % avg_reward)
 
@@ -149,7 +151,11 @@ class TDQLearning(Agent):
 
         logging.getLogger('log1').info("End training process")
         self.training_time = time.time() - start
-        return self.q_table, total_rewards, stepsToExit, np.array(eps_history), state_expantion
+        print('Finished training after {} min {} sec. \n'
+              .format(int(self.training_time/60), round(self.training_time % 60, 0)))
+        print('Save output to: \n' + self.path + '\n')
+
+        return self.q_table, self.total_rewards, self.stepsToExit, np.array(self.eps_history), self.state_expantion
 
     # TODO cleanup
     # def maxAction(self, state):
@@ -177,7 +183,7 @@ class TDQLearning(Agent):
                                       "EnvRows": self.env.rows,
                                       "VehicleData": self.env.vehicle_data,
                                       "TrainingTime": self.training_time}
-        info = "_TDQ" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
+        info = "TDQ" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
                str(int(1 in self.env.vehicle_data[5])) + "_A" + str(len(self.env.vehicle_data[0]))
 
         # path = path + '_qTablePickled.p'

@@ -107,7 +107,7 @@ class SARSA(Agent):
             # TODO set to .format and move to Agent Interface
             logging.getLogger('log1').info('It. {:7d} \t'.format(i)
                                            + 'EPS: {} \t'.format(round(self.EPS, 4))
-                                           + 'Reward: {}'.format(round(self.epReward, 2)))
+                                           + 'Reward: {}'.format(round(epReward, 2)))
 
 
             # Epsilon decreases lineary during training TODO 50 is arbitrary

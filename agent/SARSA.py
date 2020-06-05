@@ -131,7 +131,10 @@ class SARSA(Agent):
         logging.getLogger('log1').info("End training process after %d sec".format(self.training_time))
         print('Finished training after {} min {} sec. \n'
               .format(int(self.training_time/60), round(self.training_time % 60, 0)))
-        print('Save output to: \n' + self.path + '\n')
+
+        if self.path is not None:
+            print('Save output to: \n' + self.path + '\n')
+            self.env.save_stowage_plan(self.path)
 
         return self.q_table, self.total_rewards, self.steps_to_exit, np.array(self.eps_history), self.state_expantion
 

@@ -112,8 +112,9 @@ class TDQLearning(Agent):
                     logging.getLogger('log1').info(self.env._get_grid_representations())
                     print("The reward of the last training episode was " + str(ep_reward))
                     print("The Terminal reward was " + str(reward))
-                    print('Save output to: \n'+self.path+'\n')
+
                     if self.path is not None:
+                        print('Save output to: \n' + self.path + '\n')
                         self.env.save_stowage_plan(self.path)
 
                 # If agent doesnt reach end break here - seems unnessary when there is no switch Lane Option
@@ -153,7 +154,9 @@ class TDQLearning(Agent):
         self.training_time = time.time() - start
         print('Finished training after {} min {} sec. \n'
               .format(int(self.training_time/60), round(self.training_time % 60, 0)))
-        print('Save output to: \n' + self.path + '\n')
+        if self.path is not None:
+            print('Save output to: \n' + self.path + '\n')
+            self.env.save_stowage_plan(self.path)
 
         return self.q_table, self.total_rewards, self.stepsToExit, np.array(self.eps_history), self.state_expantion
 

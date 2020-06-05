@@ -83,7 +83,7 @@ class DQNAgent(Agent):
 
         self.target_update_counter = 0
 
-        self.UPDATE_TARGET = 20 #TODO try with 100
+        self.UPDATE_TARGET = 20
         logging.getLogger('log1').info("Update the target network every {} learning steps".format(self.UPDATE_TARGET))
 
         #Plots
@@ -163,7 +163,9 @@ class DQNAgent(Agent):
                 print('episode ', i, 'score %.2f' % episode_reward, 'avg. score %.2f' % avg_reward)
                 self.save_model(self.module_path)
 
-            converged = True if np.mean(total_rewards[max(0, i - 200):(i + 1)]) > 15 else False #TODO erbe init von general Agent class
+            converged = True if np.mean(total_rewards[max(0, i - 100):(i + 1)]) > 16 \
+                                and np.min(total_rewards[max(0, i - 100):(i + 1)]) > 14 \
+                                else False #TODO erbe init von general Agent class
             if converged:
                 break
 
@@ -191,6 +193,10 @@ class DQNAgent(Agent):
             print(evaluation)
 
             logging.getLogger('log1').info("\nEnd training process after %d sec".format(self.training_time))
+            print('Finished training after {} min {} sec. \n'
+                  .format(int(self.training_time / 60), round(self.training_time % 60, 0)))
+            print('Save output to: \n' + self.path + '\n')
+
         return self.q_eval, total_rewards, self.steps_to_exit, eps_history, None
 
     #TODO lösche diese Methode
@@ -198,21 +204,21 @@ class DQNAgent(Agent):
         self.memory.store_transition(state, action, reward, new_state, done, possible_Actions_state,
                                      possible_Actions_new_state)
 
-    def choose_action(self, state, possibleactions=None):
+    def choose_action(self, state, possible_actions=None):
         state = state[np.newaxis, :]
         rand = np.random.random()
         if rand < self.EPSILON:
-            if possibleactions is None:
+            if possible_actions is None:
                 action = np.random.choice(self.action_space)
             else:
-                action = np.random.choice(possibleactions)
+                action = np.random.choice(possible_actions)
         else:
             actions = self.q_eval.predict(state)
-            if possibleactions is None:
+            if possible_actions is None:
                 action = np.argmax(actions)
             else:
-                action_qVal_red = actions[0][possibleactions]
-                action = possibleactions[np.argmax(action_qVal_red)]
+                action_qVal_red = actions[0][possible_actions]
+                action = possible_actions[np.argmax(action_qVal_red)]
         return action
 
     def learn(self):
@@ -283,10 +289,6 @@ class DQNAgent(Agent):
 
     #TODO return best reward
     def execute(self, env):
-        # if env != None:
-        #    self.env = env
-        # observation = self.env.reset()
-        done = False
         state = env.current_state
         done = False
         while not done:

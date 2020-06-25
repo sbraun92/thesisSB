@@ -1,8 +1,8 @@
 from env.roroDeck import RoRoDeck
-from agent.SARSA import SARSA
+from agent.sarsa import SARSA
 from agent.dqn import DQNAgent
-from agent.TDQLearning import TDQLearning
-from analysis.Plotter import Plotter
+from agent.tdq import TDQLearning
+from analysis.plotter import Plotter
 from valuation.evaluator import *
 from analysis.loggingUnit import LoggingBase
 from datetime import datetime
@@ -11,12 +11,14 @@ import numpy as np
 import pickle
 import tensorflow as tf
 
+
+
 if __name__ == '__main__':
     # Register Output path and Logger
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
 
-    number_of_episodes = 12_00
+    number_of_episodes = 100_000 #1_000_000
     logging.getLogger('log1').info("Train for {} iterations.".format(number_of_episodes))
 
     #smoothing_window = int(number_of_episodes / 100) #TODO delete
@@ -24,15 +26,16 @@ if __name__ == '__main__':
 
     # Test with a bigger configuration
 
-    vehicleData = np.array([[0, 1, 2, 3, 4],  # vehicle id
-                            [1, 2, 1, 2, 2],  # destination
-                            [1, 1, 0, 0, 1],  # mandatory
-                            [2, 3, 2, 3, 5],  # length
-                            [7, 7, -1, -1, 2]])  # number of vehicles on yard
+    vehicleData = np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8],  # vehicle id
+                            [1, 2, 1, 2, 2, 2, 2, 1, 1],  # destination
+                            [1, 1, 0, 0, 1, 1, 1, 1, 1],  # mandatory
+                            [2, 3, 2, 3, 4, 6, 2, 2, 2],  # length
+                            [7, 7, -1, -1, 2, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 1, 0, 0, 0, 0]])  # number of vehicles on yard
     # (-1 denotes there are infinite vehicles of that type)
     np.random.seed(0)
-    tf.random.set_seed(0)
-    env = RoRoDeck(False, 12, 14, stochastic=False)
+    #tf.random.set_seed(0)
+    env = RoRoDeck(False, 14, 30, stochastic=False, vehicle_data = vehicleData)
 
 
     #######################################################################
@@ -63,12 +66,12 @@ if __name__ == '__main__':
     plotter = Plotter(module_path, number_of_episodes, algorithm="SARSA", smoothing_window=smoothing_window)
     plotter.plot(total_rewards, state_expansion, vehicle_loaded, eps_history)
     #########################################################################
-    number_of_episodes = 14_000
+    number_of_episodes = 12_000
     evaluator = Evaluator(env.vehicle_data, env.grid)
     agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0,
-                     alpha=0.0005,
+                     alpha=0.0005, regularisation=0.001,
                      mem_size=1_000_000, pretraining_duration=10_000,
-                     batch_size=32, epsilon_min=0.01, epsilon_dec=0.99999, layers=[250, 250, 250, 250, 250])
+                     batch_size=32, epsilon_min=0.01, epsilon_dec=0.99999, layers=[64,64])#layers=[250, 250, 250, 250, 250, 250])
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     print(datetime.now())
 

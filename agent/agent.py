@@ -2,14 +2,17 @@ from env.roroDeck import *
 import pickle
 import os
 
+
 class Agent:
     """
-    Agent class. Does nothing but being the mother of all events.
+    The Agent class is providing an interface for all other agent classes
 
     Subclasses:
         SARSA   -   implementation of the SARSA algorithm
         TDQ     -   implementation of the Time Difference Q Learning
         DQN     -   implementation of the Deep Q Learning (with Experience Replay and fixed target network)
+        DDQN    -   wrapper class of Double Deep Q Learning with Duelling Network and prioritised experience replay
+                    (core implementation is done by Stable Baselines (2018))
     """
 
     def __init__(self):
@@ -22,29 +25,27 @@ class Agent:
         self.BENCHMARK_REWARD = 14
         self.eps_history = None
 
-    def save_model(self, path, output_type='pickle'):
+    def save_model(self, path, name=None, output_type='pickle'):
         try:
             if output_type == 'pickle':
                 pickle.dump(self.q_table, open(path + '.p', "wb"))
-
             else:
                 with open(path + '.csv', 'w') as f:
                     for key in self.q_table.keys():
                         f.write("%s,%s\n" % (key, self.q_table[key]))
-        finally:
+        except:
             if output_type == 'pickle':
-                logging.getLogger("log1").error("Could not save pickle file to+ " + path)
+                logging.getLogger("log1").error("Could not save model as pickle file to+ " + path)
             else:
-                logging.getLogger("log1").error("Could not save csv file to+ " + path)
+                logging.getLogger("log1").error("Could not save model as csv file to+ " + path)
 
         path += '_training_history\\'
+        os.makedirs(path, exist_ok=True)
         try:
-            os.makedirs(path , exist_ok=True)
-
             pickle.dump(self.total_rewards, open(path + 'rewards.p', "wb"))
             pickle.dump(self.eps_history, open(path + 'eps_history.p', "wb"))
-        finally:
-            logging.getLogger("log1").error("Could not save training history as pickle file to+ " + path)
+        except:
+            logging.getLogger("log1").error("Could not save training history as pickle file to" + path)
 
     def load_model(self, path_to_file):
         raise NotImplementedError
@@ -56,7 +57,7 @@ class Agent:
         else:
             current_state = self.env.reset()
         done = False
-
+        # env.stochastic = False
         while not done:
             action = self.max_action(current_state, self.env.possible_actions)
             current_state, reward, done, _ = self.env.step(action)
@@ -68,7 +69,8 @@ class Agent:
 
     def choose_action(self, possible_actions):
         raise NotImplementedError
-#TODO check this
+
+    # TODO check this
     def max_action(self, state, possible_actions):
         possible_actions = self.action_ix[possible_actions]
         prediction = self.predict(state, possible_actions)
@@ -90,6 +92,6 @@ class Agent:
                 else:
                     return 0 if isinstance(action, (np.integer, int)) else np.zeros(len(action))
 
-    #TODO delete
-    def get_action(self, state, epsilon = None):
+    # TODO delete
+    def get_action(self, state, epsilon=None):
         pass

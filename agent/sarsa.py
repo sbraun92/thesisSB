@@ -7,7 +7,7 @@ import logging
 import pickle
 import csv
 
-from agent.agentInterface import Agent
+from agent.agent import Agent
 
 np.random.seed(0)
 
@@ -28,7 +28,10 @@ class SARSA(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        self.action_space_length = len(self.env.action_space)
+        if self.env.open_ai_structure:
+            self.action_space_length = self.env.action_space.n
+        else:
+            self.action_space_length = len(self.env.action_space)
         self.action_ix = np.arange(self.action_space_length)
         self.epReward = 0
         self.total_rewards = np.zeros(self.number_of_episodes)
@@ -97,6 +100,12 @@ class SARSA(Agent):
 
                 observation = observation_
 
+                #TODO add for other agents
+                if i == self.number_of_episodes - 2 and done:
+                    logging.getLogger('log1').info('Set environment for the final episode to deterministic')
+                    self.env.stochastic = False
+
+
                 if i == self.number_of_episodes - 1 and done:
                     logging.getLogger('log1').info(self.env._get_grid_representations())
                     print("The reward of the last training episode was " + str(epReward))
@@ -128,7 +137,7 @@ class SARSA(Agent):
                 print('episode ', i, '\tscore %.2f' % epReward, '\tavg. score %.2f' % avg_reward)
 
         self.training_time = time.time() - start
-        logging.getLogger('log1').info("End training process after %d sec".format(self.training_time))
+        logging.getLogger('log1').info("End training process after {} sec".format(self.training_time))
         print('Finished training after {} min {} sec. \n'
               .format(int(self.training_time/60), round(self.training_time % 60, 0)))
 

@@ -1,25 +1,26 @@
-from env.roroDeck import RoRoDeck
-import pytest
-import numpy as np
 import gym
+import numpy as np
 
-# from stable_baselines.common.env_checker import check_env
+from env.roroDeck import RoRoDeck
+
+from stable_baselines.common.env_checker import check_env
 np.random.seed(0)
 
 
-def test_OpenAiCompliance():
+# TODO test action_space and reward_space
+def test_open_ai_compliance():
     env = gym.make('RORODeck-v0')
-    env.reset()
-    env.step(env.action_space_sample())
+    #env.reset()
+    #env.step(env.action_space_sample())
+    check_env(env)
 
-
-def test_RORODeck():
+def test_roro_deck():
     env = RoRoDeck(False)
     env.reset()
     done = False
     i = 0
 
-    while (not done):
+    while not done:
         observation_, reward, done, info = env.step(env.action_space_sample())
         i += 1
         assert i <= 100
@@ -41,13 +42,12 @@ def test_env_parameter():
     assert env.vehicle_data.shape[0] == 6
     assert 0 <= env.current_Lane <= env.lanes
     assert env.grid.shape == (env.rows, env.lanes)
-    assert env.sequence_no >= 0 and type(env.sequence_no) == type(0)
+    assert env.sequence_no >= 0 and isinstance(env.sequence_no, int)
     assert len(env.reward_system) == 4
-    # TODO assert reward range
 
 
 # After the reset all variables should have the same value as after __init__
-def test_resetMethod():
+def test_reset_method():
     env = RoRoDeck(False)
     vehicle_data = env.vehicle_data.copy()
     end_of_lanes = env.end_of_lanes.copy()
@@ -116,7 +116,6 @@ def test_stepMethod():
     grid = env.grid.copy()
     grid_destination = env.grid_destination.copy()
     grid_vehicle_type = env.grid_vehicle_type.copy()
-    # TODO add a expanded grid for vehicle Type
     capacity = env.capacity.copy()
     vehicle_counter = env.vehicle_Counter.copy()
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
@@ -175,12 +174,6 @@ def test_stepMethod():
     assert (_vehicleData == vehicle_data).all()
     assert (_rewardSystem == reward_system).all()
 
-    # TODO weitere TEst
-    # teste reefer position
-    # testen wenn eine illigale Action gewählt wurde -> Was soll da überhaupt passieren
-    # testen wenn done dann env unveränderbar
-    # ....
-
 
 def test_possible_actions():
     env = RoRoDeck(True)
@@ -197,7 +190,7 @@ def test_possible_actions():
     assert len(env.possible_actions) == len(env.vehicle_data.T) - 1
 
 
-def test_Reefer_Postions():
+def test_reefer_positions():
     env = RoRoDeck(True)
     env.vehicle_data[5][4] = 1  # enable reefer for test
     env.reset()
@@ -212,7 +205,7 @@ def test_Reefer_Postions():
     assert 4 not in env.get_possible_actions_of_state()
 
 
-def test_end_of_lane_Method():
+def test_end_of_lane_method():
     env = RoRoDeck(True)
     env.reset()
     end_of_lanes = env.end_of_lanes.copy()
@@ -225,19 +218,21 @@ def test_end_of_lane_Method():
 
     assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane] + length
 
-#TODO
+
+# TODO
 def test_shifts_caused():
     pass
 
 
-def test_findCurrentLane():
+def test_find_current_lane():
     env = RoRoDeck(lanes=8, rows=12)
     env.reset()
     assert env.current_Lane == 3
     env.step(env.action_space_sample())
     assert env.current_Lane == 4
 
-#TODO delete
+
+# TODO delete
 def test_switch_current_lane():
     pass
 
@@ -247,45 +242,34 @@ def test_is_action_legal():
     env.reset()
     number_vehicle = env.vehicle_data[4][0]
 
-    assert env._is_action_legal(0) == True
+    assert env._is_action_legal(0)
     for i in range(number_vehicle):
-        assert env._is_action_legal(0) == True
+        assert env._is_action_legal(0)
         env.step(0)
-    assert env._is_action_legal(0) == False
+    assert not env._is_action_legal(0)
 
 
 def test_is_terminal_state():
     env = RoRoDeck(True)
-    assert env._is_terminal_state() == False
+    assert not env._is_terminal_state()
 
     env.reset()
-    assert env._is_terminal_state() == False
+    assert not env._is_terminal_state()
 
     for i in range(4):
         state, reward, done, info = env.step(env.action_space_sample())
-    assert env._is_terminal_state() == False
+    assert not env._is_terminal_state()
 
     while not done:
         state, reward, done, info = env.step(env.action_space_sample())
-    assert env._is_terminal_state() == True
+    assert env._is_terminal_state()
 
 
 def test_get_current_state():
-    env = RoRoDeck(True)
-
-    state = env.current_state
-    assert np.shape(state) == (13,)
-    env.reset()
-    state = env.current_state
-    assert np.shape(state) == (13,)
-
-    env.step(env.action_space_sample())
-    assert not np.all(state == env.current_state)
-
     env = RoRoDeck(False)
 
     state = env.current_state
-    assert np.shape(state) == (25,)  # was 83 TODO
+    assert np.shape(state) == (25,)
     env.reset()
     state = env.current_state
     assert np.shape(state) == (25,)

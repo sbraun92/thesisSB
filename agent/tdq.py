@@ -7,7 +7,7 @@ import logging
 import pickle
 import csv
 
-from agent.agentInterface import Agent
+from agent.agent import Agent
 
 
 class TDQLearning(Agent):
@@ -28,10 +28,13 @@ class TDQLearning(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        self.action_space_length = len(self.env.action_space)
+        try:
+            self.action_space_length = len(self.env.action_space)
+        except:
+            self.action_space_length = self.env.action_space.n
         self.action_ix = np.arange(self.action_space_length)
         self.total_rewards = np.zeros(self.number_of_episodes)
-        self.state_expantion = np.zeros(self.number_of_episodes)
+        self.state_expansion = np.zeros(self.number_of_episodes)
         self.stepsToExit = np.zeros(self.number_of_episodes)
         self.eps_history = []
 
@@ -108,7 +111,6 @@ class TDQLearning(Agent):
                 observation = observation_
 
                 if i == self.number_of_episodes - 1 and done:
-                    self.env.render()
                     logging.getLogger('log1').info(self.env._get_grid_representations())
                     print("The reward of the last training episode was " + str(ep_reward))
                     print("The Terminal reward was " + str(reward))
@@ -137,7 +139,7 @@ class TDQLearning(Agent):
             self.eps_history.append(self.EPS)
 
             self.total_rewards[i] = ep_reward
-            self.state_expantion[i] = len(self.q_table.keys())
+            self.state_expansion[i] = len(self.q_table.keys())
             self.stepsToExit[i] = steps
 
 
@@ -158,7 +160,7 @@ class TDQLearning(Agent):
             print('Save output to: \n' + self.path + '\n')
             self.env.save_stowage_plan(self.path)
 
-        return self.q_table, self.total_rewards, self.stepsToExit, np.array(self.eps_history), self.state_expantion
+        return self.q_table, self.total_rewards, self.stepsToExit, np.array(self.eps_history), self.state_expansion
 
     # TODO cleanup
     # def maxAction(self, state):

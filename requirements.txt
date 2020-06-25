@@ -7,3 +7,5 @@ tensorflow
 keras
 keras-rectified-adam
 gym
+stable_baselines
+pytest

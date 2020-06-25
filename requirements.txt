@@ -3,9 +3,9 @@ pandas
 matplotlib
 seaborn
 sympy
-tensorflow == 1.15
+tensorflow==1.15.2
 keras
 keras-rectified-adam
 gym
-stable_baselines
+https://github.com/openai/baselines/archive/tf2.zip
 pytest

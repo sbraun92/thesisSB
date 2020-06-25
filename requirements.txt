@@ -3,7 +3,7 @@ pandas
 matplotlib
 seaborn
 sympy
-tensorflow
+tensorflow == 1.15
 keras
 keras-rectified-adam
 gym

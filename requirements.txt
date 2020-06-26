@@ -3,8 +3,7 @@ pandas
 matplotlib
 seaborn
 sympy
-tensorflow==1.15.2
-keras
-keras-rectified-adam
+tensorflow==2.0
+keras==2.3.1
 gym
 pytest

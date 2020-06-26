@@ -1,8 +1,8 @@
-from keras.layers import Dense, Activation, Conv1D, Conv2D
+from keras.layers import Dense, Activation
 from keras.models import Sequential, load_model
 from keras.regularizers import l2, l1
 from keras.optimizers import Adam
-from keras_radam import RAdam
+#from keras_radam import RAdam
 import tensorflow as tf
 
 # Supress warinings

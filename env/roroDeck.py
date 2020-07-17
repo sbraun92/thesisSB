@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import gym
 from gym import spaces
+from env.envSimplifier import EnvSimplifierConsistencyChecker
 from gym.utils import seeding
 np.random.seed(0)
 
@@ -27,7 +28,7 @@ class RoRoDeck(gym.Env):
 
     """
 
-    def __init__(self, open_ai_structure=True, lanes=8, rows=10, vehicle_data=None, reward_system=None, stochastic=False):
+    def __init__(self, open_ai_structure=True, lanes=8, rows=10, hull_depth = 1, vehicle_data=None, reward_system=None, stochastic=False):
         """
         Initialise environment
 
@@ -55,9 +56,10 @@ class RoRoDeck(gym.Env):
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
-        self.grid = self._create_grid()
+        self.hull_depth = hull_depth
+        self.grid = self._create_grid(hull_depth=hull_depth)
         # Reefer TODo
-        self.grid_reefer = self._create_grid()
+        self.grid_reefer = self._create_grid(hull_depth=hull_depth)
         self.grid_reefer.T[0][4:rows] = 1
         self.grid_destination = self.grid.copy()
         self.grid_vehicle_type = self.grid.copy() - 1
@@ -85,6 +87,11 @@ class RoRoDeck(gym.Env):
                                           [0, 0, 0, 0, 1]])  # Reefer
         else:
             self.vehicle_data = vehicle_data
+        #TODO move elsewhere
+        EnvSimplifierConsistencyChecker(self).check_input_consistency()
+        # Bug Schräge Problem beim Simplifiyen create grid -> TODO methode muss auch überarbeitet werden
+        #EnvSimplifierConsistencyChecker(self).simplify_vehicle_length()
+
 
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
         # Todo dele np.min(self.vehleData
@@ -169,7 +176,7 @@ class RoRoDeck(gym.Env):
         self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes, self.rows)
 
         self.sequence_no = 1
-        self.grid = self._create_grid()
+        self.grid = self._create_grid(hull_depth=self.hull_depth)
         self.grid_destination = self.grid.copy()
         self.grid_vehicle_type = self.grid.copy() - 1
         self.grid_reefer = self.grid.copy()
@@ -204,7 +211,7 @@ class RoRoDeck(gym.Env):
         """
         print(self._get_grid_representations())
 
-    def _create_grid(self):
+    def _create_grid(self, hull_depth = 1, hull_width = 4):
         """
         Creates a grid representation of a RORO deck with vessel hull
         0:  empty space
@@ -214,12 +221,18 @@ class RoRoDeck(gym.Env):
         -------
         a numpy array:  size of lanes times rows
         """
-        grid = np.zeros((self.rows, self.lanes), dtype=np.int)
-        for i in range(4):
-            t = 4 - i
-            grid[i] += np.hstack([-np.ones(t, dtype=np.int), np.zeros(self.lanes - t, dtype=np.int)])
-            grid[i] += np.hstack([np.zeros(self.lanes - t, dtype=np.int), -np.ones(t, dtype=np.int)])
-        return grid
+
+        # Check if hull dimensions are sensible for deck-dimensions (rows & lanes)
+        # Otherwise fall back to default values #TODO Test this
+        if self.rows > hull_depth*hull_width and self.lanes >= hull_width*2:
+            grid = np.zeros((self.rows, self.lanes), dtype=np.int)
+            for i in range(hull_width):
+                t = (hull_width - i)*hull_depth
+                grid[i] += np.hstack([-np.ones(t, dtype=np.int), np.zeros(self.lanes - t, dtype=np.int)])
+                grid[i] += np.hstack([np.zeros(self.lanes - t, dtype=np.int), -np.ones(t, dtype=np.int)])
+            return grid
+        else:
+            return self._create_grid()
 
     # TODO check this method -> does not use "self"
     def _get_end_of_lane(self, grid):

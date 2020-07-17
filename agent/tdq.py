@@ -7,7 +7,7 @@ import logging
 import pickle
 import csv
 
-from agent.agent import Agent
+from agent.BasicAgent import Agent
 
 
 class TDQLearning(Agent):

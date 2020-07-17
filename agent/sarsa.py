@@ -7,13 +7,14 @@ import logging
 import pickle
 import csv
 
-from agent.agent import Agent
+from agent.BasicAgent import Agent
 
 np.random.seed(0)
 
 
 class SARSA(Agent):
     def __init__(self, env=None, path=None, number_of_episodes=20000, orig=True, GAMMA=0.999):
+        #super().__init__()
         # help only for timing
         self.orig = orig
         logging.info("Initialise SARSA Agent")
@@ -35,7 +36,7 @@ class SARSA(Agent):
         self.action_ix = np.arange(self.action_space_length)
         self.epReward = 0
         self.total_rewards = np.zeros(self.number_of_episodes)
-        self.state_expantion = np.zeros(self.number_of_episodes)
+        self.state_expansion = np.zeros(self.number_of_episodes)
         self.steps_to_exit = np.zeros(self.number_of_episodes)
 
 
@@ -128,7 +129,7 @@ class SARSA(Agent):
             self.eps_history.append(self.EPS)
 
             self.total_rewards[i] = epReward
-            self.state_expantion[i] = len(self.q_table.keys())
+            self.state_expansion[i] = len(self.q_table.keys())
             self.steps_to_exit[i] = steps
 
             if i % 500 == 0 and i > 0:
@@ -145,7 +146,7 @@ class SARSA(Agent):
             print('Save output to: \n' + self.path + '\n')
             self.env.save_stowage_plan(self.path)
 
-        return self.q_table, self.total_rewards, self.steps_to_exit, np.array(self.eps_history), self.state_expantion
+        return self.q_table, self.total_rewards, self.steps_to_exit, np.array(self.eps_history), self.state_expansion
 
 
     def load_model(self, path):

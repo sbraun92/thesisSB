@@ -16,14 +16,22 @@ class Agent:
     """
 
     def __init__(self):
-        self.number_of_episodes = None
-        self.env = None
-        self.strategies = ["Epsilon-greedy"]
-        self.training_time = 0
-        self.action_space_length = None
-        self.MAX_REWARD = 24
-        self.BENCHMARK_REWARD = 14
-        self.eps_history = None
+        pass
+
+    def get_info(self):
+        info_str = 'Information on Agent:\n'
+        for key, value in vars(self).items():
+            # if value is dict, numpy array or list print its size
+            if isinstance(value, (list, np.ndarray, dict)):
+                key += ' size'
+                value = len(value)
+            # variable tab space for clean printing
+            tab_space = ':'+'\t' * (5 - int(len(key) / 8)) if 5 - int(len(key) / 8) > 0 else ':\t'
+            info_str += key + tab_space + str(value) + '\n'
+        return info_str
+
+
+
 
     def save_model(self, path, name=None, output_type='pickle'):
         try:

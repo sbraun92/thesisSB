@@ -17,7 +17,7 @@ import logging
 from analysis.loggingUnit import LoggingBase
 from valuation.evaluator import Evaluator
 import time
-from agent.agent import Agent
+from agent.BasicAgent import Agent
 
 
 class DQNAgent(Agent):
@@ -237,6 +237,7 @@ class DQNAgent(Agent):
         return action
 
     def learn(self):
+        # Don't sample/learn if the replay buffer size is smaller than minibatch size
         if self.memory.memory_size <= self.batch_size:
             return
 
@@ -248,10 +249,11 @@ class DQNAgent(Agent):
         action_values = np.array(self.action_space, dtype=np.int8)
         action_indices = np.dot(action, action_values)
 
-        if state.ndim == 1:
-            state = np.array([state])
-        if new_state.ndim == 1:
-            new_state = np.array([new_state])
+        'TODO delete'
+        #if state.ndim == 1:
+        #    state = np.array([state])
+        #if new_state.ndim == 1:
+        #    new_state = np.array([new_state])
 
         q = self.q_eval.predict(state)
         q_next = self.q_eval.predict(new_state)
@@ -348,8 +350,8 @@ class ExperienceReplay(object):
         self.discrete = discrete
         self.state_memory = np.zeros((self.memory_size, input_shape))
         self.new_state_memory = np.zeros((self.memory_size, input_shape))
-        dtype = np.int8 if self.discrete else np.float32
-        self.action_memory = np.zeros((self.memory_size, n_actions), dtype=dtype)
+        #dtype = np.int8 if self.discrete else np.float32
+        self.action_memory = np.zeros((self.memory_size, n_actions), dtype=np.int)
         self.reward_memory = np.zeros(self.memory_size)
         self.terminal_memory = np.zeros(self.memory_size, dtype=np.float32)
 

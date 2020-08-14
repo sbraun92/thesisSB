@@ -131,7 +131,7 @@ class RoRoDeck(gym.Env):
         obs_high = np.hstack((np.ones(lanes)*(rows-1),
                               np.ones(lanes)*self.lowest_destination,
                               self.vehicle_data[4][self.mandatory_cargo_mask],
-                              np.ones(len(self.vehicle_data[0])),np.array((lanes-1))))
+                              np.ones(len(self.vehicle_data[0])), np.array((lanes-1))))
 
         obs_low = np.zeros(len(obs_high))
 

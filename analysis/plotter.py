@@ -9,7 +9,7 @@ import os
 sns.set(style="whitegrid")
 # sns.set(font_scale=1, rc={'text.usetex' : True})
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams.update({'font.size': 12})
+plt.rcParams.update({'font.size': 11})
 plt.rcParams.update({'text.color': "black",
                      'axes.labelcolor': "black"})
 plt.tight_layout()
@@ -31,8 +31,9 @@ class Plotter(object):
 
         self.plot_standard_dev = plot_standard_dev
 
-        logging.getLogger('log1').info("Setting path for plots to:" + path)
         self.path = path + '_Plots\\'
+        logging.getLogger('log1').info("Setting path for plots to:" + path)
+
         os.makedirs(self.path, exist_ok=True)
         self.algorithm = algorithm
 

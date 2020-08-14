@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
         analyser = Analysor()
 
-        invNo,degree = analyser.calculateInversionNumber(rewardSystemEval)
+        invNo,degree = analyser.calculate_degree_of_sort(rewardSystemEval)
 
         obs = np.append(system,np.array(degree))
 

@@ -36,3 +36,5 @@ class EnvSimplifierConsistencyChecker(object):
 
 
         #TODO each destination> 0, quatity bounds
+        #TODO write out input data
+

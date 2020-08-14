@@ -21,7 +21,7 @@ Detailed citations and references to the work of others may be found in the bibl
 TODO
 
 ## How to use
-1. Install the latest anaconda distribution for python 3.7.0 from https://www.anaconda.com/distribution/ 
+1. Install the latest anaconda distribution for python 3.7.0 or higher from https://www.anaconda.com/distribution/ 
 
 2. Clone or copy the repository to your machine (e.g.by downloading the zip-file and extracting it)
 

@@ -161,7 +161,7 @@ class DQNAgent(Agent):
                 self.learn()
 
                 # Break if to many illegal actions to avoid investigating unintresting areas
-                if bad_moves_counter > 5:
+                if bad_moves_counter > 7:
                     break
 
             self.eps_history.append(self.EPSILON)
@@ -179,7 +179,7 @@ class DQNAgent(Agent):
                 self.save_model(self.module_path)
 
             converged = True if np.mean(
-                self.total_rewards[max(0, i - 100):(i + 1)]) > 13 else False  # TODO erbe init von general Agent class
+                self.total_rewards[max(0, i - 100):(i + 1)]) > 15 else False  # TODO erbe init von general Agent class war 13
             # np.median(total_rewards[max(0, i - 100):(i + 1)]) > 17 and \
 
             if converged:
@@ -278,11 +278,14 @@ class DQNAgent(Agent):
         q_target[batch_index, action_indices] = reward + \
                                                 self.GAMMA * np.max(q_next, axis=1) * (1 - done)
 
+
+
+
         # Double DQN  //TODO
         # q_target[batch_index, action_indices] = reward + \
         #                                        self.GAMMA * np.max(q_next, axis=1) * (1 - done)
 
-        _ = self.q_eval.fit(state, q_target, verbose=0)
+        _ = self.q_eval.train_on_batch(state, q_target) #TODO how many epochs default was; 1 change from fit()
 
         # self.q_eval.train_on_batch(state, q_target)
 
@@ -421,7 +424,7 @@ if __name__ == '__main__':
     agent = DQNAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0,
                      alpha=0.0005,
                      mem_size=1000_000,
-                     batch_size=32, epsilon_min=0.01, epsilon_dec=0.9999925, layers=[550, 450, 450, 550])
+                     batch_size=32, epsilon_min=0.01, epsilon_dec=0.99999, layers=[64,64]) #layers=[550, 450, 450, 550]
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     plotter = Plotter(module_path, number_of_episodes)

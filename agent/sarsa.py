@@ -53,7 +53,7 @@ class SARSA(Agent):
 
         self.q_table[observation.tobytes()] = np.zeros(self.action_space_length)
 
-        logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
+        logging.getLogger('log1').info(self.get_info())
 
 
         print("Start Training Process")

@@ -25,7 +25,7 @@ TODO
 
 2. Clone or copy the repository to your machine (e.g.by downloading the zip-file and extracting it)
 
-3. Open the Anaconda Prompt and navigate to you local copy of the repository
+3. Open the Anaconda Prompt and navigate to your local copy of the repository
 
    Basic Navigation in command window:
    
@@ -33,6 +33,6 @@ TODO
       
       * `cd ..`               -> navigate to the parentfolder
       
-4. Install dependencies by typing: `pip3 install -r requirements.txt`
+4. Install dependencies by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
 
 5. Type `jupyter notebook` and open file *examples/example_notebook.ipynb*

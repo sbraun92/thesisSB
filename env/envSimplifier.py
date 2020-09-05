@@ -9,7 +9,7 @@ class EnvSimplifierConsistencyChecker(object):
         self.env = env
 
     def simplify_vehicle_length(self):
-        self.env.rows, self.env.vehicle_data[3] = find_row_width(self.env.rows, self.env.vehicle_data[3])
+        self.env.rows, self.env.vehicle_data[4] = find_row_width(self.env.rows, self.env.vehicle_data[4])
 
     def check_input_consistency(self):
         #Check vehicle dimensions

@@ -38,22 +38,22 @@ class Plotter(object):
         self.algorithm = algorithm
 
     def plot(self, rewards, states, steps, eps_history):
-        if self.rewardPlot is True:
+        if self.rewardPlot is True and rewards is not None:
             try:
                 self.plotRewardPlot(rewards)
             except:
                 logging.getLogger(__name__).warning('Could not plot Reward development')
-        if self.stateExpPlot is True:
+        if self.stateExpPlot is True and states is not None:
             try:
                 self.plotStateExp(states)
             except:
                 logging.getLogger(__name__).warning('Could not plot state expansion')
-        if self.stepPlot is True:
+        if self.stepPlot is True and steps is not None:
             try:
                 self.plotStepPlot(steps)
             except:
                 logging.getLogger(__name__).warning('Could not plot "steps to exit"')
-        if self.epsHistory is True:
+        if self.epsHistory is True and eps_history is not None:
             try:
                 self.plotEPSHistory(eps_history)
             except:

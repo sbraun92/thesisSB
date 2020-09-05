@@ -21,18 +21,18 @@ Detailed citations and references to the work of others may be found in the bibl
 TODO
 
 ## How to use
-1. Install the latest anaconda distribution for python 3.7.0 from https://www.anaconda.com/distribution/ 
+1. Install the latest anaconda distribution for python 3.7.0 or higher from https://www.anaconda.com/distribution/ 
 
-2. Clone or copy the repository to your machine
+2. Clone or copy the repository to your machine (e.g.by downloading the zip-file and extracting it)
 
-3. Open the Anaconda Prompt and navigate to you local copy of the repository
+3. Open the Anaconda Prompt and navigate to your local copy of the repository
 
    Basic Navigation in command window:
    
-      * `cd YourFolder`       -> navigate to the Folder YourFolder
+      * `cd YourFolder`       -> navigate to the folder YourFolder
       
       * `cd ..`               -> navigate to the parentfolder
       
-4. Install dependencies by typing: `pip3 install -r requirements.txt`
+4. Install dependencies by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
 
 5. Type `jupyter notebook` and open file *examples/example_notebook.ipynb*

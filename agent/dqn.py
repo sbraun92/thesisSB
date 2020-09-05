@@ -31,7 +31,7 @@ class DQNAgent(Agent):
      """
     def __init__(self, env, module_path, alpha=0.0005, gamma=0.999, epsilon=1, batch_size=32, number_of_episodes=12000,
                  epsilon_dec=0.996,
-                 epsilon_min=0.02, mem_size=1_000_000, layers=[450, 450, 450], activation='relu',
+                 epsilon_min=0.02, mem_size=1_000_000, layers=[128, 128], activation='relu',
                  regularisation=0.001, optimiser='Adam', model_name=None,
                  pretraining_duration=10_000):
 

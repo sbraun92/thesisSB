@@ -46,6 +46,13 @@ if __name__ == '__main__':
                                   [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
                                   # infinite vehicles of that type)
                                   [0, 0, 0, 0, 1]])  # Reefer
+
+    vehicle_data = np.array([[0, 1, 2, 3, 4],           # vehicle id
+                                  [5, 5, -1, -1, 2],    # number of vehicles on yard
+                                  [1, 1, 0, 0, 1],      # mandatory
+                                  [1, 2, 1, 2, 2],      # destination
+                                  [2, 3, 2, 3, 2],      # length
+                                  [0, 0, 0, 0, 1]])     # Reefer
     env = RoRoDeck(False, 10, 14, stochastic=False)
 
 
@@ -67,7 +74,7 @@ if __name__ == '__main__':
     evaluator = Evaluator(env.vehicle_data, env.grid)
     # print(env.current_state)
     evaluation = evaluator.evaluate(env.get_stowage_plan())
-    # print(evaluation)
+    print(evaluation)
     #pickle.dump(total_rewards, open(module_path + '_rewards.p', "wb"))
     # pickle.dump(steps_to_exit, open(module_path + '_steps_to_exit.p', "wb"))
     #pickle.dump(eps_history, open(module_path + '_eps_history.p', "wb"))

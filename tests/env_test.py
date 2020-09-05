@@ -136,9 +136,9 @@ def test_stepMethod():
 
     env.step(action)
 
-    destination = vehicle_data[1][action]
+    destination = vehicle_data[3][action]
     mandatory = vehicle_data[2][action]
-    length = vehicle_data[3][action]
+    length = vehicle_data[4][action]
 
     for i in range(length):
         grid.T[current_lane][end_of_lanes[current_lane] + i] = sequence_no
@@ -179,7 +179,7 @@ def test_possible_actions():
     env = RoRoDeck(True)
     env.vehicle_data[5][4] = 0  # disable reefer for test
     env.reset()
-    number_of_vehicle = env.vehicle_data[4][0]
+    number_of_vehicle = env.vehicle_data[1][0]
 
     assert len(env.vehicle_data.T) == len(env.possible_actions) == 5
 
@@ -212,7 +212,7 @@ def test_end_of_lane_method():
     assert np.all(end_of_lanes == env.initial_end_of_lanes)
 
     current_lane = env.current_Lane
-    length = env.vehicle_data[3][env.possible_actions[0]]
+    length = env.vehicle_data[4][env.possible_actions[0]]
 
     env.step(env.possible_actions[0])
 
@@ -240,7 +240,7 @@ def test_switch_current_lane():
 def test_is_action_legal():
     env = RoRoDeck(True)
     env.reset()
-    number_vehicle = env.vehicle_data[4][0]
+    number_vehicle = env.vehicle_data[1][0]
 
     assert env._is_action_legal(0)
     for i in range(number_vehicle):

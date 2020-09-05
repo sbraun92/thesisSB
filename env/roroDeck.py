@@ -78,12 +78,18 @@ class RoRoDeck(gym.Env):
         # TODO string formatting
         # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
         if vehicle_data is None:
-            self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
-                                          [1, 2, 1, 2, 2],  # destination
-                                          [1, 1, 0, 0, 1],  # mandatory
-                                          [2, 3, 2, 3, 2],  # length
-                                          [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
+            #self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
+            #                              [1, 2, 1, 2, 2],  # destination
+            #                              [1, 1, 0, 0, 1],  # mandatory
+             #                             [2, 3, 2, 3, 2],  # length
+              #                            [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
                                           # infinite vehicles of that type)
+               #                           [0, 0, 0, 0, 1]])  # Reefer
+            self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
+                                          [5, 5, -1, -1, 2],  # number of vehicles on yard
+                                          [1, 1, 0, 0, 1],  # mandatory
+                                          [1, 2, 1, 2, 2],  # destination
+                                          [2, 3, 2, 3, 2],  # length
                                           [0, 0, 0, 0, 1]])  # Reefer
         else:
             self.vehicle_data = vehicle_data
@@ -103,8 +109,8 @@ class RoRoDeck(gym.Env):
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int)
         # for shifts TODO not a good name
         self.shift_helper = self.end_of_lanes.copy()
-        self.minimal_package = np.min(self.vehicle_data[3])
-        self.maximal_package = np.max(self.vehicle_data[3])
+        self.minimal_package = np.min(self.vehicle_data[4])
+        self.maximal_package = np.max(self.vehicle_data[4])
         self.maximal_shifts = self._maximal_number_of_shifts()
 
         # mandatory cargo, must be loaded
@@ -130,7 +136,7 @@ class RoRoDeck(gym.Env):
         #low
         obs_high = np.hstack((np.ones(lanes)*(rows-1),
                               np.ones(lanes)*self.lowest_destination,
-                              self.vehicle_data[4][self.mandatory_cargo_mask],
+                              self.vehicle_data[1][self.mandatory_cargo_mask],
                               np.ones(len(self.vehicle_data[0])), np.array((lanes-1))))
 
         obs_low = np.zeros(len(obs_high))
@@ -153,11 +159,11 @@ class RoRoDeck(gym.Env):
                                        .format(self.reward_system[3]))
         for vehicle_id in self.vehicle_data[0]:
             logging.getLogger('log1').info('Vehicle id {}\t'.format(vehicle_id)
-                                           + "Destination: {}\t".format(self.vehicle_data[1][vehicle_id])
+                                           + "Destination: {}\t".format(self.vehicle_data[3][vehicle_id])
                                            + "Mandatory?: {}\t".format(bool(self.vehicle_data[2][vehicle_id]))
-                                           + "Length: {}\t".format(self.vehicle_data[3][vehicle_id])
+                                           + "Length: {}\t".format(self.vehicle_data[4][vehicle_id])
                                            + "Number on yard: " + str(
-                self.vehicle_data[4][vehicle_id] if self.vehicle_data[4][vehicle_id] != -1 else "inf")
+                self.vehicle_data[1][vehicle_id] if self.vehicle_data[1][vehicle_id] != -1 else "inf")
                                            + "\tReefer?: {}\t".format(bool(self.vehicle_data[5][vehicle_id])))
 
         logging.getLogger('log1').info("Environment initialised...")
@@ -193,11 +199,11 @@ class RoRoDeck(gym.Env):
         self.shift_helper = self.end_of_lanes.copy()
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int)
-        self.lowest_destination = np.ones(self.lanes) * np.max(self.vehicle_data[1])  # TODO
+        self.lowest_destination = np.ones(self.lanes) * np.max(self.vehicle_data[3])  # TODO
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
         self.current_state = self._get_current_state()
-        self.minimal_package = np.min(self.vehicle_data[3])
-        self.maximal_package = np.max(self.vehicle_data[3])
+        self.minimal_package = np.min(self.vehicle_data[4])
+        self.maximal_package = np.max(self.vehicle_data[4])
         self.maximal_shifts = self._maximal_number_of_shifts()
 
         return self.current_state
@@ -291,11 +297,11 @@ class RoRoDeck(gym.Env):
     def _is_action_legal(self, action):
         '''TODO: dont loop over all actions '''
         loading_position = self.end_of_lanes[self.current_Lane]
-        length_of_vehicle = self.vehicle_data[3][action]
+        length_of_vehicle = self.vehicle_data[4][action]
 
         if loading_position + length_of_vehicle <= self.rows:
-            if self.number_of_vehicles_loaded[action] < self.vehicle_data[4][action] or \
-                    self.vehicle_data[4][action] == -1:  # enough or infinite Vehicles in parking lot
+            if self.number_of_vehicles_loaded[action] < self.vehicle_data[1][action] or \
+                    self.vehicle_data[1][action] == -1:  # enough or infinite Vehicles in parking lot
                 if self.vehicle_data[5][action] == 1:  # check reefer position
                     designated_loading_area = self.grid_reefer.T[self.current_Lane][
                                               loading_position:(loading_position + length_of_vehicle)]
@@ -326,7 +332,7 @@ class RoRoDeck(gym.Env):
         # if there are still vehicles in the parking lot to be loaded TODO docstring
     #TODO possible actions == 0
         if np.min(self.end_of_lanes) + self.minimal_package > self.rows \
-                or np.all((self.vehicle_data[4] - self.number_of_vehicles_loaded) == 0)\
+                or np.all((self.vehicle_data[1] - self.number_of_vehicles_loaded) == 0)\
                 or len(self.possible_actions) == 0:
             return True
         else:
@@ -345,7 +351,7 @@ class RoRoDeck(gym.Env):
             if len(self.possible_actions) != 0:
                 illegal_actions_one_hot[self.possible_actions] = 0
 
-            mandatory_vehicles_left = self.vehicle_data[4] - self.number_of_vehicles_loaded
+            mandatory_vehicles_left = self.vehicle_data[1] - self.number_of_vehicles_loaded
 
         #    return np.hstack((self.end_of_lanes, self.lowest_destination,
 #
@@ -413,16 +419,16 @@ class RoRoDeck(gym.Env):
             self.loading_sequence += "{}. Load Vehicle Type \t {} \t in Lane: \t {} \t Row: \t {} \n" \
                 .format(self.sequence_no, action, self.current_Lane, slot)
 
-            self.end_of_lanes[self.current_Lane] += self.vehicle_data[3][action]
+            self.end_of_lanes[self.current_Lane] += self.vehicle_data[4][action]
 
             # if self.numberOfVehiclesLoaded[action] > 0 and self.vehicleData[2][action] == 1:
             #    self.numberOfVehiclesLoaded[action] -= 1
             #   reward += 2
 
-            if self.vehicle_data[4][action] == -1:  # infinite vehicles on car park
+            if self.vehicle_data[1][action] == -1:  # infinite vehicles on car park
                 self.number_of_vehicles_loaded[action] += 1
                 #reward += self.reward_system[0]
-            elif self.number_of_vehicles_loaded[action] < self.vehicle_data[4][action]:
+            elif self.number_of_vehicles_loaded[action] < self.vehicle_data[1][action]:
                 self.number_of_vehicles_loaded[action] += 1
                 #reward += self.reward_system[0]
 
@@ -440,9 +446,9 @@ class RoRoDeck(gym.Env):
             #        self.grid_destination.T[self.current_Lane][slot -1 ] == -2:
             #    same_group_factor += 1
 
-            for i in range(self.vehicle_data[3][action]):
+            for i in range(self.vehicle_data[4][action]):
                 self.grid.T[self.current_Lane][slot + i] = self.sequence_no
-                self.grid_destination.T[self.current_Lane][slot + i] = self.vehicle_data[1][action]
+                self.grid_destination.T[self.current_Lane][slot + i] = self.vehicle_data[3][action]
                 self.grid_vehicle_type.T[self.current_Lane][slot + i] = self.vehicle_data[0][action]
 
                 # TODO EXPERIMENTING WITH SAME GROUP FACTOR
@@ -458,8 +464,8 @@ class RoRoDeck(gym.Env):
 
             # reward += same_group_factor*0.005
 
-            if self.vehicle_data[1][action] < self.lowest_destination[self.current_Lane]:
-                self.lowest_destination[self.current_Lane] = self.vehicle_data[1][action]
+            if self.vehicle_data[3][action] < self.lowest_destination[self.current_Lane]:
+                self.lowest_destination[self.current_Lane] = self.vehicle_data[3][action]
 
             # TODO frontier redundant
             self.frontier = np.max(self.end_of_lanes)
@@ -480,7 +486,7 @@ class RoRoDeck(gym.Env):
                 # TODO seperate method for this
                 # mandatory_vehicles_left_to_load = self.vehicleData[4][self.mandatoryCargoMask]\
                 #                          - self.numberOfVehiclesLoaded[self.mandatoryCargoMask]
-                mandatory_vehicles_left_to_load = np.sum(self.vehicle_data[4][self.mandatory_cargo_mask] \
+                mandatory_vehicles_left_to_load = np.sum(self.vehicle_data[1][self.mandatory_cargo_mask] \
                                                          - self.number_of_vehicles_loaded[self.mandatory_cargo_mask])
 
                 # reward += np.sum(mandatory_vehicles_left_to_load) * self.rewardSystem[3]
@@ -512,7 +518,7 @@ class RoRoDeck(gym.Env):
         -------
         integer:    0 or 1 in the two destination case
         """
-        destination = self.vehicle_data[1][action]
+        destination = self.vehicle_data[3][action]
 
         no_veh_dest1 = len(np.argwhere(self.grid_destination.T[self.current_Lane] == 1))
 

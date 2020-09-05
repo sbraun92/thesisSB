@@ -41,7 +41,7 @@ class Evaluator(object):
 
     def calculate_number_of_shifts(self):
         total_shifts = np.zeros(len(self.stowage_plan[1]))
-        destinations = np.unique(self.vehicle_data[1].copy())
+        destinations = np.unique(self.vehicle_data[3].copy())
 
         # Loop over all lanes
         for lane_ix, lane in enumerate(self.stowage_plan[1]):
@@ -50,8 +50,8 @@ class Evaluator(object):
                 if lane[ix + 1] == -1:  # reached end of queue
                     break
 
-                destination_first = self.vehicle_data[1][vehicle]
-                destination_second = self.vehicle_data[1][lane[ix + 1]]
+                destination_first = self.vehicle_data[3][vehicle]
+                destination_second = self.vehicle_data[3][lane[ix + 1]]
 
                 if destination_first == destination_second:
                     if destination_first != destinations[0] and bad_queue:
@@ -71,7 +71,7 @@ class Evaluator(object):
             self.number_of_vehicles[i] = len(np.where(self.stowage_plan[1].flatten() == i)[0])
 
         loaded_mandatory_veh = np.sum(self.number_of_vehicles[self.mandatory_vehicle])
-        all_mandatory_vehicle = np.sum(self.vehicle_data[4][self.mandatory_vehicle])
+        all_mandatory_vehicle = np.sum(self.vehicle_data[1][self.mandatory_vehicle])
 
         return float(loaded_mandatory_veh / all_mandatory_vehicle)
 

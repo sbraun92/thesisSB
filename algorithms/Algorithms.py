@@ -1,7 +1,7 @@
 from sympy.combinatorics import Permutation
 import numpy as np
 import logging
-
+from scipy.stats import linregress
 def calculate_degree_of_sort(seq):
     """
     Calculates the degree of sort of a permutation as outlined in the thesis
@@ -33,8 +33,8 @@ def greatest_common_divisor(x, y):
     if y == 0:
         return x
     return greatest_common_divisor(y, x % y)
-
-
+#TODO comments
+#TODO sonderfaelle
 def find_row_width(deck_length, vehicle_width):
     logging.getLogger(__name__).info('Use algorithm of Euclid to reduce row dimensions and vehicle lengths...')
     solution = deck_length
@@ -48,3 +48,14 @@ def find_row_width(deck_length, vehicle_width):
                                          ' The new unit is now 1/{} of the inital unit'.format(solution))
         logging.getLogger(__name__).info('New Row width is {}'.format(int(deck_length / solution)))
         return int(deck_length / solution), (vehicle_width / solution).astype(np.int)
+
+
+def avg_reward_training_end(rewards):
+    return np.mean(rewards[-100:])
+
+def avg_reward_reward_slope(rewards):
+    return (1./(len(rewards)-100))*(np.mean(rewards[-100:])-np.mean(rewards[0:100]))
+
+def training_convergence(rewards):
+    beta,_,_,_,_ = linregress(np.arange(len(rewards)),rewards)
+    return beta

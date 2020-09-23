@@ -153,6 +153,7 @@ class DQNAgent(Agent):
                 state_actions = self.env.possible_actions
                 if action not in state_actions:
                     bad_moves_counter += 1
+                    steps -= 1
                 observation_, reward, done, info = self.env.step(action)
                 new_state_actions = self.env.possible_actions
                 episode_reward += reward
@@ -179,7 +180,7 @@ class DQNAgent(Agent):
                 self.save_model(self.module_path)
 
             converged = True if np.mean(
-                self.total_rewards[max(0, i - 100):(i + 1)]) > 15 else False  # TODO erbe init von general Agent class war 13
+                self.total_rewards[max(0, i - 100):(i + 1)]) > 17 else False  # TODO erbe init von general Agent class war 13,15
             # np.median(total_rewards[max(0, i - 100):(i + 1)]) > 17 and \
 
             if converged:
@@ -430,3 +431,4 @@ if __name__ == '__main__':
     plotter = Plotter(module_path, number_of_episodes)
     plotter.plotRewardPlot(total_rewards)
     plotter.plotEPSHistory(np.array(eps_history))
+    plotter.plot_cargo_units_loaded(np.array(steps_to_exit))

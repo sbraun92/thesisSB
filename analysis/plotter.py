@@ -88,7 +88,7 @@ class Plotter(object):
         plt.ylabel("episode reward")
         if self.plot_standard_dev:
             ax.legend(["episode reward",
-                       "Std. of smoothing window"],
+                       "std. of smoothing window"],
                       loc='lower right')
         else:
             ax.legend(["episode reward)".format(self.smoothing_window)],
@@ -100,11 +100,11 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + self.algorithm + '_Rewards.pdf', dpi=600, bbox_inches="tight")
+            plt.savefig(self.path + self.algorithm + '_Rewards_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title("Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + 'Rewards.pdf', dpi=600, bbox_inches="tight")
+            plt.savefig(self.path + 'Rewards_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
         logging.getLogger(__name__).info("finished plot")
         plt.show() if self.show_plot else plt.close()
 
@@ -144,15 +144,17 @@ class Plotter(object):
         ax = sns.lineplot(data=steps_smoothed, linewidth=2.5, dashes=False, color="green")
         plt.xlabel("Episode")
         plt.ylabel("Cargo Units")
+        xlabels = ['{:,.1f}'.format(x) + 'K' for x in ax.get_xticks() / 1000]
+        ax.set_xticklabels(xlabels)
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Cargo Units loaded over Time\n(Smoothed over {} it.)".format(
-                int(self.smoothing_window / 2)))
-            fi4.savefig(self.path + self.algorithm + '_CargoUnitsLoaded.pdf', dpi=600, bbox_inches="tight")
+                int(self.smoothing_window)))
+            fi4.savefig(self.path + self.algorithm + '_CargoUnitsLoaded_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title(" Cargo Units loaded over Time\n(smoothed over{} it.)".format(int(self.smoothing_window)))
-            fi4.savefig(self.path + '_CargoUnitsLoaded.pdf', dpi=600, bbox_inches="tight")
+            fi4.savefig(self.path + '_CargoUnitsLoaded_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
         logging.getLogger(__name__).info("Finished plot")
         plt.show() if self.show_plot else plt.close()
 

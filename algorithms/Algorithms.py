@@ -61,14 +61,14 @@ def training_convergence(rewards):
     return beta
 
 def training_metrics(rewards):
-    info = '*'*60 +'\nTraining evaluation metrics:\n'
+    info = '\n'+'*'*80 +'\nTraining Evaluation Metrics:\n'
     metrics = list()
     metrics.append(avg_reward_training_end(rewards))
-    info += 'Average Reward of last 100 Episodes:\t\t\t'+str(metrics[0])+'\n'
+    info += 'Average Reward of last 100 Episodes:\t\t\t\t'+str(metrics[0])+'\n'
     metrics.append(avg_reward_reward_slope(rewards))
-    info += 'Average Increase of Rewards in Training:\t\t' + str(metrics[1]) + '\n'
+    info += 'Average Increase of Rewards in Training:\t\t\t' + str(metrics[1]) + '\n'
     metrics.append(training_convergence(rewards))
-    info += 'Average Increase of Rewards of last 100 Episodes:\t' + str(metrics[2])+'\n' + '*'*60+'\n'
+    info += 'Average Increase of Rewards of last 100 Episodes:\t' + str(metrics[2])+'\n' + '*'*80+'\n'
     logging.getLogger(__name__).info(info)
 
     return metrics, info

@@ -13,8 +13,52 @@ class EnvSimplifierConsistencyChecker(object):
 
     def check_input_consistency(self):
         #Check vehicle dimensions
+        logging.getLogger(__name__).info("Check input dimensions...")
         if self.env.rows < self.env.lanes:
             logging.getLogger(__name__).warning("Unusual deck dimensions: More lanes than rows ... might not be fatal thus ignore it")
+
+        if not isinstance(self.env.rows, (np.integer, int)):
+            error_msg = 'Row argument was of type {} but must be an integer'.format(type(self.env.rows))
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if not self.env.rows > 0:
+            error_msg = 'Row argument should be positive but was {} '.format(self.env.rows)
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+
+        if not isinstance(self.env.lanes, (np.integer, int)):
+            error_msg = 'Lane argument was of type {} but must be an integer'.format(type(self.env.lanes))
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if not self.env.lanes > 0:
+            error_msg = 'Lanes argument should be positive but was {} '.format(self.env.rows)
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if not isinstance(self.env.hull_depth, (np.integer, int)):
+            error_msg = 'Hull_depth argument was of type {} but must be an integer'.format(type(self.env.hull_depth))
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if not isinstance(self.env.hull_depth, (np.integer, int)):
+            error_msg = 'Hull_width argument was of type {} but must be an integer'.format(type(self.env.hull_width))
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if 2*self.env.hull_width > self.env.lanes:
+            error_msg = 'Too much hull_width (was {}): Double hull_depth ({}) is more than Lanes ({})' \
+                        '-> Should be less or equal'.format(self.env.hull_width,self.env.hull_width*2,self.env.lanes)
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
+
+        if 2*self.env.hull_width > self.env.rows:
+            error_msg = 'Too much hull_width (was {}): Double hull_depth ({}) is more than Rows ({})' \
+                        '-> Should be less or equal'.format(self.env.hull_depth,self.env.hull_depth*2,self.env.lanes)
+            logging.getLogger(__name__).error(error_msg)
+            raise TypeError(error_msg)
 
 
         # Check the consistency of vehicle_data

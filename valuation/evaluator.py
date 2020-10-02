@@ -1,6 +1,6 @@
 import numpy as np
 # from valuation.evaluation import StowagePlan
-
+import logging
 
 class Evaluator(object):
     def __init__(self, vehicle_data, deck_layout, weights=None):
@@ -99,9 +99,12 @@ class StowagePlan(object):
         self.deck_layout = evaluation[4]
 
     def __str__(self):
-        info = "Mandatory Cargo Loaded: {}\n" \
-               "Number of Shifts: {}\n" \
-               "Space Utilisation: {}".format(self.mandatory_cargo_loaded, self.shifts, self.space_utilisation)
+        info = "\n"+"*"*80+"\nEvaluation of Stowage Plan\n"+ \
+                "Mandatory Cargo Loaded:\t {}\n".format(self.mandatory_cargo_loaded) +\
+                "Number of Shifts:\t\t {}\n".format(self.shifts) +\
+                "Space Utilisation:\t\t {}".format(self.space_utilisation) +\
+                "\n"+"*"*80
+        logging.getLogger(__name__).info(info)
 
         return info
 

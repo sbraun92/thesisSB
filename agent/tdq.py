@@ -11,7 +11,7 @@ from agent.BasicAgent import Agent
 
 
 class TDQLearning(Agent):
-    def __init__(self, env=None, path=None, number_of_episodes=20000, orig=True, GAMMA=0.999):
+    def __init__(self, env=None, path=None, number_of_episodes=20000, orig=True, GAMMA=0.999, additional_info=None):
         np.random.seed(0)
         # help only for timing
         self.orig = orig
@@ -24,6 +24,8 @@ class TDQLearning(Agent):
         self.env = env
         self.path = path
         self.env = env
+        self.additional_info = additional_info
+        self.training_time = 0
 
         self.ALPHA = 0.1
         self.EPS = 1.0
@@ -35,7 +37,7 @@ class TDQLearning(Agent):
         self.action_ix = np.arange(self.action_space_length)
         self.total_rewards = np.zeros(self.number_of_episodes)
         self.state_expansion = np.zeros(self.number_of_episodes)
-        self.stepsToExit = np.zeros(self.number_of_episodes)
+        self.loaded_cargo = np.zeros(self.number_of_episodes)
         self.eps_history = []
 
         # ix_Actions = np.arange(len(env.actionSpace))
@@ -46,7 +48,7 @@ class TDQLearning(Agent):
     # TODO Load QTable
 
     def train(self):
-        logging.getLogger('log1').info("prepare training...")
+        logging.getLogger(__name__).info("prepare training...")
 
         start = time.time()
 
@@ -54,12 +56,12 @@ class TDQLearning(Agent):
 
         self.q_table[observation.tobytes()] = np.zeros(self.action_space_length)
 
-        logging.getLogger('log1').info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
+        logging.getLogger(__name__).info("Use param: ALPHA: " + str(self.ALPHA) + " GAMMA: " + str(self.GAMMA))
 
 
 
         print("Start Training Process")
-        logging.getLogger('log1').info("Start training process")
+        logging.getLogger(__name__).info("Start training process")
         for i in range(self.number_of_episodes):
             done = False
             ep_reward = 0
@@ -104,16 +106,12 @@ class TDQLearning(Agent):
                     self.q_table[observation.tobytes()][action] += self.ALPHA * (
                             reward - self.q_table[observation.tobytes()][action])
 
-                # if not self.done:
-                #    self.q_table[self.observation.tobytes()][self.action] = self.reward \
-                #                                    + self.GAMMA * self.q_table[self.observation_.tobytes()][self.action_]
 
                 observation = observation_
 
                 if i == self.number_of_episodes - 1 and done:
-                    logging.getLogger('log1').info(self.env._get_grid_representations())
-                    print("The reward of the last training episode was " + str(ep_reward))
-                    print("The Terminal reward was " + str(reward))
+                    logging.getLogger(__name__).info(self.env._get_grid_representations())
+                    print("The reward of the last training episode was {} (was deterministic)".format(str(ep_reward)))
 
                     if self.path is not None:
                         print('Save output to: \n' + self.path + '\n')
@@ -123,13 +121,17 @@ class TDQLearning(Agent):
                 #if steps > self.MAX_IT:
                 #    break
 
-            logging.getLogger('log1').info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(ep_reward))
+            if i == self.number_of_episodes - 2:
+                logging.getLogger(__name__).info('Set env to deterministic for last it. {}'.format(i+1)) if self.env.stochastic else None
+                self.env.stochastic = False
+
+            logging.getLogger(__name__).info("It" + str(i) + " EPS: " + str(self.EPS) + " reward: " + str(ep_reward))
             # Epsilon decreases lineary during training TODO 50 is arbitrary
 
-            if 1. - i / (self.number_of_episodes - 100) > 0:
+            if 1. - i / (self.number_of_episodes - 100) > self.EPSmin:
                 self.EPS -= 1. / (self.number_of_episodes - 100)
             else:
-                self.EPS = 0
+                self.EPS = self.EPSmin
 
             # if self.EPS > self.EPSmin:
             #    self.EPS *= self.EPSdec
@@ -140,7 +142,7 @@ class TDQLearning(Agent):
 
             self.total_rewards[i] = ep_reward
             self.state_expansion[i] = len(self.q_table.keys())
-            self.stepsToExit[i] = steps
+            self.loaded_cargo[i] = steps
 
 
 
@@ -149,35 +151,32 @@ class TDQLearning(Agent):
                 # std_reward = np.std(self.totalRewards[max(0, i - 100):(i + 1)])
                 print('episode ', i, 'score %.2f' % ep_reward, '\tavg. score %.2f' % avg_reward)
 
-            # if i%500 == 0:
-            #    print(len(self.q_table.keys()))
 
-        logging.getLogger('log1').info("End training process")
+
+        logging.getLogger().info("End training process")
         self.training_time = time.time() - start
-        print('Finished training after {} min {} sec. \n'
-              .format(int(self.training_time/60), round(self.training_time % 60, 0)))
+        ttime_minutes = (int(self.training_time / 60), round(self.training_time % 60, 0))
+
+        print('Finished training after {} min {} sec. \n'.format(ttime_minutes[0], ttime_minutes[1]))
+        logging.getLogger(__name__).info('Training Time: {} m. {} s. \n\t\t\t--> ({} s.)'.format(ttime_minutes[0],
+                                                                                                ttime_minutes[1],
+                                                                                                self.training_time))
+
         if self.path is not None:
             print('Save output to: \n' + self.path + '\n')
             self.env.save_stowage_plan(self.path)
 
-        return self.q_table, self.total_rewards, self.stepsToExit, np.array(self.eps_history), self.state_expansion
+        return self.q_table, self.total_rewards, self.loaded_cargo, np.array(self.eps_history), self.state_expansion
 
-    # TODO cleanup
-    # def maxAction(self, state):
-    #    #print(self.env.possibleActions)
-    #    possibleActions = self.action_ix[self.env.possible_actions]
-    # print(possibleActions)
-    # print(Q[state.tobytes()])
-    #    positionsOfBestPossibleAction = np.argmax(self.q_table[state.tobytes()][self.env.possible_actions])
-    # print(positionsOfBestPossibleAction)
-    #    return possibleActions[positionsOfBestPossibleAction]
+
 
     # TODO try feather // move AgentIMpl class add csv file format
     def load_model(self, path):
         try:
-            self.q_table = pickle.load(open(path + '_qTablePickled.p', "rb"))
+            self.q_table = pickle.load(open(path, "rb"))
         except:
-            logging.getLogger("log1").error("Could not load pickle file")
+            logging.getLogger(__name__).error("Could not load pickle file")
+
 
     def save_model(self, path, file_type='pickle'):
         self.q_table["ModelParam"] = {"Algorithm": "Time Difference Q-Learning",
@@ -191,7 +190,6 @@ class TDQLearning(Agent):
         info = "TDQ" + "_L" + str(self.env.lanes) + "_R" + str(self.env.rows) + "_Rf" + \
                str(int(1 in self.env.vehicle_data[5])) + "_A" + str(len(self.env.vehicle_data[0]))
 
-        # path = path + '_qTablePickled.p'
 
         super().save_model(path + info)
 

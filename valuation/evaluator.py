@@ -155,8 +155,10 @@ class StowagePlan(object):
             return False
 
     def _are_plans_comparable(self, other):
-        if np.array_equal(self.vehicle_data, other.vehicle_data) and\
-                np.array_equal(self.deck_layout, other.deck_layout):
+        if np.array_equal(self.vehicle_data, other.vehicle_data) and \
+                np.shape(self.deck_layout) == np.shape(other.deck_layout):
+                #np.array_equal(self.deck_layout, other.deck_layout):
+
             return True
         else:
             return False

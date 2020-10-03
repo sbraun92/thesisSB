@@ -43,6 +43,48 @@ def test_agent_evaluator_consensus():
         assert total_rewards_env1 < total_rewards_env2
 
 
+
+def test_evaluation_ranking():
+    evaluator1 = Evaluator(env1.vehicle_data, env1.grid)
+    evaluation1 = evaluator1.evaluate(env1.get_stowage_plan())
+    evaluator2 = Evaluator(env2.vehicle_data, env2.grid)
+    evaluation2 = evaluator2.evaluate(env2.get_stowage_plan())
+
+    assert evaluation2._are_plans_comparable(evaluation1)
+
+
+    evaluation1.mandatory_cargo_loaded = 1.0
+    evaluation2.mandatory_cargo_loaded = 0.9
+
+    evaluation1.shifts = 0.0
+    evaluation2.shifts = 0.0
+
+    evaluation1.space_utilisation = 0.9
+    evaluation2.space_utilisation = 0.9
+
+    assert evaluation1 > evaluation2
+
+    evaluation2.mandatory_cargo_loaded = 1.0
+    assert evaluation1 == evaluation2
+
+    evaluation2.shifts = 1.0
+    assert evaluation1 > evaluation2
+
+    evaluation1.shifts = 1.0
+    assert evaluation1 == evaluation2
+
+    evaluation1.shifts = 2.0
+    assert evaluation1 < evaluation2
+
+    evaluation2.shifts = 2.0
+    evaluation1.space_utilisation = 0.95
+    assert evaluation1 > evaluation2
+
+    evaluation1.space_utilisation = 0.85
+    assert evaluation1 < evaluation2
+
+
+
 # Test if the mandatory Cargo Loaded is reasonable
 def test_evaluator_mandatory_cargo_loaded():
     evaluator1 = Evaluator(env1.vehicle_data, env1.grid)

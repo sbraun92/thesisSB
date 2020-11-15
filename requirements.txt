@@ -3,7 +3,8 @@ pandas
 matplotlib
 seaborn
 sympy
-tensorflow==1.15.2
+scipy
+tensorflow
 keras==2.3.1
 gym
 pytest

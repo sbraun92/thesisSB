@@ -15,7 +15,7 @@ Straße des 17. Juni 135
 ## Source code repository
 This repository contains the source code of the master thesis by Söhnke Braun.
 
-Detailed citations and references to the work of others may be found in the biblography of the corresponding thesis.
+Detailed citations and references to the work of others may be found in the bibliography of the corresponding thesis.
 
 
 ## How to use

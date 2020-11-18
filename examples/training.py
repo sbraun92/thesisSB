@@ -1,5 +1,6 @@
 from env.roroDeck import RoRoDeck
 from agent.sarsa import SARSA
+from agent.tdq import TDQLearning
 from analysis.plotter import Plotter
 from analysis.evaluator import *
 from analysis.loggingUnit import LoggingBase
@@ -50,14 +51,14 @@ if __name__ == '__main__':
             module_path = loggingBase.module_path
 
             #number_of_episodes = 600_000
-            number_of_episodes = 6_000
+            number_of_episodes = 7_000
             logging.getLogger(__name__).info('\n'+'*'*80+'\n'+'*'*80+'\n')
             logging.getLogger(__name__).info("Train for {} iterations.".format(number_of_episodes))
 
             env = RoRoDeck(size[0], size[1], stochastic=False, vehicle_data=ll)
             cut_off = cut_offs[i]
 
-            agent = SARSA(env, module_path, number_of_episodes, additional_info='-L_'+str(i+1))
+            agent = TDQLearning(env, module_path, number_of_episodes, additional_info='-L_'+str(i+1))
             #agent = DQLearningAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0,
             #                        alpha=0.0005, regularisation=0.001,
              #                       mem_size=1_000_000, pretraining_duration=10_000,
@@ -75,7 +76,6 @@ if __name__ == '__main__':
         # Plotting
             plotter = Plotter(module_path, number_of_episodes, algorithm="SARSA", show_title=True)
             plotter.plot(total_rewards, state_expansion, vehicle_loaded, eps_history)
-            print('LoadingList',i)
             print(info)
 
     '''

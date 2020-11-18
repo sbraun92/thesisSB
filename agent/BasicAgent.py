@@ -78,6 +78,7 @@ class Agent:
     def train(self):
         raise NotImplementedError
 
+    #TODO delete
     def choose_action(self, possible_actions):
         raise NotImplementedError
 
@@ -90,7 +91,7 @@ class Agent:
         return possible_actions[positions_of_best_possible_action]
 
     # TODO unify tabular and NN
-    def predict(self, state, action=None):
+    def predict(self, state, action):
         if self.q_table is not None:
             try:
                 if action is None:
@@ -102,7 +103,3 @@ class Agent:
                     return np.zeros(self.env.action_space)
                 else:
                     return 0 if isinstance(action, (np.integer, int)) else np.zeros(len(action))
-
-    # TODO delete
-    def get_action(self, state, epsilon=None):
-        pass

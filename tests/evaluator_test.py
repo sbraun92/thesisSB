@@ -1,7 +1,5 @@
-import pytest
-
 from env.roroDeck import RoRoDeck
-from valuation.evaluator import *
+from analysis.evaluator import *
 
 # Preparation for Tests
 np.random.seed(0)

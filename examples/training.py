@@ -1,10 +1,9 @@
 from env.roroDeck import RoRoDeck
-from agent.sarsa import SARSA
 from agent.tdq import TDQLearning
 from analysis.plotter import Plotter
 from analysis.evaluator import *
 from analysis.loggingUnit import LoggingBase
-from algorithms import algorithms
+from analysis import algorithms
 import logging
 import numpy as np
 

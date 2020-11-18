@@ -1,4 +1,4 @@
-from algorithms.algorithms import *
+from analysis.algorithms import *
 import numpy as np
 
 

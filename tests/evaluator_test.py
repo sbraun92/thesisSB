@@ -5,8 +5,8 @@ from analysis.evaluator import *
 np.random.seed(0)
 
 # Create a random stowagePlan
-env1 = RoRoDeck(True)
-env2 = RoRoDeck(True)
+env1 = RoRoDeck()
+env2 = RoRoDeck()
 
 env1.reset()
 env2.reset()

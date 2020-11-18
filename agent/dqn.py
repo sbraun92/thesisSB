@@ -97,6 +97,8 @@ class DQLearningAgent(Agent):
         self.epsilon_min = epsilon_min
         self.batch_size = batch_size
 
+        self.training_time = 0
+
         # If pretraining_duration equals None then don't do pretraining
         if pretraining_duration is None:
             self.pretraining_duration = number_of_episodes + 1
@@ -311,6 +313,7 @@ class DQLearningAgent(Agent):
 
     def save_model(self, path):
         """Save model and trainings history"""
+
         self.q_eval.save(path + '_' + self.model_name + '.h5')
         path += self.model_name + '_training_history\\'
         os.makedirs(path, exist_ok=True)
@@ -323,10 +326,12 @@ class DQLearningAgent(Agent):
 
     def load_model(self, path):
         """Load a saved model"""
+
         self.q_eval = load_model(path)
 
     def execute(self, env_=None):
         """finish an episode (or do one completely) by picking always the best action"""
+
         if env_ is not None:
             self.env = env_
             current_state = self.env.current_state
@@ -343,12 +348,14 @@ class DQLearningAgent(Agent):
 
     def max_action(self, state, possible_actions):
         """Find best actions of all legal actions"""
+
         pos_action = np.argmax(self.q_eval.predict(state[np.newaxis, :])[0][possible_actions])
         action = possible_actions[pos_action]
         return action
 
     def predict(self, state, action):
         """Predict Q values of a given action"""
+
         source = self.q_eval.predict(state[np.newaxis, :])
         return source[0][action]
 
@@ -364,6 +371,7 @@ class ReplayBuffer(object):
             input_shape(int):       length of state representations
             n_actions(int):         number of actions, i.e. number of cargo types
         """
+
         np.random.seed(0)
 
         logging.getLogger(__name__).info("Init Replay Buffer:\n\tMax. Size: " + str(max_size) + "\tInput Shape: "

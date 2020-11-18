@@ -14,13 +14,18 @@ def test_TDQagent():
     env.rows = 12
     env.lanes = 12
     env.reset()
+
+    # set all units to equal length
+    env.vehicle_data[4][1] = 2
+    env.vehicle_data[4][3] = 2
+
     agent = TDQLearning(env, None)
 
     assert len(agent.q_table.keys()) == 0
     agent.number_of_episodes = 1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 48
+    assert len(agent.q_table.keys()) == 61
 
 
 def test_max_action_method_tdq():
@@ -52,13 +57,17 @@ def test_sarsa_agent():
     env.rows = 12
     env.lanes = 12
     env.reset()
+    # set all units to equal length
+    env.vehicle_data[4][1] = 2
+    env.vehicle_data[4][3] = 2
+
     agent = SARSA(env, None)
 
     assert len(agent.q_table.keys()) == 0
     agent.number_of_episodes = 1
     agent.train()
 
-    assert len(agent.q_table.keys()) == 48
+    assert len(agent.q_table.keys()) == 61
 
 
 def test_max_action_method_sarsa():
@@ -95,13 +104,13 @@ def test_dqn_agent():
         score = 0
         observation = env.reset()
         while not done:
-            action = agent.choose_action(observation, env.possible_actions)
+            action = env.action_space_sample()
             state_actions = env.possible_actions
             observation_, reward, done, info = env.step(action)
             actions_taken += 1
             new_state_actions = env.possible_actions
             score += reward
-            agent.remember(observation, action, reward, observation_, done, state_actions, new_state_actions)
+            agent.memory.store_transition(observation, action, reward, observation_, done)
             observation = observation_
             agent.learn()
 

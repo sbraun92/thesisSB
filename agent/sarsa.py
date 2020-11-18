@@ -30,10 +30,7 @@ class SARSA(Agent):
         self.ALPHA = 0.1
         self.EPS = 1.0
         self.MAX_IT = 400
-        if self.env.open_ai_structure:
-            self.action_space_length = self.env.action_space.n
-        else:
-            self.action_space_length = len(self.env.action_space)
+        self.action_space_length = len(self.env.action_space)
         self.action_ix = np.arange(self.action_space_length)
         self.epReward = 0
         self.total_rewards = np.zeros(self.number_of_episodes)

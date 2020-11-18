@@ -1,9 +1,8 @@
 import numpy as np
-from valuation.evaluator import Evaluator
+from analysis.evaluator import Evaluator
 from env.roroDeck import RoRoDeck
-from algorithms.inversionNumber import Analysor
+#from algorithms.inversionNumber import Analysor
 import pandas as pd
-import tqdm
 
 
 
@@ -13,7 +12,7 @@ def calculateRewardsystems():
     reward_simpleLoading = np.arange(0, 1, 2)
     reward_shifts = np.arange(-10, -2,1)
     reward_terminalSpace = np.arange(-10, -2, 1)
-    reward_terminalMand = np.arange(-40, -10,2)
+    reward_terminalMand = np.arange(-40, -10, 2)
 
     systems = np.array(np.meshgrid(reward_simpleLoading,reward_shifts, reward_terminalSpace, reward_terminalMand)).T.reshape(-1, 4)
 
@@ -32,7 +31,7 @@ if __name__ == '__main__':
         cumRewards = np.zeros(numberOfStowagePlans)
         evaluations = []
 
-        env = RoRoDeck(True)
+        env = RoRoDeck()
         env.reward_system = system
         evaluator = Evaluator(env.vehicle_data, env.grid)
 

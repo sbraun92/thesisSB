@@ -6,7 +6,7 @@ from env.roroDeck import RoRoDeck
 from analysis.plotter import Plotter
 from analysis.loggingUnit import LoggingBase
 from analysis.evaluator import Evaluator
-from agent.BasicAgent import Agent
+from agent.BaseAgent import Agent
 
 
 class TDQLearning(Agent):

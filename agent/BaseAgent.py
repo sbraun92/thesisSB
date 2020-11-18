@@ -1,24 +1,25 @@
-from env.roroDeck import *
 import pickle
 import os
-
+import numpy as np
+import logging
 
 class Agent:
     """
-    The Agent class is providing an interface for all other agent classes
+    The Agent class works as an interface for all agent classes
+    The implementations provided are for SARSA and Q-Learning to avoid code duplications
 
     Subclasses:
-        SARSA   -   implementation of the SARSA algorithm
-        TDQ     -   implementation of the Time Difference Q Learning
-        DQN     -   implementation of the Deep Q Learning (with Experience Replay and fixed target network)
-        DDQN    -   wrapper class of Double Deep Q Learning with Duelling Network and prioritised experience replay
-                    (core implementation is done by Stable Baselines (2018))
+        SARSA          -   implementation of the SARSA algorithm
+        Q-Learning     -   implementation of the Time Difference Q Learning
+        DQ-Learning    -   implementation of the Deep Q Learning (with Experience Replay and fixed target network)
     """
 
     def __init__(self):
         pass
 
     def get_info(self):
+        """Transform variables to info-string """
+
         info_str = 'Information on Agent:\n'
         for key, value in vars(self).items():
             # if value is dict, numpy array or list print its size
@@ -31,9 +32,13 @@ class Agent:
         return info_str
 
     def train(self):
-        pass
+        """ Method to train an agent -> must be implemented"""
+
+        raise NotImplementedError
 
     def save_model(self, path, name=None, output_type='pickle'):
+        """Save a model - here specifically Q-table as Pickle-file or csv-file """
+
         if self.additional_info is not None:
             path += '_' + str(self.additional_info)
         try:
@@ -59,9 +64,13 @@ class Agent:
             logging.getLogger(__name__).error("Could not save training history as pickle file to" + path)
 
     def load_model(self, path_to_file):
+        """ Method to load a RL system -> must be implemented"""
+
         raise NotImplementedError
 
     def execute(self, env=None):
+        """finish an episode (or do one completely) by picking always the best action"""
+
         if env is not None:
             self.env = env
             current_state = self.env.current_state
@@ -75,23 +84,19 @@ class Agent:
             if current_state.tobytes() not in self.q_table:
                 self.q_table[current_state.tobytes()] = np.zeros(self.action_space_length)
 
-    def train(self):
-        raise NotImplementedError
 
-    #TODO delete
-    def choose_action(self, possible_actions):
-        raise NotImplementedError
-
-    # TODO check this
     def max_action(self, state, possible_actions):
+        """Determine best action based on current estimate"""
+
         possible_actions = self.action_ix[possible_actions]
         prediction = self.predict(state, possible_actions)
         positions_of_best_possible_action = np.argmax(prediction)
 
         return possible_actions[positions_of_best_possible_action]
 
-    # TODO unify tabular and NN
     def predict(self, state, action):
+        """Predict Q-values for for a state or for one state/action-pair"""
+
         if self.q_table is not None:
             try:
                 if action is None:

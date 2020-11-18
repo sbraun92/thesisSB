@@ -5,6 +5,10 @@ from datetime import datetime
 
 class LoggingBase(object):
     def __init__(self):
+        """
+        Initialise a Logging Unit and set an output path. Thereby create folder system and id each run by date and time
+
+        """
         date = str(datetime.utcnow().date().strftime("%Y%m%d"))
         time = str(datetime.now().strftime("%H%M"))
 
@@ -15,12 +19,5 @@ class LoggingBase(object):
 
         logging.basicConfig(filename=self.module_path + '_log.log', level=logging.INFO,
                             format="%(asctime)s - %(levelname)s - %(message)s")
-        #handler = logging.StreamHandler()
-        #handler.setLevel(logging.INFO)
-        # formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-
-        # self.logger1 = logging.getLogger('log1')
-
-        # self.logger1.addHandler(logging.FileHandler(self.module_path + '_debugger.log'))
 
         logging.getLogger(__name__).info("Initialised Logger to {}".format(self.module_path))

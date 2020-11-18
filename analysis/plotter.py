@@ -1,13 +1,12 @@
 import pandas as pd
-import seaborn as sns;
-
-sns.set()
+import seaborn as sns
 import matplotlib.pyplot as plt
 import logging
 import os
 
+sns.set()
+
 sns.set(style="whitegrid")
-# sns.set(font_scale=1, rc={'text.usetex' : True})
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams.update({'font.size': 11})
 plt.rcParams.update({'text.color': "black",
@@ -16,21 +15,36 @@ plt.tight_layout()
 
 
 class Plotter(object):
-    def __init__(self, path, it, rewardPlot=True, stateExpPlot=True, stepPlot=True, epsHistory=True, algorithm=None,
-                 smoothing_window=None, plot_standard_dev=True, show_plot=False, show_title=True):
+    def __init__(self, path, number_of_episodes, reward_plot=True, state_exp_plot=True,
+                 eps_history=True, algorithm=None, smoothing_window=None, plot_standard_dev=True,
+                 show_plot=False, show_title=True):
+        """
+        Plot various plots to visualise training processes
+
+        Args:
+            path(str):                          Output path
+            number_of_episodes(int):            number of training episodes
+            reward_plot(bool):                  plot reward development
+            state_exp_plot(bool):               plot state expansions for (tabular methods only)
+            eps_history(bool):                  plot epsilon development (for epsilon-greedy)
+            algorithm(str):                     add algorithm name
+            smoothing_window(int):              smoothing window (if not specified, set to 0.01 of total episodes)
+            plot_standard_dev(bool):            plot standard deviations of smoothing window
+            show_plot(bool):                    show plots after creation
+            show_title(bool):                   plot with title (set to false in thesis)
+        """
         logging.getLogger(__name__).info("Initialise Plotting Unit")
-        self.rewardPlot = rewardPlot
-        self.stateExpPlot = stateExpPlot
-        self.stepPlot = stepPlot
-        self.epsHistory = epsHistory
-        self.it = it
+        self.reward_plot = reward_plot
+        self.state_Exp_Plot = state_exp_plot
+        self.epsHistory = eps_history
+        self.it = number_of_episodes
         # Boolean if the Plots should be shown or closed in execution
         self.show_plot = show_plot
         # Boolean if Title should be plotted ("False" for publication)
         self.show_title = show_title
 
         if smoothing_window is None:
-            self.smoothing_window = max(int(it / 100), 1)
+            self.smoothing_window = max(int(number_of_episodes / 100), 1)
         else:
             self.smoothing_window = smoothing_window
 
@@ -44,18 +58,18 @@ class Plotter(object):
 
     # Parent method for Training Plots
     def plot(self, rewards, states, steps, eps_history):
-        if self.rewardPlot is True and rewards is not None:
+        if self.reward_plot is True and rewards is not None:
             self.plotRewardPlot(rewards)
             try:
                 self.plotRewardPlot(rewards)
             except:
                 logging.getLogger(__name__).warning('Could not plot Reward development')
-        if self.stateExpPlot is True and states is not None:
+        if self.state_Exp_Plot is True and states is not None:
             try:
                 self.plotStateExp(states)
             except:
                 logging.getLogger(__name__).warning('Could not plot state expansion')
-        if self.stepPlot is True and steps is not None:
+        if steps is not None:
             try:
                 self.plot_cargo_units_loaded(steps)
             except:
@@ -75,12 +89,11 @@ class Plotter(object):
         mean = rewards_smoothed.mean()
         std = rewards_smoothed.std()
 
-        if self.plot_standard_dev:
-            rewards_q75 = mean + std
-            rewards_q25 = mean - std
         ax = sns.lineplot(data=mean, linewidth=2, dashes=False)
 
         if self.plot_standard_dev:
+            rewards_q75 = mean + std
+            rewards_q25 = mean - std
             plt.fill_between(mean.index, mean, rewards_q75, color='gray', alpha=0.2)
             plt.fill_between(mean.index, mean, rewards_q25, color='gray', alpha=0.2)
 
@@ -100,15 +113,16 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + self.algorithm + '_Rewards_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
+            plt.savefig(self.path + self.algorithm + '_Rewards_SW_' + str(self.smoothing_window) + '.pdf', dpi=600,
+                        bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title("Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + 'Rewards_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
+            plt.savefig(self.path + 'Rewards_SW_' + str(self.smoothing_window) + '.pdf', dpi=600, bbox_inches="tight")
         logging.getLogger(__name__).info("finished plot")
         plt.show() if self.show_plot else plt.close()
 
-    # Plot StateExpantion
+    # Plot state expansion
     def plotStateExp(self, state_expansion):
         logging.getLogger(__name__).info("Prepare state Expansion plot...")
         fi3 = plt.figure(figsize=(5.9, 3.5))
@@ -130,7 +144,6 @@ class Plotter(object):
             if self.show_title:
                 plt.title("State Expansion over time")
             fi3.savefig(self.path + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
-        # plt.show()
 
         logging.getLogger(__name__).info("Finished plot")
         plt.show() if self.show_plot else plt.close()
@@ -149,12 +162,14 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Cargo Units loaded over Time\n(Smoothed over {} it.)".format(
-                int(self.smoothing_window)))
-            fi4.savefig(self.path + self.algorithm + '_CargoUnitsLoaded_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
+                    int(self.smoothing_window)))
+            fi4.savefig(self.path + self.algorithm + '_CargoUnitsLoaded_SW_' + str(self.smoothing_window) + '.pdf',
+                        dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title(" Cargo Units loaded over Time\n(smoothed over{} it.)".format(int(self.smoothing_window)))
-            fi4.savefig(self.path + '_CargoUnitsLoaded_SW_'+str(self.smoothing_window)+'.pdf', dpi=600, bbox_inches="tight")
+            fi4.savefig(self.path + '_CargoUnitsLoaded_SW_' + str(self.smoothing_window) + '.pdf', dpi=600,
+                        bbox_inches="tight")
         logging.getLogger(__name__).info("Finished plot")
         plt.show() if self.show_plot else plt.close()
 

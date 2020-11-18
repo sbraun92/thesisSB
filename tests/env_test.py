@@ -21,7 +21,6 @@ def test_env_parameter():
     env.reset()
 
     # ToDO
-    print(env.frontier)
     print(env.total_capacity)
     print(env.mandatory_cargo_mask)
     print(env.vehicle_Counter)
@@ -50,7 +49,6 @@ def test_reset_method():
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
     loaded_vehicles = env.loaded_Vehicles.copy()
     reward_system = env.reward_system.copy()
-    frontier = env.frontier.copy()
     sequence_no = env.sequence_no
     current_lane = env.current_Lane.copy()
     action_space = env.action_space.copy()
@@ -72,7 +70,6 @@ def test_reset_method():
     _mandatoryCargoMask = env.mandatory_cargo_mask
     _loadedVehicles = env.loaded_Vehicles
     _rewardSystem = env.reward_system
-    _frontier = env.frontier
     _sequence_no = env.sequence_no
     _currentLane = env.current_Lane
     _actionSpace = env.action_space
@@ -89,7 +86,6 @@ def test_reset_method():
     assert (_mandatoryCargoMask == mandatory_cargo_mask).all()
     assert (_loadedVehicles == loaded_vehicles).all()
     assert (_rewardSystem == reward_system).all()
-    assert (_frontier == frontier).all()
     assert _sequence_no == sequence_no
     assert (_currentLane == current_lane).all()
     assert (_actionSpace == action_space).all()
@@ -111,7 +107,6 @@ def test_stepMethod():
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
     loaded_vehicles = env.loaded_Vehicles.copy()
     reward_system = env.reward_system.copy()
-    frontier = env.frontier.copy()
     sequence_no = env.sequence_no
     current_lane = env.current_Lane.copy()
     action_space = env.action_space.copy()
@@ -154,7 +149,6 @@ def test_stepMethod():
     _mandatoryCargoMask = env.mandatory_cargo_mask
     _loadedVehicles = env.loaded_Vehicles
     _rewardSystem = env.reward_system
-    _frontier = env.frontier
     _sequence_no = env.sequence_no
     _currentLane = env.current_Lane
     _actionSpace = env.action_space
@@ -197,9 +191,10 @@ def test_reefer_positions():
 
 def test_end_of_lane_method():
     env = RoRoDeck()
+    initial_end_of_lanes = env.initial_end_of_lanes
     env.reset()
     end_of_lanes = env.end_of_lanes.copy()
-    assert np.all(end_of_lanes == env.initial_end_of_lanes)
+    assert np.all(end_of_lanes == initial_end_of_lanes)
 
     current_lane = env.current_Lane
     length = env.vehicle_data[4][env.possible_actions[0]]
@@ -209,9 +204,15 @@ def test_end_of_lane_method():
     assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane] + length
 
 
-# TODO
 def test_shifts_caused():
-    pass
+    env = RoRoDeck()
+    env.reset()
+
+    current_lane = env.current_Lane
+    env.step(0)
+    env.current_Lane = current_lane
+    assert env._get_number_of_shifts(1) == 1
+    assert env._get_number_of_shifts(0) == 0
 
 
 def test_find_current_lane():
@@ -220,11 +221,6 @@ def test_find_current_lane():
     assert env.current_Lane == 3
     env.step(env.action_space_sample())
     assert env.current_Lane == 4
-
-
-# TODO delete
-def test_switch_current_lane():
-    pass
 
 
 def test_is_action_legal():

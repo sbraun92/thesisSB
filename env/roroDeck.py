@@ -1,7 +1,7 @@
 # RORO-Terminal Enviroment based on a GridWorld; is OpenAI Gym complying
 import numpy as np
 import logging
-from env.envSimplifier import EnvSimplifierConsistencyChecker
+from env.envChecker import RoRoDeckConsistencyChecker
 
 np.random.seed(0)
 
@@ -9,6 +9,21 @@ np.random.seed(0)
 class RoRoDeck(object):
     def __init__(self, lanes=8, rows=12, hull_catheti_length=4, vehicle_data=None, reward_system=None,
                  stochastic=False, p=0.98, zeta= 0.001):
+        """
+        Initialise RoRo-Deck environment
+        Args:
+            lanes(int):
+            rows(int):
+            hull_catheti_length(int):
+            vehicle_data(np.array):
+            reward_system(np.array):
+            stochastic(bool):
+            p(float):
+            zeta(float):
+        """
+
+
+
         """
         Initialise environment
 
@@ -57,7 +72,7 @@ class RoRoDeck(object):
         # TODO move elsewhere
         # Bug Schräge Problem beim Simplifiyen create grid -> TODO methode muss auch überarbeitet werden
         # EnvSimplifierConsistencyChecker(self).simplify_vehicle_length()
-        EnvSimplifierConsistencyChecker(self).check_input_consistency()
+        RoRoDeckConsistencyChecker(self).check_input_consistency()
 
 
 

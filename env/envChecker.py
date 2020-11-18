@@ -5,7 +5,6 @@ import logging
 class RoRoDeckConsistencyChecker(object):
     def __init__(self, env):
         """Bind environment object to consistency checker"""
-
         self.env = env
 
     def check_input_consistency(self):

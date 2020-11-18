@@ -7,12 +7,12 @@ import tensorflow as tf
 import os
 import pickle
 import numpy as np
+import time
+import logging
 from env.roroDeck import RoRoDeck
 from analysis.plotter import Plotter
-import logging
 from analysis.loggingUnit import LoggingBase
 from analysis.evaluator import Evaluator
-import time
 from agent.BasicAgent import Agent
 
 # Supress tensorflow warnings
@@ -24,9 +24,9 @@ class DQLearningAgent(Agent):
                  regularisation=0.001, model_name=None, bad_moves_cut_off=8,
                  pretraining_duration=10_000, additional_info=None, cut_off=17, update_target=100):
         """
-        Implementation of the DQlearning algorithm (Minh et.al. 2013)
+        Implementation of the DQ-Learning algorithm (Minh et.al. 2013)
         based on work done by Tabor (cf. 2020, www.github.com/philtabor/Deep-Q-Learning-Paper-To-Code)
-        with modfications specific to the RoRo deck stowage planning problem:
+        with modifications specific to the RoRo deck stowage planning problem:
                     - no convolutions
                     - a form of pre-training
                     - smaller network (2 layers)
@@ -168,6 +168,8 @@ class DQLearningAgent(Agent):
         return neural_net
 
     def train(self):
+        """Initialise training process"""
+
         start = time.time()
 
         for i in range(self.number_of_episodes):
@@ -179,6 +181,7 @@ class DQLearningAgent(Agent):
             while not done:
                 steps += 1
 
+                # Agent can take legal actions only
                 if i > self.pretraining_duration:
                     if np.random.random() < self.epsilon:
                         action = np.random.choice(self.env.possible_actions)
@@ -186,7 +189,7 @@ class DQLearningAgent(Agent):
                         actions = self.q_eval.predict(observation[np.newaxis, :])
                         action_qVal_reduce = actions[0][self.env.possible_actions]
                         action = self.env.possible_actions[np.argmax(action_qVal_reduce)]
-
+                # Agent can take every action in pretraining
                 else:
                     if np.random.random() < self.epsilon:
                         action = np.random.choice(self.action_space)
@@ -207,6 +210,7 @@ class DQLearningAgent(Agent):
                 if bad_moves_counter >= self.bad_moves_cut_off:
                     break
 
+            # Decrement epsilon
             self.epsilon = self.epsilon * self.epsilon_dec if self.epsilon > self.epsilon_min else self.epsilon_min
 
             # Save training process data
@@ -221,7 +225,7 @@ class DQLearningAgent(Agent):
 
 
             logging.getLogger(__name__).info('episode {}'.format(i)
-                                             + 'EPS: {} '.format(self.epsilon)
+                                             + 'epsilon: {} '.format(self.epsilon)
                                              + ' score {} '.format(round(episode_reward, 2))
                                              + 'avg. score {} '.format(round(avg_reward, 2))
                                              + 'bad moves {}'.format(bad_moves_counter))
@@ -275,6 +279,8 @@ class DQLearningAgent(Agent):
         return self.q_eval, self.total_rewards, self.loaded_cargo, self.eps_history, None
 
     def learn(self):
+        """ Update the DQN as outlined in thesis."""
+
         # Don't sample/learn if the replay buffer size is smaller than minibatch size
         if self.memory.memory_size <= self.batch_size:
             return
@@ -408,17 +414,15 @@ class ReplayBuffer(object):
 # Example of usage
 if __name__ == '__main__':
     np.random.seed(0)
-    tf.random.set_seed(0)
 
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
-    env = RoRoDeck(lanes=10, rows=12, stochastic=False)
-    number_of_episodes = 14000
+    env = RoRoDeck(lanes=10, rows=12)
 
-    agent = DQLearningAgent(env=env, module_path=module_path)
+    agent = DQLearningAgent(env=env, module_path=module_path, number_of_episodes=6000)
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
-    plotter = Plotter(module_path, number_of_episodes)
+    plotter = Plotter(module_path, agent.number_of_episodes, show_plot=True)
     plotter.plotRewardPlot(total_rewards)
     plotter.plotEPSHistory(np.array(eps_history))
     plotter.plot_cargo_units_loaded(np.array(steps_to_exit))

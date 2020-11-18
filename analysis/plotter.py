@@ -82,7 +82,7 @@ class Plotter(object):
 
     def plotRewardPlot(self, total_rewards):
         logging.getLogger(__name__).info("prepare reward plot...")
-        fig2 = plt.figure(figsize=(5.9, 3.8))
+        plt.figure(figsize=(5.9, 3.8))
 
         rewards_smoothed = pd.Series(total_rewards).rolling(self.smoothing_window,
                                                             min_periods=self.smoothing_window)

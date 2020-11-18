@@ -1,7 +1,7 @@
 from env.roroDeck import RoRoDeck
 from agent.tdq import TDQLearning
 from agent.sarsa import SARSA
-from agent.dqn import DQNAgent
+from agent.dqn import DQLearningAgent
 import pytest
 import numpy as np
 
@@ -87,8 +87,8 @@ def test_dqnAgent():
     env = RoRoDeck(True, lanes=8, rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 2
-    agent = DQNAgent(env=env, module_path=None, gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
-                     batch_size=64, epsilon_min=0.01, epsilon_dec=0.99999)
+    agent = DQLearningAgent(env=env, module_path=None, gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
+                            batch_size=64, epsilon_min=0.01, epsilon_dec=0.99999)
 
     actions_taken = 0
     for i in range(n_games):

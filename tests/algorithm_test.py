@@ -1,4 +1,4 @@
-from algorithms.Algorithms import *
+from algorithms.algorithms import *
 import pytest
 
 

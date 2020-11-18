@@ -1,6 +1,6 @@
 from algorithms.algorithms import *
 import numpy as np
-import pytest
+
 
 def test_inversion_number():
     seq1 = (np.array([0, 1, 2, 3, 4]), 0)

@@ -1,14 +1,14 @@
-from env.roroDeck import RoRoDeck
-from agent.tdq import TDQLearning
-from agent.sarsa import SARSA
-from agent.dqn import DQLearningAgent
-import pytest
 import numpy as np
+
+from agent.dqn import DQLearningAgent
+from agent.sarsa import SARSA
+from agent.tdq import TDQLearning
+from env.roroDeck import RoRoDeck
 
 np.random.seed(0)
 
 
-# Test for TDQ
+# Test for Q-Learning
 def test_TDQagent():
     env = RoRoDeck()
     env.rows = 12
@@ -47,7 +47,7 @@ def test_max_action_method_tdq():
 
 # Test for SARSA
 
-def test_SARSAagent():
+def test_sarsa_agent():
     env = RoRoDeck()
     env.rows = 12
     env.lanes = 12
@@ -83,9 +83,8 @@ def test_max_action_method_sarsa():
 
 
 # Test for DQN
-def test_dqnAgent():
+def test_dqn_agent():
     env = RoRoDeck(lanes=8, rows=12)
-    input_dims = np.shape(env.reset())[0]
     n_games = 2
     agent = DQLearningAgent(env=env, module_path=None, gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,
                             batch_size=64, epsilon_min=0.01, epsilon_dec=0.99999)
@@ -96,8 +95,7 @@ def test_dqnAgent():
         score = 0
         observation = env.reset()
         while not done:
-            # possible_actions = env.possibleActions
-            action = agent.choose_action(observation, env.possible_actions)  ## add possible actions here
+            action = agent.choose_action(observation, env.possible_actions)
             state_actions = env.possible_actions
             observation_, reward, done, info = env.step(action)
             actions_taken += 1
@@ -109,11 +107,3 @@ def test_dqnAgent():
 
     assert np.shape(np.nonzero(agent.memory.reward_memory))[1] == actions_taken
     assert np.shape(np.nonzero(agent.memory.terminal_memory))[1] == 2
-
-
-def test_load_save():
-    pass
-
-
-def test_Superclass():
-    pass

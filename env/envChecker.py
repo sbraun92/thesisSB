@@ -11,6 +11,7 @@ class RoRoDeckConsistencyChecker(object):
     def check_input_consistency(self):
         """Check input data (types, dimensions, ...) to ease usability"""
 
+        # Check input dimensions
         logging.getLogger(__name__).info("Check input dimensions...")
         if self.env.rows < self.env.lanes:
             logging.getLogger(__name__).warning(
@@ -33,12 +34,12 @@ class RoRoDeckConsistencyChecker(object):
             raise TypeError(error_msg)
 
         if not self.env.lanes > 0:
-            error_msg = 'Lanes argument should be positive but was {} '.format(self.env.lanes)
+            error_msg = 'Lane argument should be positive but was {} '.format(self.env.lanes)
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 
         if 2 * self.env.hull_catheti_length > self.env.lanes:
-            error_msg = 'Too much hull_width (was {}): Double hull_catheti_length ({}) is more than Lanes ({})' \
+            error_msg = 'Too much hull_catheti_length (was {}): Double hull_catheti_length ({}) is more than Lanes ({})' \
                         '-> Should be less or equal'.format(self.env.hull_catheti_length,
                                                             self.env.hull_catheti_length * 2, self.env.lanes)
             logging.getLogger(__name__).error(error_msg)
@@ -52,7 +53,7 @@ class RoRoDeckConsistencyChecker(object):
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 
-        # Check the consistency of vehicle_data
+        # Check the consistency of vehicle_data, i.e. loading list
         logging.getLogger(__name__).info("Check format of vehicle_data...")
         if not isinstance(self.env.vehicle_data, np.ndarray):
             error_msg = 'vehicle_data argument was of type {} but must be a numpy array'.format(

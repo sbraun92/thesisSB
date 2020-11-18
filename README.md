@@ -17,8 +17,6 @@ This repository contains the source code of the master thesis by Söhnke Braun.
 
 Detailed citations and references to the work of others may be found in the biblography of the corresponding thesis.
 
-## Abstract
-TODO
 
 ## How to use
 1. Install the latest anaconda distribution for python 3.7.0 or higher from https://www.anaconda.com/distribution/ 
@@ -35,4 +33,4 @@ TODO
       
 4. Install dependencies by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
 
-5. Type `jupyter notebook` and open file *examples/example_notebook.ipynb*
+5. Type `jupyter notebook` and open file *examples/Training.ipynb* or *examples/Training.ipynb*

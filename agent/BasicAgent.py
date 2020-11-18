@@ -26,14 +26,16 @@ class Agent:
                 key += ' size'
                 value = len(value)
             # variable tab space for clean printing
-            tab_space = ':'+'\t' * (5 - int(len(key) / 8)) if 5 - int(len(key) / 8) > 0 else ':\t'
+            tab_space = ':' + '\t' * (5 - int(len(key) / 8)) if 5 - int(len(key) / 8) > 0 else ':\t'
             info_str += key + tab_space + str(value) + '\n'
         return info_str
 
-
-
+    def train(self):
+        pass
 
     def save_model(self, path, name=None, output_type='pickle'):
+        if self.additional_info is not None:
+            path += '_' + str(self.additional_info)
         try:
             if output_type == 'pickle':
                 pickle.dump(self.q_table, open(path + '.p', "wb"))
@@ -43,17 +45,18 @@ class Agent:
                         f.write("%s,%s\n" % (key, self.q_table[key]))
         except:
             if output_type == 'pickle':
-                logging.getLogger("log1").error("Could not save model as pickle file to+ " + path)
+                logging.getLogger(__name__).error("Could not save model as pickle file to+ " + path)
             else:
-                logging.getLogger("log1").error("Could not save model as csv file to+ " + path)
+                logging.getLogger(__name__).error("Could not save model as csv file to+ " + path)
 
         path += '_training_history\\'
         os.makedirs(path, exist_ok=True)
         try:
             pickle.dump(self.total_rewards, open(path + 'rewards.p', "wb"))
             pickle.dump(self.eps_history, open(path + 'eps_history.p', "wb"))
+            pickle.dump(self.loaded_cargo, open(path + 'cargo_loaded_history.p', "wb"))
         except:
-            logging.getLogger("log1").error("Could not save training history as pickle file to" + path)
+            logging.getLogger(__name__).error("Could not save training history as pickle file to" + path)
 
     def load_model(self, path_to_file):
         raise NotImplementedError

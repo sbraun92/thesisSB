@@ -1,45 +1,47 @@
 import numpy as np
-# from valuation.evaluation import StowagePlan
 import logging
 
+
 class Evaluator(object):
-    def __init__(self, vehicle_data, deck_layout, weights=None):
+    def __init__(self, vehicle_data, deck_layout):
+        """Initialise stowage plan evaluator with input data"""
+
         self.stowage_plan = None
-        # 1. Number of shifts
-        # 2. mandatory Cargo loaded [%]
-        # 3. Space utilisation [%]
         self.evaluation_criteria = np.zeros(3)
-
         self.vehicle_data = vehicle_data
-
         self.mandatory_vehicle = vehicle_data[2] == 1
-
         self.number_of_vehicles = np.zeros(len(vehicle_data.T))
 
         # A Layout of deck (empty or loaded)
         self.deck_layout = deck_layout
 
-        # TODO check comparison with None ==
-        if weights is None:
-            self.weights = np.ones(3)
-        else:
-            self.weights = weights
-
     def evaluate(self, stowage_plan):
+        """
+        Evaluate a stowage plan and calculate the evaluation tuple ESP:
+                # 1. mandatory Cargo loaded [%]
+                # 2. Number of shifts
+                # 3. Space utilisation [%]
+
+        Args:
+            stowage_plan(tuple of np.arrays):   return value of env.get_stowage_plan
+
+        Returns:
+            ESPTuple-object:                    as outlined in thesis
+        """
+
         if not self.is_stowage_plan_compatible(stowage_plan):
             assert False
 
         self.stowage_plan = stowage_plan
 
+        mandatory_cargo_loaded = self.calculate_mandatory_cargo_loaded()
         shifts = self.calculate_number_of_shifts()
-
         space_utilisation = self.calculate_space_utilisation()
 
-        mandatory_cargo_loaded = self.calculate_mandatory_cargo_loaded()
-
-        return StowagePlan((shifts, space_utilisation, mandatory_cargo_loaded, self.vehicle_data, self.deck_layout))
+        return ESPTuple((mandatory_cargo_loaded, shifts, space_utilisation, self.vehicle_data, self.deck_layout))
 
     def calculate_number_of_shifts(self):
+        """Calculates shifts for a given stowage plan"""
         total_shifts = np.zeros(len(self.stowage_plan[1]))
         destinations = np.unique(self.vehicle_data[3].copy())
 
@@ -67,6 +69,7 @@ class Evaluator(object):
         return np.sum(total_shifts)
 
     def calculate_mandatory_cargo_loaded(self):
+        """Calculates the share of mandatory cargo loaded"""
         for i in range(len(self.number_of_vehicles)):
             self.number_of_vehicles[i] = len(np.where(self.stowage_plan[1].flatten() == i)[0])
 
@@ -76,7 +79,8 @@ class Evaluator(object):
         return float(loaded_mandatory_veh / all_mandatory_vehicle)
 
     def calculate_space_utilisation(self):
-        grid = self.stowage_plan[0]  # loading sequence
+        """calculates the space utilisation in percentage"""
+        grid = self.stowage_plan[0]
         grid = grid.flatten()
         capacity = len(grid) - len(grid[grid == -1])
         free_space = len(grid[grid == 0])
@@ -84,31 +88,35 @@ class Evaluator(object):
         return 1. - (free_space / capacity)
 
     def is_stowage_plan_compatible(self, stowage_plan):
+        """Shallow check if the stowage plan passed has the same dimension as the dimensions initialised"""
         if len(stowage_plan[0]) == len(self.deck_layout) and len(stowage_plan[0].T) == len(self.deck_layout.T):
             return True
         else:
             return False
 
 
-class StowagePlan(object):
+class ESPTuple(object):
     def __init__(self, evaluation=None):
-        self.shifts = evaluation[0]
-        self.space_utilisation = evaluation[1]
-        self.mandatory_cargo_loaded = evaluation[2]
+        """Initialise ESP-tuple as outlined in thesis"""
+
+        self.mandatory_cargo_loaded = evaluation[0]
+        self.shifts = evaluation[1]
+        self.space_utilisation = evaluation[2]
         self.vehicle_data = evaluation[3]
         self.deck_layout = evaluation[4]
 
     def __str__(self):
-        info = "\n"+"*"*80+"\nEvaluation of Stowage Plan\n"+ \
-                "Mandatory Cargo Loaded:\t {}\n".format(self.mandatory_cargo_loaded) +\
-                "Number of Shifts:\t\t {}\n".format(self.shifts) +\
-                "Space Utilisation:\t\t {}".format(self.space_utilisation) +\
-                "\n"+"*"*80
+        """String-representation to use with print() of ESP-tuple"""
+        info = "\n" + "*" * 80 + "\nEvaluation of Stowage Plan\n" + \
+               "Mandatory Cargo Loaded:\t {}\n".format(self.mandatory_cargo_loaded) + \
+               "Number of Shifts:\t\t {}\n".format(self.shifts) + \
+               "Space Utilisation:\t\t {}".format(self.space_utilisation) + \
+               "\n" + "*" * 80
         logging.getLogger(__name__).info(info)
 
         return info
 
-    # Comparision of two StowagePlan Evaluations
+    # Comparision of two stowagePlan evaluations according to decision tree as outlined in thesis
 
     # Compare two Evaluations:
     #   1. Evaluation with more mandatory Cargo Loaded is always better
@@ -116,6 +124,7 @@ class StowagePlan(object):
     #   3. if 1. and 2. equal than the Stowage Plan with a higher SpaceUtilisation is better
 
     def __eq__(self, other):
+        """ESP are equivalent"""
         if self._are_plans_comparable(other):
             if self.shifts == other.shifts \
                     and self.space_utilisation == other.space_utilisation \
@@ -127,6 +136,7 @@ class StowagePlan(object):
             return False
 
     def __gt__(self, other):
+        """ESP is better than other ESP"""
         if self._are_plans_comparable(other):
             if self.mandatory_cargo_loaded > other.mandatory_cargo_loaded:
                 return True
@@ -146,6 +156,7 @@ class StowagePlan(object):
             return False
 
     def __ge__(self, other):
+        """ESP is better or equal to other"""
         if self._are_plans_comparable(other):
             if self.__eq__(other) or self.__gt__(other):
                 return True
@@ -155,14 +166,15 @@ class StowagePlan(object):
             return False
 
     def _are_plans_comparable(self, other):
+        """Checks if two ESP had the same input data"""
         if np.array_equal(self.vehicle_data, other.vehicle_data) and \
                 np.shape(self.deck_layout) == np.shape(other.deck_layout):
-                #np.array_equal(self.deck_layout, other.deck_layout):
-
             return True
         else:
+            logging.getLogger().error("ESP-tuple are not comparable...")
             return False
 
     def __hash__(self):
+        """make ESP hashable"""
         return hash((self.space_utilisation, self.mandatory_cargo_loaded, self.shifts,
                      str(self.vehicle_data), str(self.deck_layout)))

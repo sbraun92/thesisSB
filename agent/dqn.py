@@ -1,6 +1,6 @@
 from keras.layers import Dense, Activation
 from keras.models import Sequential, load_model
-from keras.regularizers import l2, l1
+from keras.regularizers import l2
 from keras.optimizers import Adam
 #from keras_radam import RAdam
 import tensorflow as tf
@@ -15,7 +15,7 @@ from env.roroDeck import RoRoDeck
 from analysis.plotter import Plotter
 import logging
 from analysis.loggingUnit import LoggingBase
-from valuation.evaluator import Evaluator
+from analysis.evaluator import Evaluator
 import time
 from agent.BasicAgent import Agent
 
@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
     loggingBase = LoggingBase()
     module_path = loggingBase.module_path
-    env = RoRoDeck(False, lanes=10, rows=12, stochastic=False)
+    env = RoRoDeck(lanes=10, rows=12, stochastic=False)
     #    env.vehicle_Data[4][env.mandatory_cargo_mask]+=4
     #    env.vehicle_Data[4][4] = 2 #reefer
 

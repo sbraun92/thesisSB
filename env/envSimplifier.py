@@ -38,15 +38,15 @@ class EnvSimplifierConsistencyChecker(object):
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 
-        if 2*self.env.hull_width > self.env.lanes:
-            error_msg = 'Too much hull_width (was {}): Double hull_depth ({}) is more than Lanes ({})' \
-                        '-> Should be less or equal'.format(self.env.hull_width,self.env.hull_width*2,self.env.lanes)
+        if 2*self.env.hull_catheti_length > self.env.lanes:
+            error_msg = 'Too much hull_width (was {}): Double hull_catheti_length ({}) is more than Lanes ({})' \
+                        '-> Should be less or equal'.format(self.env.hull_catheti_length,self.env.hull_catheti_length*2,self.env.lanes)
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 
-        if 2*self.env.hull_width > self.env.rows:
-            error_msg = 'Too much hull_width (was {}): Double hull_depth ({}) is more than Rows ({})' \
-                        '-> Should be less or equal'.format(self.env.hull_depth,self.env.hull_depth*2,self.env.lanes)
+        if 2*self.env.hull_catheti_length > self.env.rows:
+            error_msg = 'Too much hull_catheti_length (was {}): Double hull_catheti_length ({}) is more than Rows ({})' \
+                        '-> Should be less or equal'.format(self.env.hull_catheti_length,self.env.hull_catheti_length*2,self.env.lanes)
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 

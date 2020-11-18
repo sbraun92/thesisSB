@@ -1,36 +1,14 @@
 # RORO-Terminal Enviroment based on a GridWorld; is OpenAI Gym complying
 import numpy as np
 import logging
-import gym
-from gym import spaces
 from env.envSimplifier import EnvSimplifierConsistencyChecker
-from gym.utils import seeding
 
 np.random.seed(0)
 
 
-class RoRoDeck(gym.Env):
-    """
-    Environment-Class of a RORO-Deck
-
-    Methods:
-        reset()
-            Reset method
-        step()
-            does one simulation ste
-        render()
-            Representation of the current state of the RORO-Deck
-        actionSpaceSample()
-            returns a random possible action
-        possibleActionsOfState()
-            returns all possible actions of the current state
-
-
-
-    """
-
-    def __init__(self, open_ai_structure=True, lanes=8, rows=12, hull_depth=1, hull_width=4, vehicle_data=None, reward_system=None,
-                 stochastic=False, p=0.98):
+class RoRoDeck(object):
+    def __init__(self, lanes=8, rows=12, hull_catheti_length=4, vehicle_data=None, reward_system=None,
+                 stochastic=False, p=0.98, zeta= 0.001):
         """
         Initialise environment
 
@@ -41,42 +19,33 @@ class RoRoDeck(gym.Env):
             reward_system:  rewards for given predefined conditions of a state - which will be cumulated
                             at each simulation step
         """
-        logging.getLogger('log1').info('Initialise RORO-Deck environment: \tLanes: {}\tRows: {}'.format(lanes, rows))
+        logging.getLogger('log1').info('Initialise RoRo-Deck environment: \tLanes: {}\tRows: {}'.format(lanes, rows))
 
         # if stochastic is True the environment will use with probability p the action chosen by the agent and with
         # 1-p a random action from the possible actions
         self.stochastic = stochastic
         self.p = p
 
-        # The environment may be used without the OpenAi data structures
-        self.open_ai_structure = open_ai_structure
-
         self.loading_sequence = None
 
         self.lanes = lanes
         self.rows = rows
         self.sequence_no = 1
-        self.hull_depth = hull_depth
-        self.hull_width = hull_width
+        self.hull_catheti_length = hull_catheti_length
 
         if reward_system is None:
-            self.reward_system = np.array([2, -12, -0.1, -50])
+            self.reward_system = np.array([2, -12, -1, -50])
             # [0.2,  # mandatory cargo per step
             # -12,  # caused shifts per step was -8
             # -2,  # terminal: Space left unused
             # -50])  # terminal: mand. cargo not loaded   \was 40
         else:
             self.reward_system = reward_system
-        # TODO string formatting
-        # Vehicle Data stores vehicle id, destination, if it is mandatory cargo, length and how many to be loaded max
+
+        self.zeta = zeta
+
+        # Use default loading list "0" if not specified otherwise
         if vehicle_data is None:
-            # self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
-            #                              [1, 2, 1, 2, 2],  # destination
-            #                              [1, 1, 0, 0, 1],  # mandatory
-            #                             [2, 3, 2, 3, 2],  # length
-            #                            [5, 5, -1, -1, 2],  # number of vehicles on yard (-1 denotes there are
-            # infinite vehicles of that type)
-            #                           [0, 0, 0, 0, 1]])  # Reefer
             self.vehicle_data = np.array([[0, 1, 2, 3, 4],  # vehicle id
                                           [5, 5, -1, -1, 2],  # number of vehicles on yard
                                           [1, 1, 0, 0, 1],  # mandatory
@@ -93,9 +62,9 @@ class RoRoDeck(gym.Env):
 
 
 
-        self.grid = self._create_grid(hull_depth=hull_depth)
+        self.grid = self._create_grid()
         # Reefer TODo
-        self.grid_reefer = self._create_grid(hull_depth=hull_depth,hull_width=hull_width)
+        self.grid_reefer = self._create_grid()
         self.grid_reefer.T[0][4:rows] = 1
         self.grid_destination = self.grid.copy()
         self.grid_vehicle_type = self.grid.copy() - 1
@@ -107,7 +76,7 @@ class RoRoDeck(gym.Env):
         # Todo dele np.min(self.vehleData
         self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int)
-        self.capacity = self._get_free_capacity()
+        self.total_capacity = self._get_free_capacity()
         # TODO Delete Frontier as it is redundant information
         self.frontier = np.max(self.end_of_lanes)
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int)
@@ -123,10 +92,7 @@ class RoRoDeck(gym.Env):
         # Test without switching
 
         # self.action_space = self.vehicle_data[0]
-        if self.open_ai_structure:
-            self.action_space = spaces.Discrete(len(self.vehicle_data[0]))
-        else:
-            self.action_space = self.vehicle_data[0]
+        self.action_space = self.vehicle_data[0]
 
         self.possible_actions = self.get_possible_actions_of_state()
         # TODO delete Counter
@@ -145,12 +111,11 @@ class RoRoDeck(gym.Env):
 
         obs_low = np.zeros(len(obs_high))
 
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.int)
+        #self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.int)
         # self.observation_space = spaces.Tuple((
         #    spaces.Discrete(32),
         #    spaces.Discrete(11),
         #    spaces.Discrete(2)))
-        self.seed()
 
         logging.getLogger('log1').info('Initialise Reward System with parameters: \n' +
                                        '\t\t\t\t Time step reward: \t\t\t\t\t {}\n'.format(self.reward_system[0]) +
@@ -184,7 +149,7 @@ class RoRoDeck(gym.Env):
         self.loading_sequence = "Loading Sequence of RORO-Deck (Lanes: {} Rows: {})\n\n".format(self.lanes, self.rows)
 
         self.sequence_no = 1
-        self.grid = self._create_grid(hull_depth=self.hull_depth, hull_width=self.hull_width)
+        self.grid = self._create_grid(hull_catheti_length=self.hull_catheti_length)
         self.grid_destination = self.grid.copy()
         self.grid_vehicle_type = self.grid.copy() - 1
         self.grid_reefer = self.grid.copy()
@@ -193,7 +158,7 @@ class RoRoDeck(gym.Env):
         self.end_of_lanes = self._get_end_of_lane(self.grid)
         self.initial_end_of_lanes = self.end_of_lanes.copy()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int)
-        self.capacity = self._get_free_capacity()
+        self.total_capacity = self._get_free_capacity()
         self.current_Lane = self._get_minimal_lanes()[0]
         self.frontier = np.max(self.end_of_lanes)
         self.possible_actions = self.get_possible_actions_of_state()
@@ -282,7 +247,7 @@ class RoRoDeck(gym.Env):
             # TODO frontier redundant
             self.frontier = np.max(self.end_of_lanes)
             self.sequence_no += 1
-            self.current_Lane = self._get_minimal_lanes()[0]  # better name updateCurrentLane
+            self.current_Lane = self._get_minimal_lanes()[0]
 
             # if we put a car we reset the TerminalStateCounter
             self.TerminalStateCounter = 0
@@ -292,7 +257,10 @@ class RoRoDeck(gym.Env):
 
             if self._is_terminal_state():
                 # Space Utilisation
-                free_spaces = np.sum(-self.end_of_lanes + np.ones(self.lanes) * self.rows) #/ np.sum(
+                #free_spaces = np.sum(-self.end_of_lanes + np.ones(self.lanes) * self.rows)
+                free_spaces = np.sum(self._get_free_capacity())#/np.sum(self.total_capacity) #TODO rueckgaengig
+
+                #/ np.sum(
                 #self.capacity)  # Added capacity here TODO total capacity
                 # Nutzung von _get_free_capacity()
 
@@ -300,12 +268,12 @@ class RoRoDeck(gym.Env):
                 mandatory_vehicles_left_to_load = np.sum(self.vehicle_data[1][self.mandatory_cargo_mask] \
                                                          - self.number_of_vehicles_loaded[self.mandatory_cargo_mask])
 
-                internal_state = np.array([is_cargo_mandatory,number_of_shifts,free_spaces,mandatory_vehicles_left_to_load])
-                reward = np.dot(self.reward_system, internal_state) + 0.0001
+                reward_features = np.array([is_cargo_mandatory,number_of_shifts,free_spaces,mandatory_vehicles_left_to_load])
+                reward = np.dot(self.reward_system, reward_features) + self.zeta
                 return self.current_state, reward, True, {}  # {'is_success': True}#None #TODO dont return none type
             else:
-                internal_state = np.array([is_cargo_mandatory, number_of_shifts, 0, 0])
-                reward = np.dot(self.reward_system,internal_state) + 0.0001
+                reward_features = np.array([is_cargo_mandatory, number_of_shifts, 0, 0])
+                reward = np.dot(self.reward_system,reward_features) + self.zeta
                 return self.current_state, reward, False, {}  # {'is_success': True}#None
 
     def action_space_sample(self):
@@ -333,7 +301,7 @@ class RoRoDeck(gym.Env):
     def get_stowage_plan(self):
         return self.grid, self.loaded_Vehicles
 
-    def _create_grid(self, hull_depth=1, hull_width=4):
+    def _create_grid(self, hull_depth=1, hull_catheti_length=4):
         """
         Creates a grid representation of a RORO deck with vessel hull
         0:  empty space
@@ -346,10 +314,10 @@ class RoRoDeck(gym.Env):
 
         # Check if hull dimensions are sensible for deck-dimensions (rows & lanes)
         # Otherwise fall back to default values #TODO Test this
-        if self.rows > hull_depth * hull_width and self.lanes >= hull_width * 2:
+        if self.rows > hull_catheti_length and self.lanes >= hull_catheti_length * 2:
             grid = np.zeros((self.rows, self.lanes), dtype=np.int)
-            for i in range(hull_width):
-                t = (hull_width - i) * hull_depth
+            for i in range(hull_catheti_length):
+                t = (hull_catheti_length - i)
                 grid[i] += np.hstack([-np.ones(t, dtype=np.int), np.zeros(self.lanes - t, dtype=np.int)])
                 grid[i] += np.hstack([np.zeros(self.lanes - t, dtype=np.int), -np.ones(t, dtype=np.int)])
             return grid
@@ -392,12 +360,15 @@ class RoRoDeck(gym.Env):
         capacity -= np.count_nonzero(self.grid, axis=0)
         return capacity
 
+    #TODO delte
     def _find_current_lane(self):
         return np.argmin(self.end_of_lanes)
 
+    #TODO delte
     def _get_current_lane_after_put(self):
         return self._get_minimal_lanes()[0]
 
+    #TODO delte
     def _switch_current_lane(self):
         minimal_lanes = self._get_minimal_lanes()
         if minimal_lanes.size == 1:
@@ -530,7 +501,7 @@ class RoRoDeck(gym.Env):
         return representation
 
     def _maximal_number_of_shifts(self):
-        possible_shifts = np.array((self.capacity - np.ones(self.lanes) * self.minimal_package) / self.minimal_package,
+        possible_shifts = np.array((self.total_capacity - np.ones(self.lanes) * self.minimal_package) / self.minimal_package,
                                    dtype=np.int)
         return np.sum(possible_shifts)
 

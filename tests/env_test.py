@@ -1,21 +1,11 @@
-import gym
 import numpy as np
-
 from env.roroDeck import RoRoDeck
 
-#from stable_baselines.common.env_checker import check_env
 np.random.seed(0)
 
 
-# TODO test action_space and reward_space
-def test_open_ai_compliance():
-    env = gym.make('RORODeck-v0')
-    #env.reset()
-    #env.step(env.action_space_sample())
-#    check_env(env)
-
 def test_roro_deck():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.reset()
     done = False
     i = 0
@@ -27,12 +17,12 @@ def test_roro_deck():
 
 
 def test_env_parameter():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.reset()
 
     # ToDO
     print(env.frontier)
-    print(env.capacity)
+    print(env.total_capacity)
     print(env.mandatory_cargo_mask)
     print(env.vehicle_Counter)
     print(env.loaded_Vehicles)
@@ -48,14 +38,14 @@ def test_env_parameter():
 
 # After the reset all variables should have the same value as after __init__
 def test_reset_method():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     vehicle_data = env.vehicle_data.copy()
     end_of_lanes = env.end_of_lanes.copy()
     grid = env.grid.copy()
     grid_destination = env.grid_destination.copy()
     grid_vehicle_type = env.grid_vehicle_type.copy()
     # TODO add a expanded grid for vehicle Type
-    capacity = env.capacity.copy()
+    capacity = env.total_capacity.copy()
     vehicle_counter = env.vehicle_Counter.copy()
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
     loaded_vehicles = env.loaded_Vehicles.copy()
@@ -77,7 +67,7 @@ def test_reset_method():
     _grid = env.grid
     _gridDestination = env.grid_destination
     _gridVehicleType = env.grid_vehicle_type
-    _capacity = env.capacity
+    _capacity = env.total_capacity
     _vehicleCounter = env.vehicle_Counter
     _mandatoryCargoMask = env.mandatory_cargo_mask
     _loadedVehicles = env.loaded_Vehicles
@@ -108,7 +98,7 @@ def test_reset_method():
 
 
 def test_stepMethod():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.reset()
 
     vehicle_data = env.vehicle_data.copy()
@@ -116,7 +106,7 @@ def test_stepMethod():
     grid = env.grid.copy()
     grid_destination = env.grid_destination.copy()
     grid_vehicle_type = env.grid_vehicle_type.copy()
-    capacity = env.capacity.copy()
+    capacity = env.total_capacity.copy()
     vehicle_counter = env.vehicle_Counter.copy()
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
     loaded_vehicles = env.loaded_Vehicles.copy()
@@ -159,7 +149,7 @@ def test_stepMethod():
     _grid = env.grid
     _gridDestination = env.grid_destination
     _gridVehicleType = env.grid_vehicle_type
-    _capacity = env.capacity
+    _capacity = env.total_capacity
     _vehicleCounter = env.vehicle_Counter
     _mandatoryCargoMask = env.mandatory_cargo_mask
     _loadedVehicles = env.loaded_Vehicles
@@ -176,7 +166,7 @@ def test_stepMethod():
 
 
 def test_possible_actions():
-    env = RoRoDeck(True)
+    env = RoRoDeck()
     env.vehicle_data[5][4] = 0  # disable reefer for test
     env.reset()
     number_of_vehicle = env.vehicle_data[1][0]
@@ -191,7 +181,7 @@ def test_possible_actions():
 
 
 def test_reefer_positions():
-    env = RoRoDeck(True)
+    env = RoRoDeck()
     env.vehicle_data[5][4] = 1  # enable reefer for test
     env.reset()
 
@@ -206,7 +196,7 @@ def test_reefer_positions():
 
 
 def test_end_of_lane_method():
-    env = RoRoDeck(True)
+    env = RoRoDeck()
     env.reset()
     end_of_lanes = env.end_of_lanes.copy()
     assert np.all(end_of_lanes == env.initial_end_of_lanes)
@@ -238,7 +228,7 @@ def test_switch_current_lane():
 
 
 def test_is_action_legal():
-    env = RoRoDeck(True)
+    env = RoRoDeck()
     env.reset()
     number_vehicle = env.vehicle_data[1][0]
 
@@ -250,7 +240,7 @@ def test_is_action_legal():
 
 
 def test_is_terminal_state():
-    env = RoRoDeck(True)
+    env = RoRoDeck()
     assert not env._is_terminal_state()
 
     env.reset()
@@ -266,7 +256,7 @@ def test_is_terminal_state():
 
 
 def test_get_current_state():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
 
     state = env.current_state
     assert np.shape(state) == (25,)

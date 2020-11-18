@@ -10,7 +10,7 @@ np.random.seed(0)
 
 # Test for TDQ
 def test_TDQagent():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.rows = 12
     env.lanes = 12
     env.reset()
@@ -24,7 +24,7 @@ def test_TDQagent():
 
 
 def test_max_action_method_tdq():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.rows = 12
     env.lanes = 12
     state = env.reset()
@@ -48,7 +48,7 @@ def test_max_action_method_tdq():
 # Test for SARSA
 
 def test_SARSAagent():
-    env = RoRoDeck(open_ai_structure=False)
+    env = RoRoDeck()
     env.rows = 12
     env.lanes = 12
     env.reset()
@@ -62,7 +62,7 @@ def test_SARSAagent():
 
 
 def test_max_action_method_sarsa():
-    env = RoRoDeck(False)
+    env = RoRoDeck()
     env.rows = 12
     env.lanes = 12
     state = env.reset()
@@ -84,7 +84,7 @@ def test_max_action_method_sarsa():
 
 # Test for DQN
 def test_dqnAgent():
-    env = RoRoDeck(True, lanes=8, rows=12)
+    env = RoRoDeck(lanes=8, rows=12)
     input_dims = np.shape(env.reset())[0]
     n_games = 2
     agent = DQLearningAgent(env=env, module_path=None, gamma=0.999, epsilon=1.0, alpha=0.0005, mem_size=10000000,

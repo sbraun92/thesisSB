@@ -27,8 +27,4 @@ def test_avg_reward_slope():
     assert avg_reward_reward_slope(np.arange(1234)) == 1
     assert avg_reward_reward_slope(-1*np.arange(1000)) == -1
 
-def test_training_convergence():
-    assert training_convergence(np.arange(1000)) == 1
-    assert training_convergence(-0.1*np.arange(1000)) == -0.1
-    assert training_convergence(2*np.ones(500)) == 0
 

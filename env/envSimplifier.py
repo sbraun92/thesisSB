@@ -1,5 +1,5 @@
 import numpy as np
-from algorithms.Algorithms import find_row_width
+from algorithms.algorithms import find_row_width
 import logging
 #from env.roroDeck import RoRoDeck
 
@@ -34,17 +34,7 @@ class EnvSimplifierConsistencyChecker(object):
             raise TypeError(error_msg)
 
         if not self.env.lanes > 0:
-            error_msg = 'Lanes argument should be positive but was {} '.format(self.env.rows)
-            logging.getLogger(__name__).error(error_msg)
-            raise TypeError(error_msg)
-
-        if not isinstance(self.env.hull_depth, (np.integer, int)):
-            error_msg = 'Hull_depth argument was of type {} but must be an integer'.format(type(self.env.hull_depth))
-            logging.getLogger(__name__).error(error_msg)
-            raise TypeError(error_msg)
-
-        if not isinstance(self.env.hull_depth, (np.integer, int)):
-            error_msg = 'Hull_width argument was of type {} but must be an integer'.format(type(self.env.hull_width))
+            error_msg = 'Lanes argument should be positive but was {} '.format(self.env.lanes)
             logging.getLogger(__name__).error(error_msg)
             raise TypeError(error_msg)
 

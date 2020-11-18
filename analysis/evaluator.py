@@ -108,7 +108,7 @@ class ESPTuple(object):
     def __str__(self):
         """String-representation to use with print() of ESP-tuple"""
         info = "\n" + "*" * 80 + "\nEvaluation of Stowage Plan\n" + \
-               "Mandatory Cargo Loaded:\t {}\n".format(self.mandatory_cargo_loaded) + \
+               "Mandatory Cargo Loaded:\t\t {}\n".format(self.mandatory_cargo_loaded) + \
                "Number of Shifts:\t\t {}\n".format(self.shifts) + \
                "Space Utilisation:\t\t {}".format(self.space_utilisation) + \
                "\n" + "*" * 80

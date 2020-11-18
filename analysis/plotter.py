@@ -59,7 +59,6 @@ class Plotter(object):
     # Parent method for Training Plots
     def plot(self, rewards, states, steps, eps_history):
         if self.reward_plot is True and rewards is not None:
-            self.plotRewardPlot(rewards)
             try:
                 self.plotRewardPlot(rewards)
             except:

@@ -61,8 +61,8 @@ if __name__ == '__main__':
             #agent = DQLearningAgent(env=env, module_path=module_path, gamma=0.999, number_of_episodes=number_of_episodes, epsilon=1.0,
             #                        alpha=0.0005, regularisation=0.001,
              #                       mem_size=1_000_000, pretraining_duration=10_000,
-              #                      batch_size=32, epsilon_min=0.01, epsilon_dec=0.9996, cut_off=cut_off,
-               #                     layers=[128,128], additional_info=str(i), bad_moves_cut_off=7)
+              #                      batch_size=32, epsilon_min=0.01, epsilon_dec=0.9996, performance_threshold=performance_threshold,
+               #                     layers=[128,128], additional_info=str(i), illegal_action_threshold=7)
 
             model, total_rewards, vehicle_loaded, eps_history, state_expansion = agent.train()
             agent.save_model(module_path)

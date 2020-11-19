@@ -80,9 +80,9 @@ class DQLearningAgent(Agent):
         self.regularisation = regularisation
         self.additional_info = additional_info
 
-        self.info = "Init DQ-Agent:\tALPHA: {} \n".format(alpha) \
-                    + "\t\t\tGAMMA: {}\n".format(gamma) \
-                    + "\t\t\tReplay Buffer Memory Size: {}\n".format(mem_size) \
+        self.info = "DQ-Agent:\t\t ALPHA: {} \n".format(alpha) \
+                    + "\t\t\t GAMMA: {}\n".format(gamma) \
+                    + "\t\t\t Replay Buffer Memory Size: {}\n".format(mem_size) \
                     + "\t\t\t Model name: {}\n".format(model_name) \
                     + "\t\t\t Epsilon Decrement: {}\n".format(epsilon_dec) \
                     + "\t\t\t Batch Size: {}\n".format(batch_size) \

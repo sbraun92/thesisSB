@@ -19,7 +19,8 @@ Detailed citations and references to the work of others may be found in the bibl
 
 
 ## How to use
-1. Install the latest anaconda distribution for python 3.7.0 or higher from https://www.anaconda.com/distribution/ 
+
+1. Install the latest anaconda distribution for python 3.7.0 or higher from https://www.anaconda.com/distribution/
 
 2. Clone or copy the repository to your machine (e.g.by downloading the zip-file and extracting it)
 
@@ -31,6 +32,6 @@ Detailed citations and references to the work of others may be found in the bibl
       
       * `cd ..`               -> navigate to the parentfolder
       
-4. Install dependencies by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
+4. Install dependencies (or check if they are already installed) by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
 
 5. Type `jupyter notebook` and open file *examples/Training.ipynb* or *examples/Training.ipynb*

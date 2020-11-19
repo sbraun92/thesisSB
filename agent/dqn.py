@@ -18,9 +18,11 @@ from agent.baseAgent import Agent
 # Supress tensorflow warnings
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+
 class DQLearningAgent(Agent):
     def __init__(self, env, module_path, alpha=0.0005, gamma=0.999, epsilon=1., epsilon_dec=0.9996,
-                 epsilon_min=0.001, batch_size=32, number_of_episodes=12000, mem_size=1_000_000, layers=[128, 128], activation='relu',
+                 epsilon_min=0.001, batch_size=32, number_of_episodes=12000, mem_size=1_000_000, layers=[128, 128],
+                 activation='relu',
                  regularisation=0.001, model_name=None, illegal_action_threshold=8,
                  pretraining_duration=10_000, additional_info=None, performance_threshold=17, update_target=100):
         """
@@ -225,7 +227,6 @@ class DQLearningAgent(Agent):
                 self.env.stochastic = False
                 self.epsilon = 0.
 
-
             logging.getLogger(__name__).info('episode {}'.format(i)
                                              + 'epsilon: {} '.format(self.epsilon)
                                              + ' score {} '.format(round(episode_reward, 2))
@@ -236,7 +237,7 @@ class DQLearningAgent(Agent):
                       'avg. score %.2f' % avg_reward)
                 self.save_model(self.module_path)
 
-            #Check if agent reached performance cut-off
+            # Check if agent reached performance cut-off
             performance_cut_off = True if np.mean(
                 self.total_rewards[max(0, i - 100):(i + 1)]) > self.cut_off else False
 
@@ -418,6 +419,7 @@ class ReplayBuffer(object):
         terminal = self.terminal_memory[batch]
 
         return states, actions, rewards, states_, terminal
+
 
 # Example of usage
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ from agent.baseAgent import Agent
 
 
 class SARSA(Agent):
-    def __init__(self, env=None, module_path=None, number_of_episodes=20000, gamma=0.999, alpha=0.1, epsilon=1.,
+    def __init__(self, env=None, module_path=None, number_of_episodes=600000, gamma=0.999, alpha=0.1, epsilon=1.,
                  epsilon_min=0.001, additional_info=None):
         """
         Implementation of the SARSA algorithm (cf. Rummery and Niranjan, 1994)

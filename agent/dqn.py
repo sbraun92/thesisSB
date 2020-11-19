@@ -20,7 +20,7 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 class DQLearningAgent(Agent):
     def __init__(self, env, module_path, alpha=0.0005, gamma=0.999, epsilon=1., epsilon_dec=0.9996,
-                 epsilon_min=0.01, batch_size=32, number_of_episodes=12000, mem_size=1_000_000, layers=[128, 128], activation='relu',
+                 epsilon_min=0.001, batch_size=32, number_of_episodes=12000, mem_size=1_000_000, layers=[128, 128], activation='relu',
                  regularisation=0.001, model_name=None, bad_moves_cut_off=8,
                  pretraining_duration=10_000, additional_info=None, cut_off=17, update_target=100):
         """

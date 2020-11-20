@@ -82,7 +82,7 @@ class RoRoDeck(object):
         self.initial_end_of_lanes = self.end_of_lanes.copy()
         self.current_Lane = self._get_minimal_lanes()[0]
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
-        self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
+        self.loaded_vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int)
         self.total_capacity = self._get_free_capacity()
         self.number_of_vehicles_loaded = np.zeros(len(self.vehicle_data[0]), dtype=np.int)
@@ -123,7 +123,7 @@ class RoRoDeck(object):
         self.total_capacity = self._get_free_capacity()
         self.current_Lane = self._get_minimal_lanes()[0]
         self.possible_actions = self.get_possible_actions_of_state()
-        self.loaded_Vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
+        self.loaded_vehicles = -np.ones((self.lanes, self.rows), dtype=np.int)
         self.vehicle_Counter = np.zeros(self.lanes, dtype=np.int)
         self.lowest_destination = np.ones(self.lanes) * np.max(self.vehicle_data[3])
         self.mandatory_cargo_mask = self.vehicle_data[2] == 1
@@ -177,7 +177,7 @@ class RoRoDeck(object):
                     self.number_of_vehicles_loaded[action] < self.vehicle_data[1][action]:
                 self.number_of_vehicles_loaded[action] += 1
 
-            self.loaded_Vehicles[self.current_Lane][self.vehicle_Counter[self.current_Lane]] = action
+            self.loaded_vehicles[self.current_Lane][self.vehicle_Counter[self.current_Lane]] = action
             self.vehicle_Counter[self.current_Lane] += 1
 
             # Update grids
@@ -238,7 +238,7 @@ class RoRoDeck(object):
 
     def get_stowage_plan(self):
         """return stowage plan data which is usable for Evaluator (Human users should use e.g. render())"""
-        return self.grid, self.loaded_Vehicles
+        return self.grid, self.loaded_vehicles
 
     def _create_grid(self):
         """

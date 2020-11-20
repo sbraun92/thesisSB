@@ -38,7 +38,7 @@ def test_reset_method():
     capacity = env.total_capacity.copy()
     vehicle_counter = env.vehicle_Counter.copy()
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
-    loaded_vehicles = env.loaded_Vehicles.copy()
+    loaded_vehicles = env.loaded_vehicles.copy()
     reward_system = env.reward_system.copy()
     sequence_no = env.sequence_no
     current_lane = env.current_Lane.copy()
@@ -59,7 +59,7 @@ def test_reset_method():
     _capacity = env.total_capacity
     _vehicleCounter = env.vehicle_Counter
     _mandatoryCargoMask = env.mandatory_cargo_mask
-    _loadedVehicles = env.loaded_Vehicles
+    _loadedVehicles = env.loaded_vehicles
     _rewardSystem = env.reward_system
     _sequence_no = env.sequence_no
     _currentLane = env.current_Lane
@@ -94,7 +94,7 @@ def test_stepMethod():
     grid_destination = env.grid_destination.copy()
     vehicle_counter = env.vehicle_Counter.copy()
     mandatory_cargo_mask = env.mandatory_cargo_mask.copy()
-    loaded_vehicles = env.loaded_Vehicles.copy()
+    loaded_vehicles = env.loaded_vehicles.copy()
     reward_system = env.reward_system.copy()
     sequence_no = env.sequence_no
     current_lane = env.current_Lane.copy()
@@ -122,7 +122,7 @@ def test_stepMethod():
     assert (env.grid_destination == grid_destination).all()
     assert env.end_of_lanes[current_lane] == end_of_lanes[current_lane] + length
     assert env.sequence_no == sequence_no + 1
-    assert (env.loaded_Vehicles == loaded_vehicles).all()
+    assert (env.loaded_vehicles == loaded_vehicles).all()
     assert (env.vehicle_Counter[current_lane] == vehicle_counter[current_lane] + 1)
 
     _vehicle_data = env.vehicle_data

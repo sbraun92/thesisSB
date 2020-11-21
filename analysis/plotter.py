@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import logging
 import os
+from pathlib import Path
 
 sns.set()
 
@@ -50,8 +51,8 @@ class Plotter(object):
 
         self.plot_standard_dev = plot_standard_dev
 
-        self.path = path + '_Plots\\'
-        logging.getLogger(__name__).info("Setting path for plots to:" + path)
+        self.path = str(path) + str(Path('_Plots/'))
+        logging.getLogger(__name__).info("Setting path for plots to:" + self.path)
 
         os.makedirs(self.path, exist_ok=True)
         self.algorithm = algorithm
@@ -112,12 +113,13 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + self.algorithm + '_Rewards_SW_' + str(self.smoothing_window) + '.pdf', dpi=600,
-                        bbox_inches="tight")
+            plt.savefig(Path(self.path).joinpath(self.algorithm + '_Rewards_SW_' +
+                                                 str(self.smoothing_window) + '.pdf'), dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title("Rewards over time\n(smoothed over {} it.)".format(self.smoothing_window))
-            plt.savefig(self.path + 'Rewards_SW_' + str(self.smoothing_window) + '.pdf', dpi=600, bbox_inches="tight")
+            plt.savefig(Path(self.path).joinpath('Rewards_SW_' + str(self.smoothing_window) + '.pdf'),
+                        dpi=600, bbox_inches="tight")
         logging.getLogger(__name__).info("finished plot")
         plt.show() if self.show_plot else plt.close()
 
@@ -137,12 +139,13 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": State Expansion over time")
-            fi3.savefig(self.path + self.algorithm + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
+            fi3.savefig(Path(self.path).joinpath(self.algorithm + '_StateExpansion.pdf')
+                        , dpi=600, bbox_inches="tight")
 
         else:
             if self.show_title:
                 plt.title("State Expansion over time")
-            fi3.savefig(self.path + '_StateExpansion.pdf', dpi=600, bbox_inches="tight")
+            fi3.savefig(Path(self.path).joinpath('StateExpansion.pdf'), dpi=600, bbox_inches="tight")
 
         logging.getLogger(__name__).info("Finished plot")
         plt.show() if self.show_plot else plt.close()
@@ -162,12 +165,12 @@ class Plotter(object):
             if self.show_title:
                 plt.title(self.algorithm + ": Cargo Units loaded over Time\n(Smoothed over {} it.)".format(
                     int(self.smoothing_window)))
-            fi4.savefig(self.path + self.algorithm + '_CargoUnitsLoaded_SW_' + str(self.smoothing_window) + '.pdf',
-                        dpi=600, bbox_inches="tight")
+            fi4.savefig(Path(self.path).joinpath(self.algorithm + '_CargoUnitsLoaded_SW_'
+                                                 + str(self.smoothing_window) + '.pdf'), dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title(" Cargo Units loaded over Time\n(smoothed over{} it.)".format(int(self.smoothing_window)))
-            fi4.savefig(self.path + '_CargoUnitsLoaded_SW_' + str(self.smoothing_window) + '.pdf', dpi=600,
+            fi4.savefig(Path(self.path).joinpath('CargoUnitsLoaded_SW_' + str(self.smoothing_window) + '.pdf'), dpi=600,
                         bbox_inches="tight")
         logging.getLogger(__name__).info("Finished plot")
         plt.show() if self.show_plot else plt.close()
@@ -181,10 +184,10 @@ class Plotter(object):
         if self.algorithm is not None:
             if self.show_title:
                 plt.title(self.algorithm + ": Epsilon Development per episode")
-            fi3.savefig(self.path + self.algorithm + '_EPSDevelopment.pdf', dpi=600, bbox_inches="tight")
+            fi3.savefig(Path(self.path).joinpath(self.algorithm + '_EPSDevelopment.pdf'), dpi=600, bbox_inches="tight")
         else:
             if self.show_title:
                 plt.title("Epsilon Development per episode")
-            fi3.savefig(self.path + 'EPSDevelopment.pdf', dpi=600, bbox_inches="tight")
+            fi3.savefig(Path(self.path).joinpath('EPSDevelopment.pdf'), dpi=600, bbox_inches="tight")
         logging.getLogger(__name__).info("finished plot")
         plt.show() if self.show_plot else plt.close()

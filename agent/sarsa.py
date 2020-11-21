@@ -21,7 +21,7 @@ class SARSA(Agent):
 
         Args:
             env(object):                RoRo-deck environment
-            module_path(string):        output path
+            module_path(Path-object):   output path
             number_of_episodes(int):    number of trainings episodes
             gamma(float):               discount factor
             alpha(float):               learning rate
@@ -110,7 +110,7 @@ class SARSA(Agent):
                     logging.getLogger(__name__).info(self.env._get_grid_representations())
                     print("The reward of the last training episode was {} (was deterministic)".format(str(ep_reward)))
                     if self.path is not None:
-                        self.env.save_stowage_plan(self.path)
+                        self.env.save_stowage_plan(str(self.path))
 
             logging.getLogger(__name__).info('It. {:7d} \t'.format(i)
                                            + 'epsilon: {} \t'.format(round(self.epsilon, 4))
@@ -146,8 +146,9 @@ class SARSA(Agent):
                                                                                                  ttime_minutes[1],
                                                                                                  self.training_time))
         if self.path is not None:
-            print('Save output to: \n' + self.path + '\n')
+            print('Save output to: \n' + str(self.path) + '\n')
             self.env.save_stowage_plan(self.path)
+            self.save_model(self.path)
 
         return self.q_table, self.total_rewards, self.loaded_cargo, np.array(self.eps_history), self.state_expansion
 
@@ -155,7 +156,7 @@ class SARSA(Agent):
         """ Load a Q-table"""
 
         try:
-            self.q_table = pickle.load(open(path, "rb"))
+            self.q_table = pickle.load(open(str(path), "rb"))
         except:
             logging.getLogger(__name__).error("Could not load pickle file!")
 
@@ -172,7 +173,7 @@ class SARSA(Agent):
                                       "TrainingTime": self.training_time}
         info = "SARSA" + "_L" + str(self.env.lanes) + "-R" + str(self.env.rows)
 
-        super().save_model(path + info)
+        super().save_model(path, info)
 
 # Example of usage
 if __name__ == '__main__':
@@ -186,7 +187,7 @@ if __name__ == '__main__':
     agent = SARSA(env=env, module_path=module_path, number_of_episodes=number_of_episodes)
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
-    plotter = Plotter(module_path, agent.number_of_episodes, show_plot=True)
+    plotter = Plotter(module_path, agent.number_of_episodes, show_plot=False)
     plotter.plotRewardPlot(total_rewards)
     plotter.plotStateExp(state_expansion)
     plotter.plotEPSHistory(np.array(eps_history))

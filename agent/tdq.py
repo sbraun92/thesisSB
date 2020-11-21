@@ -19,7 +19,7 @@ class TDQLearning(Agent):
 
         Args:
             env(object):                RoRo-deck environment
-            module_path(string):        output path
+            module_path(Path-object):   output path
             number_of_episodes(int):    number of trainings episodes
             gamma(float):               discount factor
             alpha(float):               learning rate
@@ -107,8 +107,8 @@ class TDQLearning(Agent):
                     print("The reward of the last training episode was {} (was deterministic)".format(str(ep_reward)))
 
                     if self.path is not None:
-                        print('Save output to: \n' + self.path + '\n')
-                        self.env.save_stowage_plan(self.path)
+                        print('Save output to: \n' + str(self.path) + '\n')
+                        self.env.save_stowage_plan(str(self.path))
 
 
             logging.getLogger(__name__).info("It" + str(i) + " epsilon: " + str(self.epsilon) + " reward: " + str(ep_reward))
@@ -147,8 +147,9 @@ class TDQLearning(Agent):
                                                                                                 self.training_time))
 
         if self.path is not None:
-            print('Save output to: \n' + self.path + '\n')
-            self.env.save_stowage_plan(self.path)
+            print('Save output to: \n' + str(self.path) + '\n')
+            self.env.save_stowage_plan(str(self.path))
+            self.save_model(self.path)
 
         return self.q_table, self.total_rewards, self.loaded_cargo, np.array(self.eps_history), self.state_expansion
 
@@ -156,7 +157,7 @@ class TDQLearning(Agent):
         """ Load a Q-table"""
 
         try:
-            self.q_table = pickle.load(open(path, "rb"))
+            self.q_table = pickle.load(open(str(path), "rb"))
         except:
             logging.getLogger(__name__).error("Could not load pickle file!")
 
@@ -174,7 +175,7 @@ class TDQLearning(Agent):
                                       "TrainingTime": self.training_time}
         info = "TDQ" + "_L" + str(self.env.lanes) + "-R" + str(self.env.rows)
 
-        super().save_model(path + info)
+        super().save_model(path, info)
 
 # Example of usage
 if __name__ == '__main__':

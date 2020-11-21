@@ -228,12 +228,12 @@ class RoRoDeck(object):
 
     def save_stowage_plan(self, path):
         """Save stowage plan and loading sequence"""
-        with open(path + "_StowagePlan.txt", 'w') as stowage_plan:
+        with open(str(path) + "_StowagePlan.txt", 'w') as stowage_plan:
             stowage_plan.write('Stowage Plan and Loading Sequence \n')
             stowage_plan.write(self._get_grid_representations())
 
         # Write Loading Sequence
-        with open(path + "_LoadingSequence.txt", 'w') as loading_seq:
+        with open(str(path) + "_LoadingSequence.txt", 'w') as loading_seq:
             loading_seq.write(self.loading_sequence)
 
     def get_stowage_plan(self):

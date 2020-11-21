@@ -2,6 +2,8 @@ import pickle
 import os
 import numpy as np
 import logging
+from pathlib import Path
+
 
 class Agent:
     """
@@ -36,36 +38,35 @@ class Agent:
 
         raise NotImplementedError
 
-    def save_model(self, path, name=None, output_type='pickle'):
+    def save_model(self, path, info, name=None, output_type='pickle'):
         """Save a model - here specifically Q-table as Pickle-file or csv-file """
-
+        path = str(path)+'_' + info
         if self.additional_info is not None:
-            path += '_' + str(self.additional_info)
+            path = path+'_'+ str(self.additional_info)
         try:
             if output_type == 'pickle':
-                pickle.dump(self.q_table, open(path + '.p', "wb"))
+                pickle.dump(self.q_table, open(str(path) + '.p', "wb"))
             else:
-                with open(path + '.csv', 'w') as f:
+                with open(str(path) + '.csv', 'w') as f:
                     for key in self.q_table.keys():
                         f.write("%s,%s\n" % (key, self.q_table[key]))
         except:
             if output_type == 'pickle':
-                logging.getLogger(__name__).error("Could not save model as pickle file to+ " + path)
+                logging.getLogger(__name__).error("Could not save model as pickle file to+ " + str(path))
             else:
-                logging.getLogger(__name__).error("Could not save model as csv file to+ " + path)
+                logging.getLogger(__name__).error("Could not save model as csv file to+ " + str(path))
 
-        path += '_training_history\\'
+        path = Path(path+'_training_history/')
         os.makedirs(path, exist_ok=True)
         try:
-            pickle.dump(self.total_rewards, open(path + 'rewards.p', "wb"))
-            pickle.dump(self.eps_history, open(path + 'eps_history.p', "wb"))
-            pickle.dump(self.loaded_cargo, open(path + 'cargo_loaded_history.p', "wb"))
+            pickle.dump(self.total_rewards, open(Path(path).joinpath('rewards_history.p'), "wb"))
+            pickle.dump(self.eps_history, open(Path(path).joinpath('eps_history_history.p'), "wb"))
+            pickle.dump(self.loaded_cargo, open(Path(path).joinpath('cargo_loaded_history.p'), "wb"))
         except:
-            logging.getLogger(__name__).error("Could not save training history as pickle file to" + path)
+            logging.getLogger(__name__).error("Could not save training history as pickle file to" + str(path))
 
     def load_model(self, path_to_file):
         """ Method to load a RL system -> must be implemented"""
-
         raise NotImplementedError
 
     def execute(self, env=None):
@@ -77,7 +78,6 @@ class Agent:
         else:
             current_state = self.env.reset()
         done = False
-        # env.stochastic = False
         while not done:
             action = self.max_action(current_state, self.env.possible_actions)
             current_state, reward, done, _ = self.env.step(action)

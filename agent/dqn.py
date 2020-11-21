@@ -9,6 +9,8 @@ import pickle
 import numpy as np
 import time
 import logging
+from pathlib import Path
+
 from env.roroDeck import RoRoDeck
 from analysis.plotter import Plotter
 from analysis.loggingUnit import LoggingBase
@@ -280,7 +282,9 @@ class DQLearningAgent(Agent):
             logging.getLogger(__name__).info('Training Time: {} m. {} s. \n\t\t\t--> ({} s.)'.format(ttime_minutes[0],
                                                                                                      ttime_minutes[1],
                                                                                                      self.training_time))
-            print('Save output to: \n' + self.module_path + '\n')
+            print('Save output to: \n' + str(self.module_path) + '\n')
+            self.save_model(self.module_path)
+
 
         return self.q_eval, self.total_rewards, self.loaded_cargo, self.eps_history, None
 
@@ -318,20 +322,20 @@ class DQLearningAgent(Agent):
     def save_model(self, path):
         """Save model and trainings history"""
 
-        self.q_eval.save(path + '_' + self.model_name + '.h5')
-        path += self.model_name + '_training_history\\'
+        self.q_eval.save(str(path) + '_' + self.model_name + '.h5')
+        path = Path(str(path) + '_' + self.model_name + '_training_history/')
         os.makedirs(path, exist_ok=True)
         try:
-            pickle.dump(self.total_rewards, open(path + 'rewards_history.p', "wb"))
-            pickle.dump(self.eps_history, open(path + 'eps_history.p', "wb"))
-            pickle.dump(self.loaded_cargo, open(path + 'cargo_loaded_history.p', "wb"))
+            pickle.dump(self.total_rewards, open(Path(path).joinpath('rewards_history.p'), "wb"))
+            pickle.dump(self.eps_history, open(Path(path).joinpath('eps_history.p'), "wb"))
+            pickle.dump(self.loaded_cargo, open(Path(path).joinpath('cargo_loaded_history.p'), "wb"))
         except:
             logging.getLogger(__name__).error("Could not save training history as pickle file to " + path)
 
     def load_model(self, path):
         """Load a saved model"""
 
-        self.q_eval = load_model(path)
+        self.q_eval = load_model(str(path))
 
     def execute(self, env_=None):
         """finish an episode (or do one completely) by picking always the best action"""
@@ -432,7 +436,7 @@ if __name__ == '__main__':
     module_path = loggingBase.module_path
     env = RoRoDeck(lanes=10, rows=12)
 
-    agent = DQLearningAgent(env=env, module_path=module_path, number_of_episodes=14000)
+    agent = DQLearningAgent(env=env, module_path=module_path, number_of_episodes=40)
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     plotter = Plotter(module_path, agent.number_of_episodes, show_plot=True)

@@ -66,7 +66,6 @@ class DQLearningAgent(Agent):
         if additional_info is not None:
             name += "-L" + str(additional_info)
 
-        self.bad_moves_cut_off = illegal_action_threshold
 
         self.number_of_episodes = number_of_episodes
 
@@ -101,14 +100,19 @@ class DQLearningAgent(Agent):
 
         self.training_time = 0
 
+        # Set Pretraining duration (variable i* in thesis)
         # If pretraining_duration equals None then don't do pretraining
         if pretraining_duration is None:
             self.pretraining_duration = number_of_episodes + 1
         else:
             self.pretraining_duration = pretraining_duration
 
-        # Cut-off training when performance threshold is reached to avoid instability
-        self.cut_off = performance_threshold
+        # Cut-off training when performance threshold is reached to avoid instability (variable C in thesis)
+        self.performance_threshold = performance_threshold
+
+        # Cut-off of current episode if number of illegal actions performed exceeds threshold (variable K in thesis)
+        self.illegal_action_threshold = illegal_action_threshold
+
 
         # Initialise replay buffer
         self.memory = ReplayBuffer(mem_size, self.input_dims, self.number_of_actions)
@@ -177,7 +181,7 @@ class DQLearningAgent(Agent):
         start = time.time()
 
         for i in range(self.number_of_episodes):
-            bad_moves_counter = 0
+            illegal_action_counter = 0
             done = False
             episode_reward = 0
             observation = self.env.reset()
@@ -202,7 +206,7 @@ class DQLearningAgent(Agent):
 
                 state_actions = self.env.possible_actions
                 if action not in state_actions:
-                    bad_moves_counter += 1
+                    illegal_action_counter += 1
                     steps -= 1
                 observation_, reward, done, info = self.env.step(action)
                 episode_reward += reward
@@ -211,7 +215,7 @@ class DQLearningAgent(Agent):
                 self.learn()
 
                 # Break if to many illegal actions to avoid investigating irrelevant areas of state space
-                if bad_moves_counter >= self.bad_moves_cut_off:
+                if illegal_action_counter >= self.illegal_action_threshold:
                     break
 
             # Decrement epsilon
@@ -223,7 +227,7 @@ class DQLearningAgent(Agent):
             self.loaded_cargo.append(steps)
             avg_reward = np.mean(self.total_rewards[max(0, i - 100):(i + 1)])
 
-            if i > self.number_of_episodes - 50:
+            if i >= self.number_of_episodes - 1:
                 self.env.stochastic = False
                 self.epsilon = 0.
 
@@ -231,15 +235,14 @@ class DQLearningAgent(Agent):
                                              + 'epsilon: {} '.format(self.epsilon)
                                              + ' score {} '.format(round(episode_reward, 2))
                                              + 'avg. score {} '.format(round(avg_reward, 2))
-                                             + 'bad moves {}'.format(bad_moves_counter))
+                                             + 'bad moves {}'.format(illegal_action_counter))
             if i % 10 == 0 and i > 0:
-                print('episode ', i, 'score %.2f \t' % episode_reward, 'illegal moves {} \t'.format(bad_moves_counter),
+                print('episode ', i, 'score %.2f \t' % episode_reward, 'illegal moves {} \t'.format(illegal_action_counter),
                       'avg. score %.2f' % avg_reward)
                 self.save_model(self.module_path)
 
-            # Check if agent reached performance cut-off
-            performance_cut_off = True if np.mean(
-                self.total_rewards[max(0, i - 100):(i + 1)]) > self.cut_off else False
+            # Check if agent reached performance cut-off (variable C in thesis)
+            performance_cut_off = True if avg_reward > self.performance_threshold else False
 
             if performance_cut_off:
                 self.env.stochastic = False
@@ -299,7 +302,7 @@ class DQLearningAgent(Agent):
 
         batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-        # Calculate target (in thesis this corresponds to variable y)
+        # Calculate target (this corresponds to variable y in thesis)
         q_target[batch_index, action_indices] = reward + self.gamma * np.max(q_next, axis=1) * (1 - done)
 
         # Train on minibatch (minimise loss)

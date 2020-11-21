@@ -436,7 +436,7 @@ if __name__ == '__main__':
     module_path = loggingBase.module_path
     env = RoRoDeck(lanes=10, rows=12)
 
-    agent = DQLearningAgent(env=env, module_path=module_path, number_of_episodes=40)
+    agent = DQLearningAgent(env=env, module_path=module_path, number_of_episodes=14_000)
 
     model, total_rewards, steps_to_exit, eps_history, state_expansion = agent.train()
     plotter = Plotter(module_path, agent.number_of_episodes, show_plot=True)

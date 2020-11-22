@@ -35,3 +35,5 @@ Detailed citations and references to the work of others may be found in the bibl
 4. Install dependencies (or check if they are already installed) by typing: `pip3 install -r requirements.txt` or `pip install -r requirements.txt`
 
 5. Type `jupyter notebook` and open file *examples/Training.ipynb* or *examples/Training.ipynb*
+
+**Note: To test and use submitted prototypes, it must be ensures that the folder *output* is on the same level as this repostitory.**
